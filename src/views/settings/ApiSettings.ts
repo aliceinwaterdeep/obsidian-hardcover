@@ -8,6 +8,8 @@ export function renderApiTokenSetting(
 	onSettingsChanged: () => void
 ): void {
 	let textComponent: any;
+	let envMessageEl: HTMLElement | null = null;
+	let clearButton: HTMLElement | null = null;
 
 	const setting = new Setting(containerEl)
 		.setName("Hardcover API key")
@@ -15,8 +17,45 @@ export function renderApiTokenSetting(
 
 	markSettingAsRequired(setting);
 
+	const updateSettingState = async () => {
+		const envApiKey = await plugin.envUtils.getHardcoverApiKey();
+
+		if (envApiKey) {
+			// hide input field and clear button
+			if (textComponent) {
+				textComponent.inputEl.style.display = "none";
+			}
+			if (clearButton) {
+				clearButton.style.display = "none";
+			}
+
+			// show env message
+			if (!envMessageEl) {
+				envMessageEl = setting.controlEl.createDiv();
+				envMessageEl.textContent = "✅ Loaded API key from .env file";
+				envMessageEl.style.color = "var(--text-muted)";
+				envMessageEl.style.fontSize = "0.9em";
+			}
+			envMessageEl.style.display = "block";
+		} else {
+			// show input field and clear button
+			if (textComponent) {
+				textComponent.inputEl.style.display = "block";
+			}
+			if (clearButton) {
+				clearButton.style.display = "block";
+			}
+
+			// hide env message
+			if (envMessageEl) {
+				envMessageEl.style.display = "none";
+			}
+		}
+	};
+
 	setting
 		.addExtraButton((button) => {
+			clearButton = button.extraSettingsEl;
 			button
 				.setIcon("refresh-cw")
 				.setTooltip("Clear API key")
@@ -28,13 +67,12 @@ export function renderApiTokenSetting(
 					if (textComponent) {
 						textComponent.setValue("");
 					}
-
+					await updateSettingState();
 					onSettingsChanged();
 				});
 		})
 		.addText((text) => {
 			textComponent = text;
-
 			text
 				.setPlaceholder("Enter your API key")
 				.setValue(plugin.settings.apiKey)
@@ -44,4 +82,7 @@ export function renderApiTokenSetting(
 					onSettingsChanged();
 				});
 		});
+
+	// initial state
+	updateSettingState();
 }
