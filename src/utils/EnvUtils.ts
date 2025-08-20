@@ -9,13 +9,15 @@ export class EnvUtils {
 
 	async readEnvFile(): Promise<Record<string, string> | null> {
 		try {
-			const envFile = this.vault.getAbstractFileByPath(".env");
-			if (!envFile || !(envFile instanceof TFile)) {
-				// file doesn't exist or is a folder
+			// use adapter directly since Obsidian doesn't expose dot files through getAbstractFileByPath
+			const envFilePath = ".env";
+			const exists = await this.vault.adapter.exists(envFilePath);
+
+			if (!exists) {
 				return null;
 			}
 
-			const content = await this.vault.read(envFile);
+			const content = await this.vault.adapter.read(envFilePath);
 			return this.parseEnvContent(content);
 		} catch (error) {
 			console.debug("Could not read .env file:", error);
