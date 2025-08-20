@@ -15,10 +15,10 @@ export class HardcoverAPI {
 	private queryBuilder: QueryBuilder;
 	private plugin: ObsidianHardcover;
 
-	constructor(settings: PluginSettings, plugin: ObsidianHardcover) {
-		this.settings = settings;
-		this.queryBuilder = new QueryBuilder(settings);
+	constructor(plugin: ObsidianHardcover) {
+		this.queryBuilder = new QueryBuilder(plugin.settings);
 		this.plugin = plugin;
+		this.settings = plugin.settings;
 	}
 
 	// Update the query if settings change
