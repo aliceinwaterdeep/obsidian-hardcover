@@ -1,6 +1,7 @@
 import { Setting } from "obsidian";
 import ObsidianHardcover from "src/main";
 import { markSettingAsRequired } from "../ui/SettingsHelpers";
+import { HARDCOVER_API_KEY_URL } from "src/config/constants";
 
 export function renderApiTokenSetting(
 	containerEl: HTMLElement,
@@ -11,9 +12,14 @@ export function renderApiTokenSetting(
 	let envMessageEl: HTMLElement | null = null;
 	let clearButton: HTMLElement | null = null;
 
-	const setting = new Setting(containerEl)
-		.setName("Hardcover API key")
-		.setDesc("Get your API key from https://hardcover.app/account/api");
+	const setting = new Setting(containerEl).setName("Hardcover API key");
+
+	setting.descEl.innerHTML = `
+    Get your API key from <a href="${HARDCOVER_API_KEY_URL}" target="_blank">${HARDCOVER_API_KEY_URL}</a>
+    <br><br>
+    If you prefer, you can also add the key to a <code>.env</code> file in your vault root:<br>
+    <code>HARDCOVER_API_KEY=your_key_here</code>
+`;
 
 	markSettingAsRequired(setting);
 
@@ -32,7 +38,7 @@ export function renderApiTokenSetting(
 			// show env message
 			if (!envMessageEl) {
 				envMessageEl = setting.controlEl.createDiv();
-				envMessageEl.textContent = "✅ Loaded API key from .env file";
+				envMessageEl.textContent = "✅ API key loaded from .env file";
 				envMessageEl.style.color = "var(--text-muted)";
 				envMessageEl.style.fontSize = "0.9em";
 			}
