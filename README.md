@@ -35,10 +35,21 @@ Syncs your [Hardcover](https://hardcover.app) library to your Obsidian vault, cr
 
 1. Get your Hardcover API key from [Hardcover](https://hardcover.app/account/api)
 2. Open Obsidian Settings and go to the "Hardcover" tab
-3. Enter your API key in the settings
+3. Configure your API key using one of these methods:
+
+   - **Settings**: Enter your API key directly in the plugin settings
+   - **Environment file**: Create a `.env` file in your vault root with:
+     ```
+     HARDCOVER_API_KEY=your_api_key_here
+     ```
+
+   > **Note:** If you use both methods, the `.env` file takes priority. The `.env` approach is recommended if you sync your vault with git to keep your API key out of backups.
+
 4. Configure a target folder for your book notes (must be a subfolder, not vault root)
 5. Customize which fields to include and their property names
 6. Click "Sync now" to import your library
+
+- **Precedence:** If both methods are configured, the `.env` file takes priority.
 
 > [!TIP]
 > If you want to test your setup before syncing everything, you can use the Debug menu to run a test sync with a limited number of books. Recommended for large libraries.
