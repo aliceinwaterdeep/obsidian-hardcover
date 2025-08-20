@@ -112,11 +112,15 @@ export default class ObsidianHardcover extends Plugin {
 		new Notice("Settings reset to defaults");
 	}
 
-	validateSyncConstraints(): { isValid: boolean; errorMessage?: string } {
+	async validateSyncConstraints(): Promise<{
+		isValid: boolean;
+		errorMessage?: string;
+	}> {
 		const targetFolder = this.settings.targetFolder;
 		const isRootOrEmpty = this.fileUtils.isRootOrEmpty(targetFolder);
 
-		const apiKey = this.settings.apiKey;
+		const apiKey = await this.getApiKey();
+
 		const isApiKeyMissing = !apiKey || apiKey.trim() === "";
 
 		if (isRootOrEmpty) {
@@ -130,15 +134,16 @@ export default class ObsidianHardcover extends Plugin {
 		if (isApiKeyMissing) {
 			return {
 				isValid: false,
-				errorMessage: "Please enter your Hardcover API key in settings.",
+				errorMessage:
+					"Please enter your Hardcover API key in the settings or in a .env file.",
 			};
 		}
 
 		return { isValid: true };
 	}
 
-	private async triggerSync(): Promise<void> {
-		const validation = this.validateSyncConstraints();
+	async triggerSync(options?: { debugLimit?: number }): Promise<void> {
+		const validation = await this.validateSyncConstraints();
 
 		if (!validation.isValid) {
 			new Notice(validation.errorMessage || "Sync validation failed");
@@ -146,7 +151,7 @@ export default class ObsidianHardcover extends Plugin {
 		}
 
 		try {
-			await this.syncService.startSync();
+			await this.syncService.startSync(options);
 		} catch (error) {
 			console.error("Sync failed:", error);
 		}

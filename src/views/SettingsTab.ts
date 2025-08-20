@@ -106,8 +106,8 @@ export default class SettingsTab extends PluginSettingTab {
 		this.updateSyncButtonsState();
 	}
 
-	updateSyncButtonsState(): void {
-		const validation = this.plugin.validateSyncConstraints();
+	async updateSyncButtonsState(): Promise<void> {
+		const validation = await this.plugin.validateSyncConstraints();
 		const isDisabled = !validation.isValid;
 		const tooltipText = validation.errorMessage || "";
 
