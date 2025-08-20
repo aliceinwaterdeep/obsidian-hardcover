@@ -9,6 +9,7 @@ import { NoteService } from "./services/NoteService";
 import { IS_DEV } from "./config/constants";
 import { DEFAULT_SETTINGS } from "./config/defaultSettings";
 import { SettingsMigrationService } from "./services/SettingsMigrationService";
+import { EnvUtils } from "./utils/EnvUtils";
 
 export default class ObsidianHardcover extends Plugin {
 	settings: PluginSettings;
@@ -17,6 +18,7 @@ export default class ObsidianHardcover extends Plugin {
 	noteService: NoteService;
 	fileUtils: FileUtils;
 	syncService: SyncService;
+	envUtils: EnvUtils;
 
 	async onload() {
 		if (IS_DEV) {
@@ -26,7 +28,8 @@ export default class ObsidianHardcover extends Plugin {
 		await this.loadSettings();
 
 		// Init services
-		this.hardcoverAPI = new HardcoverAPI(this.settings);
+		this.envUtils = new EnvUtils(this.app.vault);
+		this.hardcoverAPI = new HardcoverAPI(this.settings, this);
 		this.fileUtils = new FileUtils();
 		this.metadataService = new MetadataService(this.settings);
 		this.noteService = new NoteService(this.app.vault, this.fileUtils, this);
@@ -52,6 +55,18 @@ export default class ObsidianHardcover extends Plugin {
 	}
 
 	onunload() {}
+
+	async getApiKey(): Promise<string | null> {
+		// try to get API key from .env file
+		const envApiKey = await this.envUtils.getHardcoverApiKey();
+		if (envApiKey) {
+			return envApiKey;
+		}
+
+		// fallback to plugin settings
+		const settingsApiKey = this.settings.apiKey?.trim();
+		return settingsApiKey && settingsApiKey != "" ? settingsApiKey : null;
+	}
 
 	async loadSettings() {
 		const savedData = await this.loadData();

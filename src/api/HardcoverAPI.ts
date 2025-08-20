@@ -8,14 +8,17 @@ import {
 import { GetUserIdResponse, GraphQLResponse, HardcoverUser } from "src/types";
 import { QueryBuilder } from "./QueryBuilder";
 import { HARDCOVER_API } from "src/config/constants";
+import ObsidianHardcover from "src/main";
 
 export class HardcoverAPI {
 	private settings: PluginSettings;
 	private queryBuilder: QueryBuilder;
+	private plugin: ObsidianHardcover;
 
-	constructor(settings: PluginSettings) {
+	constructor(settings: PluginSettings, plugin: ObsidianHardcover) {
 		this.settings = settings;
 		this.queryBuilder = new QueryBuilder(settings);
+		this.plugin = plugin;
 	}
 
 	// Update the query if settings change
@@ -120,9 +123,16 @@ export class HardcoverAPI {
 			variables,
 		});
 
-		// remove Bearer if it exists since HC currently includes it in the string it copies
-		let apiKey = this.settings.apiKey.trim();
+		// use resolved API key, or fall back to settings
+		let apiKey = await this.plugin.getApiKey();
 
+		if (!apiKey || apiKey == "") {
+			throw new Error(
+				"No API key configured. Please set HARDCOVER_API_KEY in .env file or plugin settings."
+			);
+		}
+
+		// remove Bearer if it exists since HC currently includes it in the string it copies
 		if (apiKey.toLowerCase().startsWith("bearer ")) {
 			apiKey = apiKey.substring(7);
 		}
