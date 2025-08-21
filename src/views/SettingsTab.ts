@@ -81,7 +81,7 @@ export default class SettingsTab extends PluginSettingTab {
 			plugin: this.plugin,
 			name: "Sync Hardcover library",
 			description:
-				"Sync your Hardcover books to Obsidian notes. For testing, you can sync a limited number of books in the Debug section below.",
+				"Sync your Hardcover books to your notes. For testing, you can sync a limited number of books in the Debug section below.",
 			buttonText: this.SYNC_CTA_LABEL,
 			isMainCTA: true,
 			updateSyncButtonsState: () => this.updateSyncButtonsState(),

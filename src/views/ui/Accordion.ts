@@ -1,15 +1,13 @@
-import { Setting } from "obsidian";
+import { setIcon, Setting } from "obsidian";
 import ObsidianHardcover from "src/main";
 import { FieldDefinition } from "src/types";
 
 export class Accordion {
 	private plugin: ObsidianHardcover;
-	private chevronIcon: string;
 	private expandedSections: Map<string, boolean> = new Map();
 
 	constructor(plugin: ObsidianHardcover) {
 		this.plugin = plugin;
-		this.chevronIcon = `<svg viewBox="0 0 8 13" width="8" height="13" xmlns="http://www.w3.org/2000/svg"><path d="M1.5 1.5l5 5-5 5" stroke="currentColor" fill="none" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"></path></svg>`;
 	}
 
 	renderAccordionField(containerEl: HTMLElement, field: FieldDefinition) {
@@ -23,7 +21,8 @@ export class Accordion {
 		});
 
 		const icon = header.createSpan({ cls: "obhc-accordion-icon" });
-		icon.innerHTML = this.chevronIcon;
+
+		setIcon(icon, "chevron-right");
 
 		header.createSpan({ text: field.name });
 

@@ -50,7 +50,8 @@
 	background-color: var(--interactive-hover);
 }
 .obhc-accordion-icon {
-	margin-right: 8px;
+	margin-right: 4px;
+	transform: translateY(2px);
 	transition: transform 0.2s ease;
 }
 .obhc-accordion-icon.expanded {

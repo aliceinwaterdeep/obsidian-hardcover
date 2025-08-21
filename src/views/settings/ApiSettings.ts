@@ -14,12 +14,19 @@ export function renderApiTokenSetting(
 
 	const setting = new Setting(containerEl).setName("Hardcover API key");
 
-	setting.descEl.innerHTML = `
-    Get your API key from <a href="${HARDCOVER_API_KEY_URL}" target="_blank">${HARDCOVER_API_KEY_URL}</a>
-    <br><br>
-    If you prefer, you can also add the key to a <code>.env</code> file in your vault root:<br>
-    <code>HARDCOVER_API_KEY=your_key_here</code>
-`;
+	setting.descEl.empty();
+
+	const apiKeyInfo = setting.descEl.createDiv();
+	apiKeyInfo.appendText("Get your API key from ");
+	apiKeyInfo.createEl("a", {
+		text: HARDCOVER_API_KEY_URL,
+		href: HARDCOVER_API_KEY_URL,
+		attr: { target: "_blank" },
+	});
+
+	setting.descEl.appendText(
+		"If you prefer, you can also add the key to a .env file in your vault root: HARDCOVER_API_KEY=your_key_here"
+	);
 
 	markSettingAsRequired(setting);
 

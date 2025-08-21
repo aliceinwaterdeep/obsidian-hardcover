@@ -22,7 +22,7 @@ export function addSyncButton(config: SyncButtonConfig): ButtonComponent {
 		containerEl,
 		plugin,
 		name = "Sync",
-		description = "Sync Hardcover books to Obsidian",
+		description = "Sync Hardcover books to your notes",
 		buttonText = "Sync",
 		debugLimit,
 		showLimitInput = false,
