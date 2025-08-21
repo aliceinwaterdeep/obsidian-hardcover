@@ -160,6 +160,12 @@ These notes won't be overwritten during sync...
 
 ## Changelog
 
+### v1.0.1
+
+- Added support for loading API token from `.env` file as alternative to plugin settings
+- Marked as desktop-only due to Node.js API usage (mobile users can still access synced notes)
+- Changed license from MIT to GPL-3.0 to ensure continued open source development
+
 ### 1.0.0 - Initial Release
 
 - Sync your Hardcover library to Obsidian notes
