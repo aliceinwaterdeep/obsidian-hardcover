@@ -160,6 +160,10 @@ These notes won't be overwritten during sync...
 
 ## Changelog
 
+### v1.0.2
+
+- Updated plugin metadata. No functional changes
+
 ### v1.0.1
 
 - Added support for loading API token from `.env` file as alternative to plugin settings
