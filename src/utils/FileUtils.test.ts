@@ -39,7 +39,7 @@ describe("FileUtils", () => {
 					"${title} by ${authors} (${year})",
 					metadata
 				)
-			).toBe("All Systems Red by Martha Wells - (2017).md");
+			).toBe("All Systems Red by Martha Wells (2017).md");
 		});
 
 		test("handles missing data gracefully", () => {

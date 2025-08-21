@@ -1,5 +1,5 @@
 import { App, ButtonComponent, PluginSettingTab } from "obsidian";
-import { IS_DEV } from "src/config/constants";
+import { IS_DEV, REPO_ISSUES_URL, REPO_URL } from "src/config/constants";
 import ObsidianHardcover from "src/main";
 import { Accordion } from "./ui/Accordion";
 import { renderDebugInfo, renderDevOptions } from "./settings/DebugSettings";
@@ -73,6 +73,10 @@ export default class SettingsTab extends PluginSettingTab {
 			containerEl.createEl("h2", { text: "Developer Options" });
 			renderDevOptions(containerEl, this.plugin);
 		}
+
+		containerEl.createEl("hr");
+
+		this.addSourceSection(containerEl);
 	}
 
 	private addMainSyncButton(containerEl: HTMLElement): void {
@@ -106,8 +110,26 @@ export default class SettingsTab extends PluginSettingTab {
 		this.updateSyncButtonsState();
 	}
 
-	updateSyncButtonsState(): void {
-		const validation = this.plugin.validateSyncConstraints();
+	private addSourceSection(containerEl: HTMLElement): void {
+		const helpContainer = containerEl.createDiv({
+			cls: "obhc-source-container",
+		});
+
+		helpContainer.createEl("a", {
+			text: "👩🏻‍💻 Source Code",
+			href: REPO_URL,
+			cls: "obhc-source-link",
+		});
+
+		helpContainer.createEl("a", {
+			text: "🐛 Report Issue",
+			href: REPO_ISSUES_URL,
+			cls: "obhc-source-link",
+		});
+	}
+
+	async updateSyncButtonsState(): Promise<void> {
+		const validation = await this.plugin.validateSyncConstraints();
 		const isDisabled = !validation.isValid;
 		const tooltipText = validation.errorMessage || "";
 

@@ -1,5 +1,4 @@
 import { Setting } from "obsidian";
-import ObsidianHardcover from "src/main";
 
 export function createSetting(
 	containerEl: HTMLElement,
@@ -19,7 +18,7 @@ export function createSetting(
 export function markSettingAsRequired(setting: Setting): Setting {
 	const asterisk = document.createElement("span");
 	asterisk.textContent = " *";
-	asterisk.style.color = "var(--text-error)";
+	asterisk.className = "obhc-required";
 	setting.nameEl.appendChild(asterisk);
 
 	return setting;

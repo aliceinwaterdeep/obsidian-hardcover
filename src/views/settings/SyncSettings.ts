@@ -66,7 +66,7 @@ export function addSyncButton(config: SyncButtonConfig): ButtonComponent {
 
 			try {
 				const options = limitInputValue ? { debugLimit: limitInputValue } : {};
-				await plugin.syncService.startSync(options);
+				await plugin.triggerSync(options);
 				if (onSyncComplete) {
 					onSyncComplete();
 				}

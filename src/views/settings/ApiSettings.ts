@@ -1,6 +1,7 @@
 import { Setting } from "obsidian";
 import ObsidianHardcover from "src/main";
 import { markSettingAsRequired } from "../ui/SettingsHelpers";
+import { HARDCOVER_API_KEY_URL } from "src/config/constants";
 
 export function renderApiTokenSetting(
 	containerEl: HTMLElement,
@@ -8,15 +9,57 @@ export function renderApiTokenSetting(
 	onSettingsChanged: () => void
 ): void {
 	let textComponent: any;
+	let envMessageEl: HTMLElement | null = null;
+	let clearButton: HTMLElement | null = null;
 
-	const setting = new Setting(containerEl)
-		.setName("Hardcover API key")
-		.setDesc("Get your API key from https://hardcover.app/account/api");
+	const setting = new Setting(containerEl).setName("Hardcover API key");
+
+	setting.descEl.innerHTML = `
+    Get your API key from <a href="${HARDCOVER_API_KEY_URL}" target="_blank">${HARDCOVER_API_KEY_URL}</a>
+    <br><br>
+    If you prefer, you can also add the key to a <code>.env</code> file in your vault root:<br>
+    <code>HARDCOVER_API_KEY=your_key_here</code>
+`;
 
 	markSettingAsRequired(setting);
 
+	const updateSettingState = async () => {
+		const envApiKey = await plugin.envUtils.getHardcoverApiKey();
+
+		if (envApiKey) {
+			// hide input field and clear button
+			if (textComponent) {
+				textComponent.inputEl.addClass("obhc-hidden");
+			}
+			if (clearButton) {
+				clearButton.addClass("obhc-hidden");
+			}
+
+			// show env message
+			if (!envMessageEl) {
+				envMessageEl = setting.controlEl.createDiv({ cls: "obhc-env-message" });
+				envMessageEl.textContent = "✅ API key loaded from .env file";
+			}
+			envMessageEl.removeClass("obhc-hidden");
+		} else {
+			// show input field and clear button
+			if (textComponent) {
+				textComponent.inputEl.removeClass("obhc-hidden");
+			}
+			if (clearButton) {
+				clearButton.removeClass("obhc-hidden");
+			}
+
+			// hide env message
+			if (envMessageEl) {
+				envMessageEl.addClass("obhc-hidden");
+			}
+		}
+	};
+
 	setting
 		.addExtraButton((button) => {
+			clearButton = button.extraSettingsEl;
 			button
 				.setIcon("refresh-cw")
 				.setTooltip("Clear API key")
@@ -28,13 +71,12 @@ export function renderApiTokenSetting(
 					if (textComponent) {
 						textComponent.setValue("");
 					}
-
+					await updateSettingState();
 					onSettingsChanged();
 				});
 		})
 		.addText((text) => {
 			textComponent = text;
-
 			text
 				.setPlaceholder("Enter your API key")
 				.setValue(plugin.settings.apiKey)
@@ -44,4 +86,7 @@ export function renderApiTokenSetting(
 					onSettingsChanged();
 				});
 		});
+
+	// initial state
+	updateSettingState();
 }
