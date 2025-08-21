@@ -32,7 +32,7 @@ export function renderFolderSetting(
 		"The folder where book notes will be stored (required, will be created if it doesn't exist)";
 
 	const setting = new Setting(containerEl)
-		.setName("Target Folder")
+		.setName("Target folder")
 		.setDesc(baseDesc);
 
 	markSettingAsRequired(setting);

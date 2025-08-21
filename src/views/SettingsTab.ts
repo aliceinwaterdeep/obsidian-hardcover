@@ -37,8 +37,6 @@ export default class SettingsTab extends PluginSettingTab {
 
 		this.syncButtons = [];
 
-		containerEl.createEl("h2", { text: "Obsidian Hardcover Plugin" });
-
 		// config section
 		renderApiTokenSetting(containerEl, this.plugin, () =>
 			this.updateSyncButtonsState()
@@ -70,7 +68,7 @@ export default class SettingsTab extends PluginSettingTab {
 
 		// show developer options in dev mode
 		if (IS_DEV) {
-			containerEl.createEl("h2", { text: "Developer Options" });
+			containerEl.createEl("h2", { text: "Developer options" });
 			renderDevOptions(containerEl, this.plugin);
 		}
 
@@ -116,13 +114,13 @@ export default class SettingsTab extends PluginSettingTab {
 		});
 
 		helpContainer.createEl("a", {
-			text: "👩🏻‍💻 Source Code",
+			text: "👩🏻‍💻 Source code",
 			href: REPO_URL,
 			cls: "obhc-source-link",
 		});
 
 		helpContainer.createEl("a", {
-			text: "🐛 Report Issue",
+			text: "🐛 Report issue",
 			href: REPO_ISSUES_URL,
 			cls: "obhc-source-link",
 		});

@@ -96,7 +96,7 @@ export function renderLastSyncTimestampSetting(
 	onSettingsChanged: () => void
 ): void {
 	new Setting(containerEl)
-		.setName("Last Sync Timestamp")
+		.setName("Last sync timestamp")
 		.setDesc(
 			"When provided, only books updated on Hardcover after this timestamp will be synced. Leave empty to sync your entire library. Example format: 2025-01-01T18:30:35.519934+00:00"
 		)
