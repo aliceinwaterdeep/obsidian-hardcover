@@ -9,4 +9,5 @@ module.exports = {
 	rootDir: ".",
 	modulePaths: ["<rootDir>"],
 	moduleDirectories: ["node_modules", "<rootDir>"],
+	setupFilesAfterEnv: ["<rootDir>/src/test-setup.ts"],
 };
