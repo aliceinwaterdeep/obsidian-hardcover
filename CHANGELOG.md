@@ -1,5 +1,12 @@
 # Changelog
 
+### 1.1.0
+
+- Plugin ID changed from `obsidian-hardcover` to `hardcover` to comply with Obsidian rules
+- **Action required:** Users upgrading from v1.0.x must delete old folder and restore settings ([see README](README.md#updating-from-versions-before-110))
+- Updated plugin description to remove "Obsidian" reference as per Obsidian guidelines
+- Replaced `innerHTML` usage with DOM API methods
+
 ### 1.0.3
 
 - Updated UI text to follow Obsidian's style guidelines (sentence case, headings)
