@@ -175,9 +175,22 @@ These notes won't be overwritten during sync...
 - Preserve user notes below delimiter line
 - Command palette and ribbon icon for easy access
 
-## Feedback
+## Roadmap
 
-Feel free to open an issue if you find bugs or have a feature idea.
+### Planned Features
+
+- **Directory organization** - Group books by author, series, or both ([#2](https://github.com/aliceinwaterdeep/obsidian-hardcover/issues/2))
+- Add property to display reading progress for in-progress books
+
+### Under Consideration
+
+- Add optional timestamps (createdDate/lastModifiedDate) to frontmatter
+- Allow custom note template for body content
+- Improve read dates handling: only show both `firstRead` `lastRead` when they differ, otherwise show a single `readDate`
+- Provide edition title as a separate field alongside book title
+- Make cover image dimensions configurable in settings
+
+_Feel free to [open an issue](https://github.com/aliceinwaterdeep/obsidian-hardcover/issues) if you find bugs or have a feature idea!_
 
 ---
 
