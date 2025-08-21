@@ -92,3 +92,26 @@
 	border-top: none;
 	padding-top: 0;
 }
+
+.obhc-source-container {
+	display: flex;
+	gap: 12px;
+	justify-content: flex-end;
+}
+
+.obhc-source-link {
+	display: inline-flex;
+	align-items: center;
+	padding: 8px 12px;
+	background: var(--background-modifier-border);
+	border: 1px solid var(--border-color);
+	border-radius: 4px;
+	text-decoration: none;
+	color: var(--text-normal);
+	font-size: 0.9em;
+	transition: background-color 0.2s ease;
+}
+
+.obhc-source-link:hover {
+	background: var(--background-modifier-hover);
+}
