@@ -1,7 +1,7 @@
 {
 	"name": "obsidian-hardcover",
 	"version": "1.0.1",
-	"description": "This is a Hardcover for Obsidian",
+	"description": "Sync your Hardcover library to Obsidian notes.",
 	"main": "main.js",
 	"scripts": {
 		"dev": "node esbuild.config.mjs",
@@ -11,8 +11,8 @@
 		"test:watch": "jest --watch"
 	},
 	"keywords": [],
-	"author": "",
-	"license": "MIT",
+	"author": "aliceinwaterdeep",
+	"license": "GPL-3.0",
 	"devDependencies": {
 		"@types/jest": "^29.0.0",
 		"@types/node": "^16.11.6",
