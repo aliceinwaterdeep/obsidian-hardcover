@@ -98,7 +98,9 @@ export class NoteService {
 
 			// check if the file needs to be renamed
 			if (originalPath !== newPath) {
-				await this.vault.modify(existingFile, updatedContent);
+				await this.vault.process(existingFile, (data) => {
+					return updatedContent;
+				});
 				await this.vault.rename(existingFile, newPath);
 
 				if (IS_DEV) {
@@ -109,7 +111,9 @@ export class NoteService {
 				// get the new file reference after renaming
 				return this.vault.getAbstractFileByPath(newPath) as TFile;
 			} else {
-				await this.vault.modify(existingFile, updatedContent);
+				await this.vault.process(existingFile, (data) => {
+					return updatedContent;
+				});
 
 				if (IS_DEV) {
 					console.log(`Updated note: ${originalPath}`);
