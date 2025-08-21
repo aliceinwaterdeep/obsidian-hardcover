@@ -29,32 +29,30 @@ export function renderApiTokenSetting(
 		if (envApiKey) {
 			// hide input field and clear button
 			if (textComponent) {
-				textComponent.inputEl.style.display = "none";
+				textComponent.inputEl.addClass("obhc-hidden");
 			}
 			if (clearButton) {
-				clearButton.style.display = "none";
+				clearButton.addClass("obhc-hidden");
 			}
 
 			// show env message
 			if (!envMessageEl) {
-				envMessageEl = setting.controlEl.createDiv();
+				envMessageEl = setting.controlEl.createDiv({ cls: "obhc-env-message" });
 				envMessageEl.textContent = "✅ API key loaded from .env file";
-				envMessageEl.style.color = "var(--text-muted)";
-				envMessageEl.style.fontSize = "0.9em";
 			}
-			envMessageEl.style.display = "block";
+			envMessageEl.removeClass("obhc-hidden");
 		} else {
 			// show input field and clear button
 			if (textComponent) {
-				textComponent.inputEl.style.display = "block";
+				textComponent.inputEl.removeClass("obhc-hidden");
 			}
 			if (clearButton) {
-				clearButton.style.display = "block";
+				clearButton.removeClass("obhc-hidden");
 			}
 
 			// hide env message
 			if (envMessageEl) {
-				envMessageEl.style.display = "none";
+				envMessageEl.addClass("obhc-hidden");
 			}
 		}
 	};

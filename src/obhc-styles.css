@@ -1,5 +1,15 @@
-.obhc-settings .field-groups-container {
+.obhc-hidden {
+	display: none !important;
 }
+
+.obhc-visible {
+	display: block !important;
+}
+
+.obhc-required {
+	color: var(--text-error);
+}
+
 .obhc-settings .field-separator {
 	margin: 1.2rem 0;
 }
@@ -18,6 +28,12 @@
 .obhc-settings .has-error {
 	border-color: var(--text-error) !important;
 }
+
+.obhc-env-message {
+	color: var(--text-muted);
+	font-size: 0.9em;
+}
+
 .obhc-accordion {
 	margin-bottom: 8px;
 	border: 1px solid var(--background-modifier-border);
