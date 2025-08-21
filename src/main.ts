@@ -79,12 +79,6 @@ export default class ObsidianHardcover extends Plugin {
 			typeof savedData.settingsVersion === "undefined" ||
 			savedData.settingsVersion < DEFAULT_SETTINGS.settingsVersion
 		) {
-			console.log(
-				`Settings migration needed: from settings version ${
-					savedData?.settingsVersion || "none"
-				} to ${DEFAULT_SETTINGS.settingsVersion}`
-			);
-
 			// apply migrations
 			this.settings = SettingsMigrationService.migrateSettings(this.settings);
 

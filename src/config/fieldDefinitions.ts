@@ -21,7 +21,7 @@ export const FIELD_DEFINITIONS: FieldDefinition[] = [
 	},
 	{
 		key: "releaseDate",
-		name: "Release Date",
+		name: "Release date",
 		description: "Publication date",
 		hasDataSource: true,
 	},
@@ -54,13 +54,13 @@ export const FIELD_DEFINITIONS: FieldDefinition[] = [
 	{ key: "review", name: "Review", description: "Your review of the book" },
 	{
 		key: "firstRead",
-		name: "First Read",
+		name: "First read",
 		description: "Start and end date of first read",
 		isActivityDateField: true,
 	},
 	{
 		key: "lastRead",
-		name: "Last Read",
+		name: "Last read",
 		description: "Start and end date of last read",
 		isActivityDateField: true,
 	},
@@ -71,7 +71,7 @@ export const FIELD_DEFINITIONS: FieldDefinition[] = [
 	},
 	{
 		key: "readYears",
-		name: "Read Years",
+		name: "Read years",
 		description: "List of years when the book was read",
 	},
 ];

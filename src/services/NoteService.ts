@@ -1,5 +1,5 @@
 import { TFile, Vault } from "obsidian";
-import { CONTENT_DELIMITER } from "src/config/constants";
+import { CONTENT_DELIMITER, IS_DEV } from "src/config/constants";
 import { FIELD_DEFINITIONS } from "src/config/fieldDefinitions";
 
 import ObsidianHardcover from "src/main";
@@ -37,11 +37,15 @@ export class NoteService {
 				// if file exists, write to it and then get the file reference
 				await this.vault.adapter.write(fullPath, noteContent);
 				file = this.vault.getAbstractFileByPath(fullPath) as TFile;
-				console.log(`Updated note: ${fullPath}`);
+				if (IS_DEV) {
+					console.log(`Updated note: ${fullPath}`);
+				}
 			} else {
 				// create new file
 				file = await this.vault.create(fullPath, noteContent);
-				console.log(`Created note: ${fullPath}`);
+				if (IS_DEV) {
+					console.log(`Created note: ${fullPath}`);
+				}
 			}
 
 			return file;
@@ -94,16 +98,26 @@ export class NoteService {
 
 			// check if the file needs to be renamed
 			if (originalPath !== newPath) {
-				await this.vault.modify(existingFile, updatedContent);
+				await this.vault.process(existingFile, (data) => {
+					return updatedContent;
+				});
 				await this.vault.rename(existingFile, newPath);
 
-				console.log(`Updated and renamed note: ${originalPath} -> ${newPath}`);
-
+				if (IS_DEV) {
+					console.log(
+						`Updated and renamed note: ${originalPath} -> ${newPath}`
+					);
+				}
 				// get the new file reference after renaming
 				return this.vault.getAbstractFileByPath(newPath) as TFile;
 			} else {
-				await this.vault.modify(existingFile, updatedContent);
-				console.log(`Updated note: ${originalPath}`);
+				await this.vault.process(existingFile, (data) => {
+					return updatedContent;
+				});
+
+				if (IS_DEV) {
+					console.log(`Updated note: ${originalPath}`);
+				}
 
 				return existingFile;
 			}
@@ -175,7 +189,9 @@ export class NoteService {
 
 		const exists = await this.vault.adapter.exists(folderPath);
 		if (!exists) {
-			console.log(`Creating folder: ${folderPath}`);
+			if (IS_DEV) {
+				console.log(`Creating folder: ${folderPath}`);
+			}
 			await this.vault.createFolder(folderPath);
 		}
 	}

@@ -14,9 +14,9 @@ export function renderFieldSettings(
 	plugin: ObsidianHardcover,
 	accordion: Accordion
 ): void {
-	containerEl.createEl("h2", {
-		text: "Configure the data to include in your book notes.",
-	});
+	new Setting(containerEl)
+		.setName("Configure the data to include in your book notes")
+		.setHeading();
 
 	// create field groups div for better spacing
 	const fieldGroupsContainer = containerEl.createDiv({

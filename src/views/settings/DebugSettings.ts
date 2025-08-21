@@ -42,7 +42,7 @@ export function renderDebugInfo(
 	const button = addSyncButton({
 		containerEl: debugContent,
 		plugin: plugin,
-		name: "Test Sync",
+		name: "Test sync",
 		description:
 			"Sync a limited number of books to test the plugin before doing a full sync. Remember to change or reset the timestamp accordingly, if set.",
 		buttonText: "Run",
@@ -62,11 +62,11 @@ export function renderDevOptions(
 	plugin: ObsidianHardcover
 ): void {
 	new Setting(containerEl)
-		.setName("Reset Plugin")
+		.setName("Reset plugin")
 		.setDesc("Reset plugin settings to defaults")
 		.addButton((button) => {
 			button
-				.setButtonText("Reset Settings")
+				.setButtonText("Reset settings")
 				.setWarning()
 				.onClick(async () => {
 					const confirmed = confirm(

@@ -1,4 +1,4 @@
-import { App, ButtonComponent, PluginSettingTab } from "obsidian";
+import { App, ButtonComponent, PluginSettingTab, Setting } from "obsidian";
 import { IS_DEV, REPO_ISSUES_URL, REPO_URL } from "src/config/constants";
 import ObsidianHardcover from "src/main";
 import { Accordion } from "./ui/Accordion";
@@ -37,8 +37,6 @@ export default class SettingsTab extends PluginSettingTab {
 
 		this.syncButtons = [];
 
-		containerEl.createEl("h2", { text: "Obsidian Hardcover Plugin" });
-
 		// config section
 		renderApiTokenSetting(containerEl, this.plugin, () =>
 			this.updateSyncButtonsState()
@@ -50,8 +48,6 @@ export default class SettingsTab extends PluginSettingTab {
 		renderLastSyncTimestampSetting(containerEl, this.plugin, () =>
 			this.display()
 		);
-
-		containerEl.createEl("hr");
 
 		// fields section
 		renderFieldSettings(containerEl, this.plugin, this.accordion);
@@ -70,7 +66,7 @@ export default class SettingsTab extends PluginSettingTab {
 
 		// show developer options in dev mode
 		if (IS_DEV) {
-			containerEl.createEl("h2", { text: "Developer Options" });
+			new Setting(containerEl).setName("Developer options").setHeading();
 			renderDevOptions(containerEl, this.plugin);
 		}
 
@@ -116,13 +112,13 @@ export default class SettingsTab extends PluginSettingTab {
 		});
 
 		helpContainer.createEl("a", {
-			text: "👩🏻‍💻 Source Code",
+			text: "👩🏻‍💻 Source code",
 			href: REPO_URL,
 			cls: "obhc-source-link",
 		});
 
 		helpContainer.createEl("a", {
-			text: "🐛 Report Issue",
+			text: "🐛 Report issue",
 			href: REPO_ISSUES_URL,
 			cls: "obhc-source-link",
 		});
