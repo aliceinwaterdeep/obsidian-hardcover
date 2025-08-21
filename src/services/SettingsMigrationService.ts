@@ -11,7 +11,6 @@ export class SettingsMigrationService {
 
 		// apply migrations in sequence
 		if (currentVersion < 1) {
-			console.log("Applying migration to version 1");
 			settings = this.migrateToV1(settings);
 		}
 
