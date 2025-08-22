@@ -1,5 +1,5 @@
 import { TFile, Vault } from "obsidian";
-import { CONTENT_DELIMITER, IS_DEV } from "src/config/constants";
+import { CONTENT_DELIMITER } from "src/config/constants";
 import { FIELD_DEFINITIONS } from "src/config/fieldDefinitions";
 
 import ObsidianHardcover from "src/main";
@@ -311,14 +311,14 @@ export class NoteService {
 
 			const folderExists = await this.vault.adapter.exists(folderPath);
 			if (!folderExists) {
-				console.log(`Specified target folder doesn't exist: ${folderPath}`);
+				console.debug(`Specified target folder doesn't exist: ${folderPath}`);
 				return null;
 			}
 
 			// get all markdown files in the folder
 			const folder = this.vault.getFolderByPath(folderPath);
 			if (!folder) {
-				console.log(`Couldn't get folder object for: ${folderPath}`);
+				console.debug(`Couldn't get folder object for: ${folderPath}`);
 				return null;
 			}
 

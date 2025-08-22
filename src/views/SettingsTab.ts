@@ -1,5 +1,5 @@
 import { App, ButtonComponent, PluginSettingTab, Setting } from "obsidian";
-import { IS_DEV, REPO_ISSUES_URL, REPO_URL } from "src/config/constants";
+import { REPO_ISSUES_URL, REPO_URL } from "src/config/constants";
 import ObsidianHardcover from "src/main";
 import { Accordion } from "./ui/Accordion";
 import { renderDebugInfo, renderDevOptions } from "./settings/DebugSettings";

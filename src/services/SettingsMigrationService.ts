@@ -5,9 +5,11 @@ export class SettingsMigrationService {
 	static migrateSettings(settings: PluginSettings): PluginSettings {
 		const currentVersion = settings.settingsVersion || 0;
 
-		console.log(
-			`Migrating settings from version ${currentVersion} to ${DEFAULT_SETTINGS.settingsVersion}`
-		);
+		if (IS_DEV) {
+			console.log(
+				`Migrating settings from version ${currentVersion} to ${DEFAULT_SETTINGS.settingsVersion}`
+			);
+		}
 
 		// apply migrations in sequence
 		if (currentVersion < 1) {

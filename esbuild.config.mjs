@@ -24,7 +24,7 @@ const context = await esbuild.context({
 	entryPoints: ["src/main.ts"],
 	bundle: true,
 	define: {
-		"global.IS_DEV": JSON.stringify(!prod),
+		IS_DEV: JSON.stringify(!prod),
 	},
 	external: [
 		"obsidian",
