@@ -2,5 +2,5 @@ export * from "./plugin";
 export * from "./api";
 
 declare global {
-	var IS_DEV: boolean;
+	const IS_DEV: boolean;
 }

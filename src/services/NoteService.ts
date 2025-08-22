@@ -36,7 +36,14 @@ export class NoteService {
 			if (await this.vault.adapter.exists(fullPath)) {
 				// if file exists, write to it and then get the file reference
 				await this.vault.adapter.write(fullPath, noteContent);
-				file = this.vault.getAbstractFileByPath(fullPath) as TFile;
+
+				const abstractFile = this.vault.getAbstractFileByPath(fullPath);
+				if (abstractFile instanceof TFile) {
+					file = abstractFile;
+				} else {
+					return null;
+				}
+
 				if (IS_DEV) {
 					console.log(`Updated note: ${fullPath}`);
 				}
@@ -109,7 +116,12 @@ export class NoteService {
 					);
 				}
 				// get the new file reference after renaming
-				return this.vault.getAbstractFileByPath(newPath) as TFile;
+				const renamedFile = this.vault.getAbstractFileByPath(newPath);
+				if (renamedFile instanceof TFile) {
+					return renamedFile;
+				} else {
+					return null;
+				}
 			} else {
 				await this.vault.process(existingFile, (data) => {
 					return updatedContent;
