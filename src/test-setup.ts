@@ -8,3 +8,5 @@ jest.mock(
 	}),
 	{ virtual: true }
 );
+
+(global as any).IS_DEV = false;
