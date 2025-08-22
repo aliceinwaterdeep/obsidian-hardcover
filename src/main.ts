@@ -40,7 +40,7 @@ export default class ObsidianHardcover extends Plugin {
 		// Add command palette command
 		this.addCommand({
 			id: "sync-hardcover-library",
-			name: "Sync Hardcover library",
+			name: "Sync library",
 			callback: () => {
 				this.triggerSync();
 			},
