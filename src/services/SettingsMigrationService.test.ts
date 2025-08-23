@@ -19,7 +19,7 @@ describe("SettingsMigrationService", () => {
 				lastSyncTimestamp: "2023-01-01T00:00:00Z",
 				userId: 123,
 				// missing settingsVersion field
-			} as any;
+			};
 
 			const result = SettingsMigrationService.migrateSettings(oldSettings);
 

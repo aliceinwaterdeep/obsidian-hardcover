@@ -1,5 +1,9 @@
 # Changelog
 
+### 1.1.1
+
+- Improvements to comply with Obsidian's review. No functional changes
+
 ### 1.1.0
 
 - Plugin ID changed from `obsidian-hardcover` to `hardcover` to comply with Obsidian rules

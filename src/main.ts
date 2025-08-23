@@ -6,7 +6,6 @@ import { SyncService } from "./services/SyncService";
 import { MetadataService } from "./services/MetadataService";
 import { FileUtils } from "./utils/FileUtils";
 import { NoteService } from "./services/NoteService";
-import { IS_DEV } from "./config/constants";
 import { DEFAULT_SETTINGS } from "./config/defaultSettings";
 import { SettingsMigrationService } from "./services/SettingsMigrationService";
 import { EnvUtils } from "./utils/EnvUtils";
@@ -40,7 +39,7 @@ export default class ObsidianHardcover extends Plugin {
 		// Add command palette command
 		this.addCommand({
 			id: "sync-hardcover-library",
-			name: "Sync Hardcover library",
+			name: "Sync library",
 			callback: () => {
 				this.triggerSync();
 			},
@@ -84,7 +83,9 @@ export default class ObsidianHardcover extends Plugin {
 
 			// save the migrated settings
 			await this.saveSettings();
-			console.log("Settings migration completed and saved");
+			if (IS_DEV) {
+				console.log("Settings migration completed and saved");
+			}
 		}
 	}
 

@@ -74,7 +74,7 @@ Hardcover API keys expire after 1 year. You can check the expiration date of you
 Once set up, you can sync your Hardcover library in multiple ways:
 
 - **Settings tab**: Click "Sync now" in the plugin settings
-- **Command palette**: Press `Ctrl+P` or `Cmd+P` and search for "Sync Hardcover library"
+- **Command palette**: Press `Ctrl+P` or `Cmd+P` and search for "Sync library"
 - **Ribbon icon**: Click the book icon in the left sidebar
 
 ## Sync Process

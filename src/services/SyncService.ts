@@ -58,7 +58,7 @@ export class SyncService {
 
 			// show debug notice if in debug mode
 			if (isDebugMode) {
-				console.log(
+				console.debug(
 					`Debug sync: Processing ${booksToProcess}/${currentBooksCount} books`
 				);
 				new Notice(`DEBUG MODE: Sync limited to ${booksToProcess} books`);
@@ -188,7 +188,7 @@ export class SyncService {
 								? book.book.title
 								: book.edition.title || "Unknown";
 					} catch (e) {
-						console.log("Could not get book title:", e);
+						console.debug("Could not get book title:", e);
 					}
 
 					failedBooks.push({
@@ -224,7 +224,7 @@ export class SyncService {
 					failedBooks
 				);
 
-				console.log("Last sync timestamp not updated due to book failures");
+				console.debug("Last sync timestamp not updated due to book failures");
 			}
 
 			new Notice(message);
