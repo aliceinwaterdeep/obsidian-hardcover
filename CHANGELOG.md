@@ -1,5 +1,9 @@
 # Changelog
 
+### 1.1.2
+
+- Removing logs to comply with Obsidian's guidelines. No functional changes
+
 ### 1.1.1
 
 - Improvements to comply with Obsidian's review. No functional changes
