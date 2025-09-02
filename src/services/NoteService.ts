@@ -45,13 +45,13 @@ export class NoteService {
 				}
 
 				if (IS_DEV) {
-					console.log(`Updated note: ${fullPath}`);
+					// console.log(`Updated note: ${fullPath}`);
 				}
 			} else {
 				// create new file
 				file = await this.vault.create(fullPath, noteContent);
 				if (IS_DEV) {
-					console.log(`Created note: ${fullPath}`);
+					// console.log(`Created note: ${fullPath}`);
 				}
 			}
 
@@ -111,9 +111,9 @@ export class NoteService {
 				await this.vault.rename(existingFile, newPath);
 
 				if (IS_DEV) {
-					console.log(
-						`Updated and renamed note: ${originalPath} -> ${newPath}`
-					);
+					// console.log(
+					// 	`Updated and renamed note: ${originalPath} -> ${newPath}`
+					// );
 				}
 				// get the new file reference after renaming
 				const renamedFile = this.vault.getAbstractFileByPath(newPath);
@@ -128,7 +128,7 @@ export class NoteService {
 				});
 
 				if (IS_DEV) {
-					console.log(`Updated note: ${originalPath}`);
+					// console.log(`Updated note: ${originalPath}`);
 				}
 
 				return existingFile;
@@ -202,7 +202,7 @@ export class NoteService {
 		const exists = await this.vault.adapter.exists(folderPath);
 		if (!exists) {
 			if (IS_DEV) {
-				console.log(`Creating folder: ${folderPath}`);
+				// console.log(`Creating folder: ${folderPath}`);
 			}
 			await this.vault.createFolder(folderPath);
 		}
@@ -311,14 +311,14 @@ export class NoteService {
 
 			const folderExists = await this.vault.adapter.exists(folderPath);
 			if (!folderExists) {
-				console.debug(`Specified target folder doesn't exist: ${folderPath}`);
+				// console.debug(`Specified target folder doesn't exist: ${folderPath}`);
 				return null;
 			}
 
 			// get all markdown files in the folder
 			const folder = this.vault.getFolderByPath(folderPath);
 			if (!folder) {
-				console.debug(`Couldn't get folder object for: ${folderPath}`);
+				// console.debug(`Couldn't get folder object for: ${folderPath}`);
 				return null;
 			}
 
