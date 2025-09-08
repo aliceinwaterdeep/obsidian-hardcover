@@ -59,6 +59,23 @@ function addFieldSettings(
 			);
 	}
 
+	if (field.supportsWikilinks) {
+		new Setting(containerEl)
+			.setName("Format as wikilinks")
+			.setDesc(
+				`Format ${field.name.toLowerCase()} as [[wikilinks]] for linked notes`
+			)
+			.addToggle((toggle) =>
+				toggle
+					.setValue((fieldSettings as any).wikilinks || false)
+					.onChange(async (value) => {
+						(plugin.settings.fieldsSettings[field.key] as any).wikilinks =
+							value;
+						await plugin.saveSettings();
+					})
+			);
+	}
+
 	// add explanation for review field
 	if (field.key === "review") {
 		containerEl.createEl("p", {
