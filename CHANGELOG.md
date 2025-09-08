@@ -1,5 +1,12 @@
 # Changelog
 
+### 1.2.0
+
+- **New:** Wikilink support for authors, contributors, series, publisher, and genres
+- Individual toggles per field in plugin settings for wikilink formatting
+- Disabled by default
+- Thanks to @Saorsa32 for the suggestion!
+
 ### 1.1.2
 
 - Removing logs to comply with Obsidian's guidelines. No functional changes
@@ -27,7 +34,7 @@
 
 ### 1.0.1
 
-- Added support for loading API token from `.env` file as alternative to plugin settings
+- Added support for loading API token from `.env` file as alternative to plugin settings (thanks to @imcompiling for the suggestion!)
 - Marked as desktop-only due to Node.js API usage (mobile users can still access synced notes)
 - Added quick links to GitHub repo and issues in settings
 - Changed license from MIT to GPL-3.0 to ensure continued open source development

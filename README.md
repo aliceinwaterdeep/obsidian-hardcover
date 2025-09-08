@@ -117,6 +117,16 @@ Configure which fields to include in your book notes:
 > [!WARNING]
 > The `review` field on the API currently has some inconsistencies, so reviews might not show up in an optimal format until the issue is solved on Hardcover.
 
+### Wikilinks
+
+You can decide to format some fields as wikilinks to create linked notes.
+
+- **Authors**: `[[Author Name]]`
+- **Contributors**: `[[Jay Rubin|Jay Rubin (Translator)]]`
+- **Series**: `[[Series Name|Series Name #3]]
+- **Publisher**: `[[Publisher Name]]`
+- **Genres**: `[[Genre Name]]`
+
 ### Filename Template
 
 Customize how filenames are generated using variables:
