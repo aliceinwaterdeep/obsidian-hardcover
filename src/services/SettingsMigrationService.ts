@@ -39,6 +39,10 @@ export class SettingsMigrationService {
 			"genres",
 		] as const;
 
+		if (!settings.fieldsSettings) {
+			return settings;
+		}
+
 		for (const fieldKey of wikilinkFields) {
 			const fieldConfig = settings.fieldsSettings[fieldKey];
 			if (fieldConfig && !("wikilinks" in fieldConfig)) {
