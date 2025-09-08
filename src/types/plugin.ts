@@ -29,6 +29,7 @@ type DataSource = "book" | "edition";
 export interface FieldConfig {
 	enabled: boolean;
 	propertyName: string;
+	wikilinks?: boolean;
 }
 
 export interface ActivityDateFieldConfig extends FieldConfig {
@@ -72,6 +73,7 @@ export interface FieldDefinition {
 	description: string;
 	hasDataSource?: boolean;
 	isActivityDateField?: boolean;
+	supportsWikilinks?: boolean;
 }
 
 export interface BookMetadata {
