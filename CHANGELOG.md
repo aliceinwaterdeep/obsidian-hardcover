@@ -3,8 +3,7 @@
 ### 1.2.0
 
 - **New:** Wikilink support for authors, contributors, series, publisher, and genres
-- Individual toggles per field in plugin settings for wikilink formatting
-- Disabled by default
+- Individual toggles per field in settings, disabled by default
 - Thanks to @Saorsa32 for the suggestion!
 
 ### 1.1.2
