@@ -16,6 +16,10 @@ export class SettingsMigrationService {
 			settings = this.migrateToV1(settings);
 		}
 
+		if (currentVersion < 2) {
+			settings = this.migrateToV2(settings);
+		}
+
 		// update version number
 		settings.settingsVersion = DEFAULT_SETTINGS.settingsVersion;
 		return settings;
@@ -23,6 +27,29 @@ export class SettingsMigrationService {
 
 	private static migrateToV1(settings: PluginSettings): PluginSettings {
 		// no real data migration needed for initial version
+		return settings;
+	}
+
+	private static migrateToV2(settings: PluginSettings): PluginSettings {
+		const wikilinkFields = [
+			"authors",
+			"contributors",
+			"series",
+			"publisher",
+			"genres",
+		] as const;
+
+		if (!settings.fieldsSettings) {
+			return settings;
+		}
+
+		for (const fieldKey of wikilinkFields) {
+			const fieldConfig = settings.fieldsSettings[fieldKey];
+			if (fieldConfig && !("wikilinks" in fieldConfig)) {
+				(fieldConfig as any).wikilinks = false;
+			}
+		}
+
 		return settings;
 	}
 

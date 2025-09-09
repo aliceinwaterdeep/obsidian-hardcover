@@ -1,6 +1,7 @@
 import { HARDCOVER_BOOKS_ROUTE, HARDCOVER_URL } from "src/config/constants";
 import {
 	BookMetadata,
+	FieldsSettings,
 	HardcoverBookSeries,
 	HardcoverUserBook,
 	HardcoverUserBooksReads,
@@ -90,7 +91,8 @@ export class MetadataService {
 			}
 
 			if (authors.length) {
-				metadata[fieldsSettings.authors.propertyName] = authors;
+				const formattedAuthors = this.formatAsWikilinks(authors, "authors");
+				metadata[fieldsSettings.authors.propertyName] = formattedAuthors;
 			}
 		}
 
@@ -112,8 +114,15 @@ export class MetadataService {
 			}
 
 			if (otherContributors.length) {
+				const contributorStrings = otherContributors.map(
+					(c) => `${c.name} (${c.role})`
+				);
+				const formattedContributors = this.formatAsWikilinks(
+					contributorStrings,
+					"contributors"
+				);
 				metadata[fieldsSettings.contributors.propertyName] =
-					otherContributors.map((c) => `${c.name} (${c.role})`);
+					formattedContributors;
 			}
 		}
 
@@ -142,14 +151,19 @@ export class MetadataService {
 
 		// add publisher
 		if (fieldsSettings.publisher.enabled && edition.publisher?.name) {
-			metadata[fieldsSettings.publisher.propertyName] = edition.publisher.name;
+			let publisherValue = edition.publisher.name;
+			if ((fieldsSettings.publisher as any).wikilinks) {
+				publisherValue = `[[${publisherValue}]]`;
+			}
+			metadata[fieldsSettings.publisher.propertyName] = publisherValue;
 		}
 
 		// add series
 		if (fieldsSettings.series.enabled && book.book_series) {
 			const seriesArray = this.extractSeriesInfo(book.book_series);
 			if (seriesArray.length > 0) {
-				metadata[fieldsSettings.series.propertyName] = seriesArray;
+				const formattedSeries = this.formatAsWikilinks(seriesArray, "series");
+				metadata[fieldsSettings.series.propertyName] = formattedSeries;
 			}
 		}
 
@@ -164,7 +178,8 @@ export class MetadataService {
 			);
 
 			if (genres.length > 0) {
-				metadata[fieldsSettings.genres.propertyName] = genres;
+				const formattedGenres = this.formatAsWikilinks(genres, "genres");
+				metadata[fieldsSettings.genres.propertyName] = formattedGenres;
 			}
 		}
 
@@ -324,6 +339,34 @@ export class MetadataService {
 				}
 				return seriesName;
 			});
+	}
+
+	private formatAsWikilinks(
+		values: string[],
+		fieldKey: keyof FieldsSettings
+	): string[] {
+		const fieldConfig = this.settings.fieldsSettings[fieldKey];
+
+		if (!(fieldConfig as any).wikilinks) {
+			return values;
+		}
+
+		return values.map((value) => {
+			// extract base name for contributors and series
+			if (fieldKey === "contributors") {
+				const match = value.match(/^(.+?)\s*\((.+)\)$/);
+				if (match) {
+					return `[[${match[1].trim()}|${value}]]`;
+				}
+			} else if (fieldKey === "series") {
+				const match = value.match(/^(.+?)\s*#(\d+)$/);
+				if (match) {
+					return `[[${match[1].trim()}|${value}]]`;
+				}
+			}
+
+			return `[[${value}]]`;
+		});
 	}
 
 	private capitalizeFirstLetter(text: string): string {
