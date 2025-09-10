@@ -3,7 +3,11 @@ import { CONTENT_DELIMITER } from "src/config/constants";
 import { FIELD_DEFINITIONS } from "src/config/fieldDefinitions";
 
 import ObsidianHardcover from "src/main";
-import { ActivityDateFieldConfig, BookMetadata } from "src/types";
+import {
+	ActivityDateFieldConfig,
+	BookMetadata,
+	GroupingSettings,
+} from "src/types";
 import { FileUtils } from "src/utils/FileUtils";
 
 export class NoteService {
@@ -17,16 +21,15 @@ export class NoteService {
 
 	async createNote(bookMetadata: BookMetadata): Promise<TFile | null> {
 		try {
-			const filename = this.fileUtils.processFilenameTemplate(
-				this.plugin.settings.filenameTemplate,
-				bookMetadata
+			const fullPath = this.generateNotePath(
+				bookMetadata,
+				this.plugin.settings.grouping
 			);
 
-			const targetFolder = this.fileUtils.normalizePath(
-				this.plugin.settings.targetFolder
-			);
-			await this.ensureFolderExists(targetFolder);
-			const fullPath = targetFolder ? `${targetFolder}/${filename}` : filename;
+			const directoryPath = this.fileUtils.getDirectoryPath(fullPath);
+			if (directoryPath) {
+				await this.ensureFolderExists(directoryPath);
+			}
 
 			// create frontmatter and full note content with delimiter
 			const frontmatter = this.createFrontmatter(bookMetadata);
@@ -90,18 +93,15 @@ export class NoteService {
 				updatedContent = newContent;
 			}
 
-			// generate the new filename based on current template
-			const newFilename = this.fileUtils.processFilenameTemplate(
-				this.plugin.settings.filenameTemplate,
-				bookMetadata
+			const newPath = this.generateNotePath(
+				bookMetadata,
+				this.plugin.settings.grouping
 			);
 
-			const targetFolder = this.fileUtils.normalizePath(
-				this.plugin.settings.targetFolder
-			);
-			const newPath = targetFolder
-				? `${targetFolder}/${newFilename}`
-				: newFilename;
+			const directoryPath = this.fileUtils.getDirectoryPath(newPath);
+			if (directoryPath) {
+				await this.ensureFolderExists(directoryPath);
+			}
 
 			// check if the file needs to be renamed
 			if (originalPath !== newPath) {
@@ -137,6 +137,89 @@ export class NoteService {
 			console.error("Error updating note:", error);
 			return null;
 		}
+	}
+
+	public generateNotePath(
+		bookMetadata: BookMetadata,
+		groupingSettings: GroupingSettings
+	): string {
+		const filename = this.fileUtils.processFilenameTemplate(
+			this.plugin.settings.filenameTemplate,
+			bookMetadata
+		);
+
+		let basePath = this.fileUtils.normalizePath(
+			this.plugin.settings.targetFolder
+		);
+
+		if (groupingSettings.enabled) {
+			const directories = this.buildDirectoryPath(
+				bookMetadata,
+				groupingSettings
+			);
+
+			if (directories) {
+				basePath = `${basePath}/${directories}`;
+			}
+		}
+
+		return basePath ? `${basePath}/${filename}` : filename;
+	}
+
+	public buildDirectoryPath(
+		bookMetadata: BookMetadata,
+		groupingSettings: GroupingSettings
+	): string {
+		const pathComponents: string[] = [];
+
+		if (
+			groupingSettings.groupBy === "author" ||
+			groupingSettings.groupBy === "author-series"
+		) {
+			const authorDirectory = this.getAuthorDirectory(bookMetadata);
+			if (authorDirectory) {
+				pathComponents.push(authorDirectory);
+			}
+		}
+
+		if (
+			groupingSettings.groupBy === "series" ||
+			groupingSettings.groupBy === "author-series"
+		) {
+			const seriesDirectory = this.getSeriesDirectory(bookMetadata);
+
+			if (seriesDirectory) {
+				pathComponents.push(seriesDirectory);
+			}
+		}
+
+		return pathComponents.join("/");
+	}
+
+	private getAuthorDirectory(bookMetadata: BookMetadata): string | null {
+		const authorProperty =
+			this.plugin.settings.fieldsSettings.authors.propertyName;
+		const authors = bookMetadata[authorProperty];
+
+		if (Array.isArray(authors) && authors.length > 0) {
+			return this.fileUtils.sanitizeFilename(authors[0]);
+		}
+
+		return null;
+	}
+
+	private getSeriesDirectory(bookMetadata: BookMetadata): string | null {
+		const seriesProperty =
+			this.plugin.settings.fieldsSettings.series.propertyName;
+		const series = bookMetadata[seriesProperty];
+
+		if (Array.isArray(series) && series.length > 0) {
+			// remove series position info if it exists ("Series Name #1" -> "Series Name")
+			const seriesName = series[0].replace(/\s*#\d+.*$/, "").trim();
+			return this.fileUtils.sanitizeFilename(seriesName);
+		}
+
+		return null;
 	}
 
 	private createNoteContent(frontmatter: string, bookMetadata: any): string {

@@ -20,6 +20,10 @@ export class SettingsMigrationService {
 			settings = this.migrateToV2(settings);
 		}
 
+		if (currentVersion < 3) {
+			settings = this.migrateToV3(settings);
+		}
+
 		// update version number
 		settings.settingsVersion = DEFAULT_SETTINGS.settingsVersion;
 		return settings;
@@ -48,6 +52,17 @@ export class SettingsMigrationService {
 			if (fieldConfig && !("wikilinks" in fieldConfig)) {
 				(fieldConfig as any).wikilinks = false;
 			}
+		}
+
+		return settings;
+	}
+
+	private static migrateToV3(settings: PluginSettings): PluginSettings {
+		if (!("grouping" in settings)) {
+			(settings as any).grouping = {
+				enabled: false,
+				groupBy: "author",
+			};
 		}
 
 		return settings;

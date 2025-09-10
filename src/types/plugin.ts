@@ -1,3 +1,8 @@
+export interface GroupingSettings {
+	enabled: boolean;
+	groupBy: "author" | "series" | "author-series";
+}
+
 export interface PluginSettings {
 	settingsVersion: number;
 	apiKey: string;
@@ -22,6 +27,7 @@ export interface PluginSettings {
 	};
 
 	targetFolder: string;
+	grouping: GroupingSettings;
 	filenameTemplate: string;
 }
 

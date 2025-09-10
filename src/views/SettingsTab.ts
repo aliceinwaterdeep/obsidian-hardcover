@@ -14,6 +14,7 @@ import {
 	renderLastSyncTimestampSetting,
 	renderSyncInfoMessages,
 } from "./settings/SyncSettings";
+import { renderGroupingSettings } from "./settings/GroupingSettings";
 
 export default class SettingsTab extends PluginSettingTab {
 	plugin: ObsidianHardcover;
@@ -44,6 +45,7 @@ export default class SettingsTab extends PluginSettingTab {
 		renderFolderSetting(containerEl, this.plugin, () =>
 			this.updateSyncButtonsState()
 		);
+		renderGroupingSettings(containerEl, this.plugin, () => this.display());
 		renderFilenameTemplateSetting(containerEl, this.plugin);
 		renderLastSyncTimestampSetting(containerEl, this.plugin, () =>
 			this.display()
