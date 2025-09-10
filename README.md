@@ -18,6 +18,8 @@ Syncs your [Hardcover](https://hardcover.app) library to your Obsidian vault, cr
   - Choose which data to include in your notes
   - Configure property names to match your personal system
   - Select data source preferences (book vs. edition level)
+- **Directory Organization**:
+  - Group your book notes by author and/or series
 - **User notes**: The plugin uses a delimiter system to separate plugin-generated content and user-added content. This means you can add your own notes (thoughts, quotes...) to a book note below the delimiter and it will be preserved during syncs.
 
 > [!WARNING]
@@ -181,6 +183,19 @@ Lorem ipsum dolor sit amet, consectetur adipiscing elit...
 These notes won't be overwritten during sync...
 ```
 
+### Grouping Options
+
+- **Disabled** (default): All notes go in your target folder
+- **Group by Author**: `Books/Brandon Sanderson/book1.md`, `Books/Martha Wells/book2.md`
+- **Group by Series**: `Books/The Murderbot Diaries/book1.md`, `Books/Secret Projects/book2.md`
+- **Group by Author → Series**: `Books/Brandon Sanderson/Secret Projects/book1.md`
+
+#### Important Notes
+
+- **New files only**: This only organizes newly synced books. Existing notes stay where they are.
+- **Want to reorganize existing files?** Delete your book notes and re-sync to apply the new structure. **Consider backing up any manual edits first**.
+- **Multiple authors/series**: To avoid duplicate notes, the plugin uses the first author/series Hardcover provides.
+
 ## Changelog
 
 See [CHANGELOG.md](CHANGELOG.md) for the full version history.
@@ -189,13 +204,12 @@ See [CHANGELOG.md](CHANGELOG.md) for the full version history.
 
 ### Planned Features
 
-- **Directory organization** - Group books by author, series, or both ([#2](https://github.com/aliceinwaterdeep/obsidian-hardcover/issues/2))
 - Add property to display reading progress for in-progress books
 
 ### Under Consideration
 
+- Allow custom note template for body content ([#10](https://github.com/aliceinwaterdeep/obsidian-hardcover/issues/10))
 - Add optional timestamps (createdDate/lastModifiedDate) to frontmatter
-- Allow custom note template for body content
 - Improve read dates handling: only show both `firstRead` `lastRead` when they differ, otherwise show a single `readDate`
 - Provide edition title as a separate field alongside book title
 - Make cover image dimensions configurable in settings
