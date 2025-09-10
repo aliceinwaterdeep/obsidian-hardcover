@@ -3,7 +3,11 @@ import { CONTENT_DELIMITER } from "src/config/constants";
 import { FIELD_DEFINITIONS } from "src/config/fieldDefinitions";
 
 import ObsidianHardcover from "src/main";
-import { ActivityDateFieldConfig, BookMetadata } from "src/types";
+import {
+	ActivityDateFieldConfig,
+	BookMetadata,
+	GroupingSettings,
+} from "src/types";
 import { FileUtils } from "src/utils/FileUtils";
 
 export class NoteService {
@@ -138,6 +142,65 @@ export class NoteService {
 			return null;
 		}
 	}
+
+	private generateNotePath(
+		bookMetadata: BookMetadata,
+		groupingSettings: GroupingSettings
+	): string {
+		const filename = this.fileUtils.processFilenameTemplate(
+			this.plugin.settings.filenameTemplate,
+			bookMetadata
+		);
+
+		let basePath = this.fileUtils.normalizePath(
+			this.plugin.settings.targetFolder
+		);
+
+		if (groupingSettings.enabled) {
+			const directories = this.buildDirectoryPath(
+				bookMetadata,
+				groupingSettings
+			);
+			if (directories) {
+				basePath = `${basePath}/${directories}`;
+			}
+		}
+
+		return basePath ? `${basePath}/${filename}` : filename;
+	}
+
+	private buildDirectoryPath(
+		bookMetadata: BookMetadata,
+		groupingSettings: GroupingSettings
+	): string {
+		const pathComponents: string[] = [];
+
+		if (
+			groupingSettings.groupBy === "author" ||
+			groupingSettings.groupBy === "author-series"
+		) {
+			const authorDirectory = this.getAuthorDirectory(bookMetadata);
+			if (authorDirectory) {
+				pathComponents.push(authorDirectory);
+			}
+		}
+
+		if (
+			groupingSettings.groupBy === "series" ||
+			groupingSettings.groupBy === "author-series"
+		) {
+			const seriesDirectory = this.getSeriesDirectory(bookMetadata);
+			if (seriesDirectory) {
+				pathComponents.push(seriesDirectory);
+			}
+		}
+
+		return pathComponents.join("/");
+	}
+
+	private getAuthorDirectory(bookMetadata: BookMetadata) {}
+
+	private getSeriesDirectory(bookMetadata: BookMetadata) {}
 
 	private createNoteContent(frontmatter: string, bookMetadata: any): string {
 		let content = this.getFrontmatterString(frontmatter);
