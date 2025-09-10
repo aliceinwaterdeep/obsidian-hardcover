@@ -1,5 +1,13 @@
 # Changelog
 
+### 1.3.0
+
+- New: Directory organization feature: group books by author, series, or author → series
+- Choose your preferred structure in the settings
+- Only affects newly synced books. Existing notes remain in place
+- Use first author/series for books with multiple entries
+- Thanks to @imcompiling for the suggestion!
+
 ### 1.2.0
 
 - **New:** Wikilink support for authors, contributors, series, publisher, and genres
