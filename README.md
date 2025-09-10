@@ -4,7 +4,7 @@ Syncs your [Hardcover](https://hardcover.app) library to your Obsidian vault, cr
 
 [![GitHub downloads](https://img.shields.io/github/downloads/aliceinwaterdeep/obsidian-hardcover/total)](https://github.com/aliceinwaterdeep/obsidian-hardcover/releases)
 
-![obsidian-hardcover-demo](https://github.com/user-attachments/assets/876fcc8b-d05c-4d1f-b26b-566d572421c6)
+![obsidian-hardcover-demo](https://github.com/user-attachments/assets/c7d3f900-65b8-45c0-b89c-58a25410149d)
 
 ## Features
 
