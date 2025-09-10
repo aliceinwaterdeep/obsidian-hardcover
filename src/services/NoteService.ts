@@ -139,7 +139,7 @@ export class NoteService {
 		}
 	}
 
-	private generateNotePath(
+	public generateNotePath(
 		bookMetadata: BookMetadata,
 		groupingSettings: GroupingSettings
 	): string {
@@ -166,7 +166,7 @@ export class NoteService {
 		return basePath ? `${basePath}/${filename}` : filename;
 	}
 
-	private buildDirectoryPath(
+	public buildDirectoryPath(
 		bookMetadata: BookMetadata,
 		groupingSettings: GroupingSettings
 	): string {
