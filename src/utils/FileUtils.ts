@@ -77,4 +77,11 @@ export class FileUtils {
 				.replace(/\</g, "\\<")
 		);
 	}
+
+	getDirectoryPath(fullPath: string): string | null {
+		const pathSeparatorIndex = fullPath.lastIndexOf("/");
+		return pathSeparatorIndex > 0
+			? fullPath.substring(0, pathSeparatorIndex)
+			: null;
+	}
 }

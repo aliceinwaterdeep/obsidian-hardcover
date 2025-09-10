@@ -21,16 +21,15 @@ export class NoteService {
 
 	async createNote(bookMetadata: BookMetadata): Promise<TFile | null> {
 		try {
-			const filename = this.fileUtils.processFilenameTemplate(
-				this.plugin.settings.filenameTemplate,
-				bookMetadata
+			const fullPath = this.generateNotePath(
+				bookMetadata,
+				this.plugin.settings.grouping
 			);
 
-			const targetFolder = this.fileUtils.normalizePath(
-				this.plugin.settings.targetFolder
-			);
-			await this.ensureFolderExists(targetFolder);
-			const fullPath = targetFolder ? `${targetFolder}/${filename}` : filename;
+			const directoryPath = this.fileUtils.getDirectoryPath(fullPath);
+			if (directoryPath) {
+				await this.ensureFolderExists(directoryPath);
+			}
 
 			// create frontmatter and full note content with delimiter
 			const frontmatter = this.createFrontmatter(bookMetadata);
@@ -94,18 +93,15 @@ export class NoteService {
 				updatedContent = newContent;
 			}
 
-			// generate the new filename based on current template
-			const newFilename = this.fileUtils.processFilenameTemplate(
-				this.plugin.settings.filenameTemplate,
-				bookMetadata
+			const newPath = this.generateNotePath(
+				bookMetadata,
+				this.plugin.settings.grouping
 			);
 
-			const targetFolder = this.fileUtils.normalizePath(
-				this.plugin.settings.targetFolder
-			);
-			const newPath = targetFolder
-				? `${targetFolder}/${newFilename}`
-				: newFilename;
+			const directoryPath = this.fileUtils.getDirectoryPath(newPath);
+			if (directoryPath) {
+				await this.ensureFolderExists(directoryPath);
+			}
 
 			// check if the file needs to be renamed
 			if (originalPath !== newPath) {
