@@ -25,6 +25,22 @@ Syncs your [Hardcover](https://hardcover.app) library to your Obsidian vault, cr
 > [!WARNING]
 > While the delimiter system protects your content during syncs, regular backups of your vault are still recommended. I am not responsible for any data loss.
 
+## Table of Contents
+
+- [Manual Installation](#manual-installation)
+  - [Updating from Versions Before 1.1.0](#updating-from-versions-before-110)
+- [Setup](#setup)
+  - [Quick Access](#quick-access)
+  - [Sync Process](#sync-process)
+- [Configuration Options](#configuration-options)
+  - [Fields](#fields)
+  - [Wikilinks](#wikilinks)
+  - [Filename Template](#filename-template)
+  - [Grouping Options](#grouping-options)
+- [Note Format](#note-format)
+- [Changelog](#changelog)
+- [Roadmap](#roadmap)
+
 ## Manual Installation
 
 1. Download the ZIP file from the [latest release](https://github.com/aliceinwaterdeep/obsidian-hardcover/releases/latest)
@@ -46,7 +62,7 @@ If you installed this plugin manually before `1.1.0`:
 
 **Note:** The new plugin creates a `hardcover` folder instead of `obsidian-hardcover`.
 
-### Setup
+## Setup
 
 1. Get your Hardcover API key from [Hardcover](https://hardcover.app/account/api)
 2. Open Obsidian Settings and go to the "Hardcover" tab
@@ -71,7 +87,7 @@ If you installed this plugin manually before `1.1.0`:
 
 Hardcover API keys expire after 1 year. You can check the expiration date of your current key on [Hardcover](https://hardcover.app/account/api).
 
-## Quick Access
+### Quick Access
 
 Once set up, you can sync your Hardcover library in multiple ways:
 
@@ -79,7 +95,7 @@ Once set up, you can sync your Hardcover library in multiple ways:
 - **Command palette**: Press `Ctrl+P` or `Cmd+P` and search for "Sync library"
 - **Ribbon icon**: Click the book icon in the left sidebar
 
-## Sync Process
+### Sync Process
 
 The plugin follows these steps when syncing:
 
@@ -141,6 +157,19 @@ Default format: `${title} (${year})`
 
 Notes are identified using the Hardcover Book ID (`hardcoverBookId` in the frontmatter) so you're free to choose whatever filename suits your vault.
 
+### Grouping Options
+
+- **Disabled** (default): All notes go in your target folder
+- **Group by Author**: `Books/Brandon Sanderson/book1.md`, `Books/Martha Wells/book2.md`
+- **Group by Series**: `Books/The Murderbot Diaries/book1.md`, `Books/Secret Projects/book2.md`
+- **Group by Author → Series**: `Books/Brandon Sanderson/Secret Projects/book1.md`
+
+#### Important Notes
+
+- **New files only**: This only organizes newly synced books. Existing notes stay where they are.
+- **Want to reorganize existing files?** Delete your book notes and re-sync to apply the new structure. **Consider backing up any manual edits first**.
+- **Multiple authors/series**: To avoid duplicate notes, the plugin uses the first author/series Hardcover provides.
+
 ## Note Format
 
 Each synced book creates a note with:
@@ -182,19 +211,6 @@ Lorem ipsum dolor sit amet, consectetur adipiscing elit...
 
 These notes won't be overwritten during sync...
 ```
-
-### Grouping Options
-
-- **Disabled** (default): All notes go in your target folder
-- **Group by Author**: `Books/Brandon Sanderson/book1.md`, `Books/Martha Wells/book2.md`
-- **Group by Series**: `Books/The Murderbot Diaries/book1.md`, `Books/Secret Projects/book2.md`
-- **Group by Author → Series**: `Books/Brandon Sanderson/Secret Projects/book1.md`
-
-#### Important Notes
-
-- **New files only**: This only organizes newly synced books. Existing notes stay where they are.
-- **Want to reorganize existing files?** Delete your book notes and re-sync to apply the new structure. **Consider backing up any manual edits first**.
-- **Multiple authors/series**: To avoid duplicate notes, the plugin uses the first author/series Hardcover provides.
 
 ## Changelog
 
