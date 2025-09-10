@@ -97,8 +97,7 @@ export class MetadataService {
 			}
 
 			if (authors.length) {
-				const formattedAuthors = this.formatAsWikilinks(authors, "authors");
-				metadata[fieldsSettings.authors.propertyName] = formattedAuthors;
+				metadata[fieldsSettings.authors.propertyName] = authors;
 			}
 		}
 
@@ -123,12 +122,7 @@ export class MetadataService {
 				const contributorStrings = otherContributors.map(
 					(c) => `${c.name} (${c.role})`
 				);
-				const formattedContributors = this.formatAsWikilinks(
-					contributorStrings,
-					"contributors"
-				);
-				metadata[fieldsSettings.contributors.propertyName] =
-					formattedContributors;
+				metadata[fieldsSettings.contributors.propertyName] = contributorStrings;
 			}
 		}
 
@@ -157,10 +151,9 @@ export class MetadataService {
 
 		// add publisher
 		if (fieldsSettings.publisher.enabled && edition.publisher?.name) {
-			let publisherValue = this.fileUtils.normalizeText(edition.publisher.name);
-			if ((fieldsSettings.publisher as any).wikilinks) {
-				publisherValue = `[[${publisherValue}]]`;
-			}
+			const publisherValue = this.fileUtils.normalizeText(
+				edition.publisher.name
+			);
 			metadata[fieldsSettings.publisher.propertyName] = publisherValue;
 		}
 
@@ -169,8 +162,7 @@ export class MetadataService {
 			const seriesArray = this.extractSeriesInfo(book.book_series);
 
 			if (seriesArray.length > 0) {
-				const formattedSeries = this.formatAsWikilinks(seriesArray, "series");
-				metadata[fieldsSettings.series.propertyName] = formattedSeries;
+				metadata[fieldsSettings.series.propertyName] = seriesArray;
 			}
 		}
 
@@ -185,8 +177,7 @@ export class MetadataService {
 			);
 
 			if (genres.length > 0) {
-				const formattedGenres = this.formatAsWikilinks(genres, "genres");
-				metadata[fieldsSettings.genres.propertyName] = formattedGenres;
+				metadata[fieldsSettings.genres.propertyName] = genres;
 			}
 		}
 
@@ -347,34 +338,6 @@ export class MetadataService {
 				}
 				return seriesName;
 			});
-	}
-
-	private formatAsWikilinks(
-		values: string[],
-		fieldKey: keyof FieldsSettings
-	): string[] {
-		const fieldConfig = this.settings.fieldsSettings[fieldKey];
-
-		if (!(fieldConfig as any).wikilinks) {
-			return values;
-		}
-
-		return values.map((value) => {
-			// extract base name for contributors and series
-			if (fieldKey === "contributors") {
-				const match = value.match(/^(.+?)\s*\((.+)\)$/);
-				if (match) {
-					return `[[${match[1].trim()}|${value}]]`;
-				}
-			} else if (fieldKey === "series") {
-				const match = value.match(/^(.+?)\s*#(\d+)$/);
-				if (match) {
-					return `[[${match[1].trim()}|${value}]]`;
-				}
-			}
-
-			return `[[${value}]]`;
-		});
 	}
 
 	private capitalizeFirstLetter(text: string): string {

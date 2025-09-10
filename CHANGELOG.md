@@ -1,5 +1,9 @@
 # Changelog
 
+### 1.3.2
+
+- Refactored wikilink formatting to apply only during note generation for clean directory names (improved from 1.3.1 hotfix)
+
 ### 1.3.1
 
 - Fixed an issue where enabling both wikilinks and grouping would cause directory names to be formatted as `[[wikilinks]]`

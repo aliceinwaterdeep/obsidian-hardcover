@@ -31,9 +31,14 @@ export class NoteService {
 				await this.ensureFolderExists(directoryPath);
 			}
 
+			const formattedMetadata = this.applyWikilinkFormatting(bookMetadata);
+
 			// create frontmatter and full note content with delimiter
-			const frontmatter = this.createFrontmatter(bookMetadata);
-			const noteContent = this.createNoteContent(frontmatter, bookMetadata);
+			const frontmatter = this.createFrontmatter(formattedMetadata);
+			const noteContent = this.createNoteContent(
+				frontmatter,
+				formattedMetadata
+			);
 
 			let file;
 			if (await this.vault.adapter.exists(fullPath)) {
@@ -73,8 +78,10 @@ export class NoteService {
 			const originalPath = existingFile.path;
 			const existingContent = await this.vault.read(existingFile);
 
-			const frontmatter = this.createFrontmatter(bookMetadata);
-			const newContent = this.createNoteContent(frontmatter, bookMetadata);
+			const formattedMetadata = this.applyWikilinkFormatting(bookMetadata);
+
+			const frontmatter = this.createFrontmatter(formattedMetadata);
+			const newContent = this.createNoteContent(frontmatter, formattedMetadata);
 			// check if the delimiter exists in the current content
 			const delimiterIndex = existingContent.indexOf(CONTENT_DELIMITER);
 
@@ -447,5 +454,82 @@ export class NoteService {
 			);
 			return null;
 		}
+	}
+
+	private formatAsWikilinks(values: string[], fieldKey: string): string[] {
+		return values.map((value) => {
+			// extract base name for contributors and series
+			if (fieldKey === "contributors") {
+				const match = value.match(/^(.+?)\s*\((.+)\)$/);
+				if (match) {
+					return `[[${match[1].trim()}|${value}]]`;
+				}
+			} else if (fieldKey === "series") {
+				const match = value.match(/^(.+?)\s*#(\d+)$/);
+				if (match) {
+					return `[[${match[1].trim()}|${value}]]`;
+				}
+			}
+
+			return `[[${value}]]`;
+		});
+	}
+
+	private applyWikilinkFormatting(metadata: BookMetadata): BookMetadata {
+		const formattedMetadata = { ...metadata };
+		const settings = this.plugin.settings.fieldsSettings;
+
+		if (
+			settings.authors.wikilinks &&
+			formattedMetadata[settings.authors.propertyName]
+		) {
+			formattedMetadata[settings.authors.propertyName] = this.formatAsWikilinks(
+				formattedMetadata[settings.authors.propertyName],
+				"authors"
+			);
+		}
+
+		if (
+			settings.contributors.wikilinks &&
+			formattedMetadata[settings.contributors.propertyName]
+		) {
+			formattedMetadata[settings.contributors.propertyName] =
+				this.formatAsWikilinks(
+					formattedMetadata[settings.contributors.propertyName],
+					"contributors"
+				);
+		}
+
+		if (
+			settings.series.wikilinks &&
+			formattedMetadata[settings.series.propertyName]
+		) {
+			formattedMetadata[settings.series.propertyName] = this.formatAsWikilinks(
+				formattedMetadata[settings.series.propertyName],
+				"series"
+			);
+		}
+
+		if (
+			settings.publisher.wikilinks &&
+			formattedMetadata[settings.publisher.propertyName]
+		) {
+			const publisherValue = formattedMetadata[settings.publisher.propertyName];
+			formattedMetadata[
+				settings.publisher.propertyName
+			] = `[[${publisherValue}]]`;
+		}
+
+		if (
+			settings.genres.wikilinks &&
+			formattedMetadata[settings.genres.propertyName]
+		) {
+			formattedMetadata[settings.genres.propertyName] = this.formatAsWikilinks(
+				formattedMetadata[settings.genres.propertyName],
+				"genres"
+			);
+		}
+
+		return formattedMetadata;
 	}
 }
