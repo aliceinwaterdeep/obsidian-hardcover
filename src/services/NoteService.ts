@@ -157,6 +157,7 @@ export class NoteService {
 				bookMetadata,
 				groupingSettings
 			);
+
 			if (directories) {
 				basePath = `${basePath}/${directories}`;
 			}
@@ -186,6 +187,7 @@ export class NoteService {
 			groupingSettings.groupBy === "author-series"
 		) {
 			const seriesDirectory = this.getSeriesDirectory(bookMetadata);
+
 			if (seriesDirectory) {
 				pathComponents.push(seriesDirectory);
 			}
@@ -211,9 +213,9 @@ export class NoteService {
 			this.plugin.settings.fieldsSettings.series.propertyName;
 		const series = bookMetadata[seriesProperty];
 
-		if (typeof series === "string" && series.trim()) {
+		if (Array.isArray(series) && series.length > 0) {
 			// remove series position info if it exists ("Series Name #1" -> "Series Name")
-			const seriesName = series.replace(/\s*#\d+.*$/, "").trim();
+			const seriesName = series[0].replace(/\s*#\d+.*$/, "").trim();
 			return this.fileUtils.sanitizeFilename(seriesName);
 		}
 
