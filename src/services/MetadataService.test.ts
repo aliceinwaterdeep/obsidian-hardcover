@@ -1,6 +1,7 @@
 import { MetadataService } from "./MetadataService";
 import { PluginSettings } from "../types";
 import { DEFAULT_SETTINGS } from "../config/defaultSettings";
+import { FileUtils } from "../utils/FileUtils";
 
 describe("MetadataService", () => {
 	let metadataService: MetadataService;
@@ -67,7 +68,8 @@ describe("MetadataService", () => {
 
 	beforeEach(() => {
 		mockSettings = JSON.parse(JSON.stringify(DEFAULT_SETTINGS)); // deep clone
-		metadataService = new MetadataService(mockSettings);
+		const fileUtils = new FileUtils();
+		metadataService = new MetadataService(mockSettings, fileUtils);
 	});
 
 	describe("buildMetadata", () => {
