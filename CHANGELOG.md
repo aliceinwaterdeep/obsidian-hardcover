@@ -1,5 +1,9 @@
 # Changelog
 
+### 1.3.1
+
+- Fixed an issue where enabling both wikilinks and grouping would cause directory names to be formatted as `[[wikilinks]]`
+
 ### 1.3.0
 
 - New: Directory organization feature: group books by author, series, or author → series

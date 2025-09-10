@@ -177,6 +177,7 @@ export class NoteService {
 			groupingSettings.groupBy === "author-series"
 		) {
 			const authorDirectory = this.getAuthorDirectory(bookMetadata);
+
 			if (authorDirectory) {
 				pathComponents.push(authorDirectory);
 			}
@@ -202,7 +203,9 @@ export class NoteService {
 		const authors = bookMetadata[authorProperty];
 
 		if (Array.isArray(authors) && authors.length > 0) {
-			return this.fileUtils.sanitizeFilename(authors[0]);
+			return this.fileUtils.sanitizeFilename(
+				authors[0].replace(/[\[\]']+/g, "")
+			);
 		}
 
 		return null;
@@ -214,8 +217,19 @@ export class NoteService {
 		const series = bookMetadata[seriesProperty];
 
 		if (Array.isArray(series) && series.length > 0) {
-			// remove series position info if it exists ("Series Name #1" -> "Series Name")
-			const seriesName = series[0].replace(/\s*#\d+.*$/, "").trim();
+			let seriesName = series[0];
+
+			// extract series name from wikilink format: [[Series|Series #1]] -> Series
+			const wikilinkMatch = seriesName.match(
+				/^\[\[([^|\]]+)(?:\|[^\]]+)?\]\]$/
+			);
+			if (wikilinkMatch) {
+				seriesName = wikilinkMatch[1];
+			} else {
+				// fallback: remove series position info if it exists ("Series Name #1" -> "Series Name")
+				seriesName = seriesName.replace(/\s*#\d+.*$/, "");
+			}
+
 			return this.fileUtils.sanitizeFilename(seriesName);
 		}
 
