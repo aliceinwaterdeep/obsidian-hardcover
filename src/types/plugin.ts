@@ -28,7 +28,6 @@ export interface PluginSettings {
 
 	targetFolder: string;
 	grouping: GroupingSettings;
-	previousGrouping?: GroupingSettings;
 	filenameTemplate: string;
 }
 

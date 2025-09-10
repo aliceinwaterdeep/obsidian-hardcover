@@ -20,40 +20,6 @@ export class SyncService {
 		return isoDateRegex.test(timestamp);
 	}
 
-	private hasGroupingChanged(): boolean {
-		const currentGrouping = this.plugin.settings.grouping;
-		const previousGrouping = this.plugin.settings.previousGrouping;
-
-		if (!previousGrouping) {
-			return currentGrouping.enabled;
-		}
-
-		return (
-			currentGrouping.enabled !== previousGrouping.enabled ||
-			currentGrouping.groupBy !== previousGrouping.groupBy
-		);
-	}
-
-	private async handleGroupingChange(): Promise<void> {
-		if (!this.hasGroupingChanged()) {
-			return;
-		}
-
-		const currentGrouping = this.plugin.settings.grouping;
-		const previousGrouping = this.plugin.settings.previousGrouping;
-
-		if (!previousGrouping) {
-			console.log("First time enabling grouping");
-		} else {
-			console.log(
-				"grouping changed from ",
-				previousGrouping,
-				"to ",
-				currentGrouping
-			);
-		}
-	}
-
 	async startSync(options: { debugLimit?: number } = {}) {
 		const targetFolder = this.plugin.settings.targetFolder;
 		const { lastSyncTimestamp } = this.plugin.settings;
@@ -77,7 +43,6 @@ export class SyncService {
 		try {
 			// get user ID if not there
 			const userId = await this.ensureUserId();
-			await this.handleGroupingChange();
 
 			// always get the latest book count before syncing
 			const currentBooksCount = await this.hardcoverAPI.fetchBooksCount(userId);
@@ -239,12 +204,9 @@ export class SyncService {
 				completedTasks = totalBooks + (i + 1);
 			}
 
-			// update the timestamp and grouping setting used if ALL books were successfully processed
+			// only update the timestamp if ALL books were successfully processed
 			if (failedBooksCount === 0) {
 				this.plugin.settings.lastSyncTimestamp = new Date().toISOString();
-				this.plugin.settings.previousGrouping = {
-					...this.plugin.settings.grouping,
-				};
 				await this.plugin.saveSettings();
 			}
 
