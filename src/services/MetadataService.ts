@@ -7,12 +7,15 @@ import {
 	HardcoverUserBooksReads,
 	PluginSettings,
 } from "src/types";
+import { FileUtils } from "src/utils/FileUtils";
 
 export class MetadataService {
 	private settings: PluginSettings;
+	private fileUtils: FileUtils;
 
-	constructor(settings: PluginSettings) {
+	constructor(settings: PluginSettings, fileUtils: FileUtils) {
 		this.settings = settings;
+		this.fileUtils = fileUtils;
 	}
 
 	updateSettings(settings: PluginSettings): void {
@@ -35,10 +38,13 @@ export class MetadataService {
 		// add title (from book or edition based on user settings)
 		const currentTitleSource = titleSource === "book" ? book : edition;
 		if (currentTitleSource && currentTitleSource.title) {
+			const normalizedTitle = this.fileUtils.normalizeText(
+				currentTitleSource.title
+			);
 			// add to frontmatter
-			metadata[fieldsSettings.title.propertyName] = currentTitleSource.title;
+			metadata[fieldsSettings.title.propertyName] = normalizedTitle;
 			//add to body
-			metadata.bodyContent.title = currentTitleSource.title;
+			metadata.bodyContent.title = normalizedTitle;
 		}
 
 		// add rating if enabled and exists
@@ -151,7 +157,7 @@ export class MetadataService {
 
 		// add publisher
 		if (fieldsSettings.publisher.enabled && edition.publisher?.name) {
-			let publisherValue = edition.publisher.name;
+			let publisherValue = this.fileUtils.normalizeText(edition.publisher.name);
 			if ((fieldsSettings.publisher as any).wikilinks) {
 				publisherValue = `[[${publisherValue}]]`;
 			}
@@ -161,6 +167,7 @@ export class MetadataService {
 		// add series
 		if (fieldsSettings.series.enabled && book.book_series) {
 			const seriesArray = this.extractSeriesInfo(book.book_series);
+
 			if (seriesArray.length > 0) {
 				const formattedSeries = this.formatAsWikilinks(seriesArray, "series");
 				metadata[fieldsSettings.series.propertyName] = formattedSeries;
@@ -261,7 +268,7 @@ export class MetadataService {
 		const contributors = contributorsData
 			.filter((item) => item.contribution && item.contribution !== "Author")
 			.map((item) => ({
-				name: item.author?.name,
+				name: this.fileUtils.normalizeText(item.author?.name || ""),
 				role: this.capitalizeFirstLetter(item.contribution),
 			}))
 			.filter((name) => !!name) // remove any undefined/null names
@@ -333,7 +340,8 @@ export class MetadataService {
 		return seriesData
 			.filter((series) => series.series?.name)
 			.map((series) => {
-				const seriesName = series.series.name;
+				const seriesName = this.fileUtils.normalizeText(series.series.name);
+
 				if (series.position) {
 					return `${seriesName} #${series.position}`;
 				}

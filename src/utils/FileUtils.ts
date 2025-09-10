@@ -14,6 +14,15 @@ export class FileUtils {
 		return normalized;
 	}
 
+	normalizeText(text: string): string {
+		return text
+			.replace(/’/g, "'") // normalize curly apostrophe to straight
+			.replace(/“/g, '"') // normalize curly quotes to straight
+			.replace(/”/g, '"') // normalize other curly quote
+			.replace(/–/g, "-") // normalize en dash to hyphen
+			.replace(/—/g, "-"); // normalize em dash to hyphen
+	}
+
 	isRootOrEmpty(path: string): boolean {
 		const normalizedPath = this.normalizePath(path);
 		return !normalizedPath || normalizedPath === "/";
