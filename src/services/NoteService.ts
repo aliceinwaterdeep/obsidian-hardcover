@@ -198,9 +198,31 @@ export class NoteService {
 		return pathComponents.join("/");
 	}
 
-	private getAuthorDirectory(bookMetadata: BookMetadata) {}
+	private getAuthorDirectory(bookMetadata: BookMetadata): string | null {
+		const authorProperty =
+			this.plugin.settings.fieldsSettings.authors.propertyName;
+		const authors = bookMetadata[authorProperty];
 
-	private getSeriesDirectory(bookMetadata: BookMetadata) {}
+		if (Array.isArray(authors) && authors.length > 0) {
+			return this.fileUtils.sanitizeFilename(authors[0]);
+		}
+
+		return null;
+	}
+
+	private getSeriesDirectory(bookMetadata: BookMetadata): string | null {
+		const seriesProperty =
+			this.plugin.settings.fieldsSettings.series.propertyName;
+		const series = bookMetadata[seriesProperty];
+
+		if (typeof series === "string" && series.trim()) {
+			// remove series position info if it exists ("Series Name #1" -> "Series Name")
+			const seriesName = series.replace(/\s*#\d+.*$/, "").trim();
+			return this.fileUtils.sanitizeFilename(seriesName);
+		}
+
+		return null;
+	}
 
 	private createNoteContent(frontmatter: string, bookMetadata: any): string {
 		let content = this.getFrontmatterString(frontmatter);
