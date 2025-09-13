@@ -80,8 +80,6 @@ If you installed this plugin manually before `1.1.0`:
 5. Customize which fields to include and their property names
 6. Click "Sync now" to import your library
 
-- **Precedence:** If both methods are configured, the `.env` file takes priority.
-
 > [!TIP]
 > If you want to test your setup before syncing everything, you can use the Debug menu to run a test sync with a limited number of books. Recommended for large libraries.
 
