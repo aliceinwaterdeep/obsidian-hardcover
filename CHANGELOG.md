@@ -5,6 +5,7 @@
 - New: Lists field support - display your Hardcover lists in book notes
 - Lists can be formatted as wikilinks to create linked notes
 - Lists field is disabled by default, enable it in settings
+- Thanks to @sisypheand for the suggestion!
 
 ### 1.3.2
 
