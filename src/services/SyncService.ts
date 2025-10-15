@@ -1,6 +1,7 @@
 import { Notice } from "obsidian";
 import { HardcoverAPI } from "src/api/HardcoverAPI";
 import ObsidianHardcover from "src/main";
+import { UserList } from "src/types";
 
 export class SyncService {
 	private plugin: ObsidianHardcover;
@@ -113,6 +114,30 @@ export class SyncService {
 		return user.id;
 	}
 
+	private buildBookToListsMap(userLists: UserList[]): Map<number, string[]> {
+		const map = new Map<number, string[]>();
+
+		for (const list of userLists) {
+			const listName = this.plugin.fileUtils.normalizeText(list.name);
+
+			for (const listBook of list.list_books) {
+				const bookId = listBook.book_id;
+
+				if (!map.has(bookId)) {
+					map.set(bookId, []);
+				}
+
+				const existingLists = map.get(bookId)!;
+				// avoide duplicate list names for the same book
+				if (!existingLists.includes(listName)) {
+					existingLists.push(listName);
+				}
+			}
+		}
+
+		return map;
+	}
+
 	private async syncBooks(
 		userId: number,
 		totalBooks: number,
@@ -124,6 +149,18 @@ export class SyncService {
 		const notice = new Notice("Syncing Hardcover library...", 0);
 
 		try {
+			// fetch user lists if the lists field is enabled
+			let bookToListsMap: Map<number, string[]> | null = null;
+			if (this.plugin.settings.fieldsSettings.lists.enabled) {
+				try {
+					const userLists = await this.hardcoverAPI.fetchUserLists(userId);
+					bookToListsMap = this.buildBookToListsMap(userLists);
+				} catch (error) {
+					console.error("Error fetching user lists: ", error);
+					// continue sync without lists data
+				}
+			}
+
 			const totalTasks = totalBooks * 2; // each book counts twice: one for fetch, one for the note creation
 			let completedTasks = 0;
 
@@ -159,7 +196,7 @@ export class SyncService {
 				const book = books[i];
 
 				try {
-					const metadata = metadataService.buildMetadata(book);
+					const metadata = metadataService.buildMetadata(book, bookToListsMap);
 
 					// check if note already exists by checking hardcover book Id
 					const existingNote = await noteService.findNoteByHardcoverId(

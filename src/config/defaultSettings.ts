@@ -19,6 +19,7 @@ export const DEFAULT_FIELDS_SETTINGS: FieldsSettings = {
 		propertyName: "seriesName",
 	},
 	genres: { enabled: true, propertyName: "genres" },
+	lists: { enabled: false, propertyName: "lists" },
 
 	publisher: { enabled: true, propertyName: "publisher" },
 
@@ -41,7 +42,7 @@ export const DEFAULT_FIELDS_SETTINGS: FieldsSettings = {
 export const DEFAULT_FILENAME_FORMAT = "${title} (${year})";
 
 export const DEFAULT_SETTINGS: PluginSettings = {
-	settingsVersion: 3,
+	settingsVersion: 4,
 	apiKey: "",
 	lastSyncTimestamp: "",
 	userId: null,

@@ -4,6 +4,7 @@ import {
 	FetchLibraryParams,
 	PluginSettings,
 	NodeNetworkError,
+	UserList,
 } from "../types";
 import { GetUserIdResponse, GraphQLResponse, HardcoverUser } from "src/types";
 import { QueryBuilder } from "./QueryBuilder";
@@ -258,6 +259,26 @@ export class HardcoverAPI {
 		} = data;
 
 		return count;
+	}
+
+	async fetchUserLists(userId: number): Promise<UserList[]> {
+		const query = `
+		query GetUserLists($userId: Int!) {
+			users_by_pk(id: $userId) {
+				lists {
+					name
+					list_books {
+						book_id
+					}
+				}
+			}
+		}
+	`;
+
+		const variables = { userId };
+		const data = await this.graphqlRequest(query, variables);
+
+		return data.users_by_pk?.lists || [];
 	}
 
 	async fetchUserId(): Promise<HardcoverUser | undefined> {

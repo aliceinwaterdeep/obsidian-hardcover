@@ -22,7 +22,10 @@ export class MetadataService {
 		this.settings = settings;
 	}
 
-	buildMetadata(userBook: HardcoverUserBook): BookMetadata {
+	buildMetadata(
+		userBook: HardcoverUserBook,
+		bookToListsMap?: Map<number, string[]> | null
+	): BookMetadata {
 		const { fieldsSettings, dataSourcePreferences } = this.settings;
 		const metadata: BookMetadata = {
 			// always include the Hardcover book id
@@ -178,6 +181,15 @@ export class MetadataService {
 
 			if (genres.length > 0) {
 				metadata[fieldsSettings.genres.propertyName] = genres;
+			}
+		}
+
+		// add lists
+		if (fieldsSettings.lists.enabled && bookToListsMap) {
+			const lists = bookToListsMap.get(userBook.book_id);
+
+			if (lists && lists.length > 0) {
+				metadata[fieldsSettings.lists.propertyName] = lists;
 			}
 		}
 

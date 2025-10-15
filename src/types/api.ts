@@ -90,3 +90,10 @@ export interface HardcoverBookSeries {
 	};
 	position: number;
 }
+
+export interface UserList {
+	name: string;
+	list_books: Array<{
+		book_id: number;
+	}>;
+}
