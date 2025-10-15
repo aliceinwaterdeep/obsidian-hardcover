@@ -530,6 +530,16 @@ export class NoteService {
 			);
 		}
 
+		if (
+			settings.lists.wikilinks &&
+			formattedMetadata[settings.lists.propertyName]
+		) {
+			formattedMetadata[settings.lists.propertyName] = this.formatAsWikilinks(
+				formattedMetadata[settings.lists.propertyName],
+				"lists"
+			);
+		}
+
 		return formattedMetadata;
 	}
 }
