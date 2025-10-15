@@ -122,6 +122,7 @@ Configure which fields to include in your book notes:
 - **Publisher**: Publishing house name
 - **URL**: Link to the book on Hardcover
 - **Genres**: Book genre tags
+- **Lists**: User lists (e.g., "Owned")
 - **Status**: Reading status (Want to Read, Currently Reading, etc.) - you can customize the text
 - **Rating**: Your 1-5 star rating
 - **Review**: Your written review
@@ -142,6 +143,7 @@ You can decide to format some fields as wikilinks to create linked notes.
 - **Series**: `[[Series Name|Series Name #3]]
 - **Publisher**: `[[Publisher Name]]`
 - **Genres**: `[[Genre Name]]`
+- **Lists**: `[[List Name]]`
 
 ### Filename Template
 
