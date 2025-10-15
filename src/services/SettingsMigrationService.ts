@@ -24,6 +24,10 @@ export class SettingsMigrationService {
 			settings = this.migrateToV3(settings);
 		}
 
+		if (currentVersion < 4) {
+			settings = this.migrateToV4(settings);
+		}
+
 		// update version number
 		settings.settingsVersion = DEFAULT_SETTINGS.settingsVersion;
 		return settings;
@@ -62,6 +66,18 @@ export class SettingsMigrationService {
 			(settings as any).grouping = {
 				enabled: false,
 				groupBy: "author",
+			};
+		}
+
+		return settings;
+	}
+
+	private static migrateToV4(settings: PluginSettings): PluginSettings {
+		if (!settings.fieldsSettings.lists) {
+			(settings.fieldsSettings as any).lists = {
+				enabled: false,
+				propertyName: "lists",
+				wikilinks: false,
 			};
 		}
 

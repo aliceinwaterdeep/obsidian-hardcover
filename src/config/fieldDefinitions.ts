@@ -58,6 +58,12 @@ export const FIELD_DEFINITIONS: FieldDefinition[] = [
 		description: "Book genres",
 		supportsWikilinks: true,
 	},
+	{
+		key: "lists",
+		name: "Lists",
+		description: "User lists",
+		supportsWikilinks: true,
+	},
 	{ key: "status", name: "Status", description: "Reading status" },
 	{ key: "rating", name: "Rating", description: "Your rating" },
 	{ key: "review", name: "Review", description: "Your review of the book" },

@@ -62,6 +62,9 @@ export interface FieldsSettings {
 	series: FieldConfig;
 	genres: FieldConfig;
 
+	// lists fields
+	lists: FieldConfig;
+
 	// edition fields
 	publisher: FieldConfig;
 
