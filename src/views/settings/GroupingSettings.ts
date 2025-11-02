@@ -44,8 +44,9 @@ export function renderGroupingSettings(
 
 	// add author format checkbox, only show when grouping includes authors
 	if (
-		plugin.settings.grouping.groupBy === "author" ||
-		plugin.settings.grouping.groupBy === "author-series"
+		plugin.settings.grouping.enabled &&
+		(plugin.settings.grouping.groupBy === "author" ||
+			plugin.settings.grouping.groupBy === "author-series")
 	) {
 		const authorFormatSetting = new Setting(containerEl)
 			.setName("Use 'Last Name, First Name' format for author folders")
