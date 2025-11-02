@@ -23,6 +23,9 @@ export const DEFAULT_FIELDS_SETTINGS: FieldsSettings = {
 
 	publisher: { enabled: true, propertyName: "publisher" },
 
+	isbn10: { enabled: false, propertyName: "isbn10" },
+	isbn13: { enabled: false, propertyName: "isbn13" },
+
 	firstRead: {
 		enabled: true,
 		propertyName: "firstRead",

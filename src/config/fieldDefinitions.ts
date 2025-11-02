@@ -51,6 +51,16 @@ export const FIELD_DEFINITIONS: FieldDefinition[] = [
 		description: "Publisher name",
 		supportsWikilinks: true,
 	},
+	{
+		key: "isbn10",
+		name: "ISBN-10",
+		description: "ISBN-10",
+	},
+	{
+		key: "isbn13",
+		name: "ISBN-13",
+		description: "ISBN-13",
+	},
 	{ key: "url", name: "URL", description: "Hardcover URL" },
 	{
 		key: "genres",
