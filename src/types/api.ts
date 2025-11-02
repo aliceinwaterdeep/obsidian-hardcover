@@ -77,6 +77,8 @@ interface HardcoverEdition {
 	publisher: {
 		name: string;
 	};
+	isbn_10: string | null;
+	isbn_13: string | null;
 }
 
 export interface HardcoverUserBooksReads {

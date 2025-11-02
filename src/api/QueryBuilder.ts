@@ -163,6 +163,14 @@ export class QueryBuilder {
                         }`);
 		}
 
+		if (settings.isbn10.enabled) {
+			fields.push("isbn_10");
+		}
+
+		if (settings.isbn13.enabled) {
+			fields.push("isbn_13");
+		}
+
 		return fields.join("\n                        ");
 	}
 
