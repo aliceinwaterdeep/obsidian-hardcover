@@ -240,6 +240,14 @@ export class MetadataService {
 		return [statusText];
 	}
 
+	private hasNameAsRole(contributorsData: Record<any, any>[]): boolean {
+		// hc metadata workaround: check if there's only one contributor and their role is their own name
+		return (
+			contributorsData.length === 1 &&
+			contributorsData[0].contribution === contributorsData[0].author?.name
+		);
+	}
+
 	private extractAuthors(contributorsData: Record<any, any>[]): string[] {
 		if (!contributorsData || !Array.isArray(contributorsData)) {
 			return [];
@@ -251,7 +259,8 @@ export class MetadataService {
 				(item) =>
 					!item.contribution ||
 					item.contribution === "" ||
-					item.contribution === "Author"
+					item.contribution === "Author" ||
+					this.hasNameAsRole(contributorsData) // treat as author
 			)
 			.map((item) => item.author?.name)
 			.filter((name) => !!name) // remove any undefined/null names
@@ -264,6 +273,11 @@ export class MetadataService {
 		contributorsData: Record<any, any>[]
 	): Array<{ name: string; role: string }> {
 		if (!contributorsData || !Array.isArray(contributorsData)) {
+			return [];
+		}
+
+		if (this.hasNameAsRole(contributorsData)) {
+			// treated as author, exclude from contributors
 			return [];
 		}
 
