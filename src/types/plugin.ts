@@ -1,6 +1,7 @@
 export interface GroupingSettings {
 	enabled: boolean;
 	groupBy: "author" | "series" | "author-series";
+	authorFormat: "firstLast" | "lastFirst";
 }
 
 export interface PluginSettings {
@@ -67,6 +68,8 @@ export interface FieldsSettings {
 
 	// edition fields
 	publisher: FieldConfig;
+	isbn10: FieldConfig;
+	isbn13: FieldConfig;
 
 	// user_book_reads fields
 	firstRead: ActivityDateFieldConfig;

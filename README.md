@@ -120,6 +120,8 @@ Configure which fields to include in your book notes:
 - **Authors**: The main writer/s of the book
 - **Contributors**: Other contributors (translators, narrators, etc.)
 - **Publisher**: Publishing house name
+- **ISBN-13**
+- **ISBN-10**
 - **URL**: Link to the book on Hardcover
 - **Genres**: Book genre tags
 - **Lists**: User lists (e.g., "Owned")

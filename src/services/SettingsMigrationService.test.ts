@@ -18,6 +18,7 @@ describe("SettingsMigrationService", () => {
 				apiKey: "test-key",
 				lastSyncTimestamp: "2023-01-01T00:00:00Z",
 				userId: 123,
+				fieldsSettings: DEFAULT_SETTINGS.fieldsSettings,
 				// missing settingsVersion field
 			};
 

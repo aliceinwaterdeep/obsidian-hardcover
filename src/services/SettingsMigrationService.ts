@@ -28,6 +28,10 @@ export class SettingsMigrationService {
 			settings = this.migrateToV4(settings);
 		}
 
+		if (currentVersion < 5) {
+			settings = this.migrateToV5(settings);
+		}
+
 		// update version number
 		settings.settingsVersion = DEFAULT_SETTINGS.settingsVersion;
 		return settings;
@@ -78,6 +82,28 @@ export class SettingsMigrationService {
 				enabled: false,
 				propertyName: "lists",
 				wikilinks: false,
+			};
+		}
+
+		return settings;
+	}
+
+	private static migrateToV5(settings: PluginSettings): PluginSettings {
+		if (!("authorFormat" in settings.grouping)) {
+			(settings.grouping as any).authorFormat = "firstLast";
+		}
+
+		if (!settings.fieldsSettings.isbn10) {
+			(settings.fieldsSettings as any).isbn10 = {
+				enabled: false,
+				propertyName: "isbn10",
+			};
+		}
+
+		if (!settings.fieldsSettings.isbn13) {
+			(settings.fieldsSettings as any).isbn13 = {
+				enabled: false,
+				propertyName: "isbn13",
 			};
 		}
 

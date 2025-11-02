@@ -23,6 +23,9 @@ export const DEFAULT_FIELDS_SETTINGS: FieldsSettings = {
 
 	publisher: { enabled: true, propertyName: "publisher" },
 
+	isbn10: { enabled: false, propertyName: "isbn10" },
+	isbn13: { enabled: false, propertyName: "isbn13" },
+
 	firstRead: {
 		enabled: true,
 		propertyName: "firstRead",
@@ -42,7 +45,7 @@ export const DEFAULT_FIELDS_SETTINGS: FieldsSettings = {
 export const DEFAULT_FILENAME_FORMAT = "${title} (${year})";
 
 export const DEFAULT_SETTINGS: PluginSettings = {
-	settingsVersion: 4,
+	settingsVersion: 5,
 	apiKey: "",
 	lastSyncTimestamp: "",
 	userId: null,
@@ -60,6 +63,7 @@ export const DEFAULT_SETTINGS: PluginSettings = {
 	grouping: {
 		enabled: false,
 		groupBy: "author",
+		authorFormat: "firstLast",
 	},
 	filenameTemplate: DEFAULT_FILENAME_FORMAT,
 };
