@@ -1,6 +1,7 @@
 export interface GroupingSettings {
 	enabled: boolean;
 	groupBy: "author" | "series" | "author-series";
+	authorFormat: "firstLast" | "lastFirst";
 }
 
 export interface PluginSettings {

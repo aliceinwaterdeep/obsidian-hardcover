@@ -35,9 +35,32 @@ export function renderGroupingSettings(
 					.onChange(async (value: GroupingSettings["groupBy"]) => {
 						plugin.settings.grouping.groupBy = value;
 						await plugin.saveSettings();
+						onSettingsChanged();
 					})
 			);
 
 		groupByDropdown.settingEl.style.borderTop = "none";
+	}
+
+	// add author format checkbox, only show when grouping includes authors
+	if (
+		plugin.settings.grouping.groupBy === "author" ||
+		plugin.settings.grouping.groupBy === "author-series"
+	) {
+		const authorFormatSetting = new Setting(containerEl)
+			.setName("Use 'Last Name, First Name' format for author folders")
+			.setDesc("(default is First Name Last Name)")
+			.addToggle((toggle) =>
+				toggle
+					.setValue(plugin.settings.grouping.authorFormat === "lastFirst")
+					.onChange(async (value) => {
+						plugin.settings.grouping.authorFormat = value
+							? "lastFirst"
+							: "firstLast";
+						await plugin.saveSettings();
+					})
+			);
+
+		authorFormatSetting.settingEl.style.borderTop = "none";
 	}
 }

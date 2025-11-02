@@ -60,6 +60,7 @@ export const DEFAULT_SETTINGS: PluginSettings = {
 	grouping: {
 		enabled: false,
 		groupBy: "author",
+		authorFormat: "firstLast",
 	},
 	filenameTemplate: DEFAULT_FILENAME_FORMAT,
 };
