@@ -210,9 +210,14 @@ export class NoteService {
 		const authors = bookMetadata[authorProperty];
 
 		if (Array.isArray(authors) && authors.length > 0) {
-			return this.fileUtils.sanitizeFilename(
-				authors[0].replace(/[\[\]']+/g, "")
-			);
+			let authorName = authors[0].replace(/[\[\]']+/g, "");
+
+			// format the name based on settings
+			if (this.plugin.settings.grouping.authorFormat === "lastFirst") {
+				authorName = this.formatNameAsLastFirst(authorName);
+			}
+
+			return this.fileUtils.sanitizeFilename(authorName);
 		}
 
 		return null;
@@ -541,5 +546,25 @@ export class NoteService {
 		}
 
 		return formattedMetadata;
+	}
+
+	private formatNameAsLastFirst(name: string): string {
+		// if name already contains a comma, assume it's already in "Last, First" format
+		if (name.includes(",")) {
+			return name;
+		}
+
+		// split on last space
+		const lastSpaceIndex = name.lastIndexOf(" ");
+
+		// if no space found, return as is (single name)
+		if (lastSpaceIndex === -1) {
+			return name;
+		}
+
+		const firstName = name.substring(0, lastSpaceIndex).trim();
+		const lastName = name.substring(lastSpaceIndex + 1).trim();
+
+		return `${lastName}, ${firstName}`;
 	}
 }
