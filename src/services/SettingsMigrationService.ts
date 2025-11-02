@@ -28,6 +28,10 @@ export class SettingsMigrationService {
 			settings = this.migrateToV4(settings);
 		}
 
+		if (currentVersion < 5) {
+			settings = this.migrateToV5(settings);
+		}
+
 		// update version number
 		settings.settingsVersion = DEFAULT_SETTINGS.settingsVersion;
 		return settings;
@@ -79,6 +83,14 @@ export class SettingsMigrationService {
 				propertyName: "lists",
 				wikilinks: false,
 			};
+		}
+
+		return settings;
+	}
+
+	private static migrateToV5(settings: PluginSettings): PluginSettings {
+		if (!("authorFormat" in settings.grouping)) {
+			(settings.grouping as any).authorFormat = "firstLast";
 		}
 
 		return settings;
