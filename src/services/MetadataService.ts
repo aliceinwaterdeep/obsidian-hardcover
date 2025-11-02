@@ -160,6 +160,16 @@ export class MetadataService {
 			metadata[fieldsSettings.publisher.propertyName] = publisherValue;
 		}
 
+		// add isbn-10
+		if (fieldsSettings.isbn10.enabled && edition.isbn_10) {
+			metadata[fieldsSettings.isbn10.propertyName] = edition.isbn_10;
+		}
+
+		// add isbn-13
+		if (fieldsSettings.isbn13.enabled && edition.isbn_13) {
+			metadata[fieldsSettings.isbn13.propertyName] = edition.isbn_13;
+		}
+
 		// add series
 		if (fieldsSettings.series.enabled && book.book_series) {
 			const seriesArray = this.extractSeriesInfo(book.book_series);

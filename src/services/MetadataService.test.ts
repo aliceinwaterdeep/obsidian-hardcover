@@ -57,6 +57,8 @@ describe("MetadataService", () => {
 				{ author: { name: "Jane Narrator" }, contribution: "Narrator" },
 			],
 			publisher: { name: "Tor.com" },
+			isbn_10: "0765397528",
+			isbn_13: "9780765397522",
 		},
 		user_book_reads: [
 			{
@@ -237,6 +239,28 @@ describe("MetadataService", () => {
 			expect(result.bodyContent.coverUrl).toBe(
 				"https://example.com/edition-cover.jpg"
 			);
+		});
+
+		test("extracts ISBN fields when enabled", () => {
+			mockSettings.fieldsSettings.isbn10.enabled = true;
+			mockSettings.fieldsSettings.isbn13.enabled = true;
+			metadataService.updateSettings(mockSettings);
+
+			const result = metadataService.buildMetadata(MOCK_USER_BOOK);
+
+			expect(result.isbn10).toBe("0765397528");
+			expect(result.isbn13).toBe("9780765397522");
+		});
+
+		test("respects ISBN field enable/disable settings", () => {
+			mockSettings.fieldsSettings.isbn10.enabled = false;
+			mockSettings.fieldsSettings.isbn13.enabled = false;
+			metadataService.updateSettings(mockSettings);
+
+			const result = metadataService.buildMetadata(MOCK_USER_BOOK);
+
+			expect(result.isbn10).toBeUndefined();
+			expect(result.isbn13).toBeUndefined();
 		});
 	});
 });
