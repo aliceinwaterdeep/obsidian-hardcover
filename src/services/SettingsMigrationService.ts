@@ -93,6 +93,20 @@ export class SettingsMigrationService {
 			(settings.grouping as any).authorFormat = "firstLast";
 		}
 
+		if (!settings.fieldsSettings.isbn10) {
+			(settings.fieldsSettings as any).isbn10 = {
+				enabled: false,
+				propertyName: "isbn10",
+			};
+		}
+
+		if (!settings.fieldsSettings.isbn13) {
+			(settings.fieldsSettings as any).isbn13 = {
+				enabled: false,
+				propertyName: "isbn13",
+			};
+		}
+
 		return settings;
 	}
 
