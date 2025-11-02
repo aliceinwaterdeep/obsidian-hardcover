@@ -1,5 +1,12 @@
 # Changelog
 
+### 1.5.0
+
+- New: Added support for ISBN-10 and ISBN-13 fields
+- New: Added 'Last Name, First Name' format option for author directories
+- Added a workaround for imperfect Hardcover metadata where author's role is author's own name
+- Thanks to @coffeemonk!
+
 ### 1.4.0
 
 - New: Lists field support - display your Hardcover lists in book notes
