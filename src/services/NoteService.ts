@@ -422,18 +422,11 @@ export class NoteService {
 			for (const file of folder.children) {
 				// only check markdown files
 				if (file instanceof TFile && file.extension === "md") {
-					const content = await this.vault.cachedRead(file);
+					const fileCache = this.plugin.app.metadataCache.getFileCache(file);
+					const frontmatter = fileCache?.frontmatter;
 
-					// check if it has frontmatter
-					const frontmatterMatch = content.match(/^---\n([\s\S]*?)\n---/);
-					if (frontmatterMatch) {
-						const frontmatter = frontmatterMatch[1];
-
-						// check if hardcoverBookId matches
-						const idMatch = frontmatter.match(/hardcoverBookId:\s*(\d+)/);
-						if (idMatch && parseInt(idMatch[1]) === hardcoverBookId) {
-							return file;
-						}
+					if (frontmatter && frontmatter.hardcoverBookId === hardcoverBookId) {
+						return file;
 					}
 				}
 			}
