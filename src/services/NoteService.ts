@@ -41,7 +41,7 @@ export class NoteService {
 			);
 
 			let file;
-			if (await this.vault.adapter.exists(fullPath)) {
+			if (this.vault.getFileByPath(fullPath) !== null) {
 				// if file exists, write to it and then get the file reference
 				await this.vault.adapter.write(fullPath, noteContent);
 
@@ -308,8 +308,8 @@ export class NoteService {
 	private async ensureFolderExists(folderPath: string): Promise<void> {
 		if (!folderPath) return;
 
-		const exists = await this.vault.adapter.exists(folderPath);
-		if (!exists) {
+		const folder = this.vault.getFolderByPath(folderPath);
+		if (!folder) {
 			if (IS_DEV) {
 				// console.log(`Creating folder: ${folderPath}`);
 			}
@@ -417,12 +417,6 @@ export class NoteService {
 	async findNoteByHardcoverId(hardcoverBookId: number): Promise<TFile | null> {
 		try {
 			const folderPath = this.plugin.settings.targetFolder;
-
-			const folderExists = await this.vault.adapter.exists(folderPath);
-			if (!folderExists) {
-				// console.debug(`Specified target folder doesn't exist: ${folderPath}`);
-				return null;
-			}
 
 			// get all markdown files in the folder
 			const folder = this.vault.getFolderByPath(folderPath);
