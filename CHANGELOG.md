@@ -1,5 +1,12 @@
 # Changelog
 
+### 1.5.1
+
+- Improvements to comply with Obsidian plugin review guidelines
+- Due to the changes, plugin is now mobile compatible (removed desktop-only restriction)
+- Improved performance by leveraging Obsidian's metadata cache
+- Improved code quality
+
 ### 1.5.0
 
 - New: Added support for ISBN-10 and ISBN-13 fields
