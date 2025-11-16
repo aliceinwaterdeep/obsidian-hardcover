@@ -1,13 +1,3 @@
-// Node.js network error type
-export interface NodeNetworkError extends Error {
-	code?: string;
-	errno?: number;
-	syscall?: string;
-	hostname?: string;
-	host?: string;
-	port?: number;
-}
-
 export interface HardcoverUser {
 	id: number;
 }

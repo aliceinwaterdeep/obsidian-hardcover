@@ -1,17 +1,11 @@
+import { normalizePath } from "obsidian";
+
 export class FileUtils {
 	sanitizeFilename(name: string): string {
 		return name
 			.replace(/[\\/:*?"<>|]/g, "") // remove illegal characters
 			.replace(/\s+/g, " ") // replace multiple spaces with single space
 			.trim(); // remove leading/trailing spaces
-	}
-
-	normalizePath(path: string): string {
-		// remove leading and trailing slashes
-		let normalized = path.replace(/^\/+|\/+$/g, "");
-		// remove duplicate slashes
-		normalized = normalized.replace(/\/+/g, "/");
-		return normalized;
 	}
 
 	normalizeText(text: string): string {
@@ -24,7 +18,7 @@ export class FileUtils {
 	}
 
 	isRootOrEmpty(path: string): boolean {
-		const normalizedPath = this.normalizePath(path);
+		const normalizedPath = normalizePath(path);
 		return !normalizedPath || normalizedPath === "/";
 	}
 

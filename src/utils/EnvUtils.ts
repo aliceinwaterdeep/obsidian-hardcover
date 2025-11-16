@@ -9,7 +9,7 @@ export class EnvUtils {
 
 	async readEnvFile(): Promise<Record<string, string> | null> {
 		try {
-			// use adapter directly since Obsidian doesn't expose dot files through getAbstractFileByPath
+			// NOTE: Must use adapter API for .env file because hidden files are not exposed through vault.getFiles() or vault.getFileByPath()
 			const envFilePath = ".env";
 			const exists = await this.vault.adapter.exists(envFilePath);
 

@@ -222,7 +222,7 @@ See [CHANGELOG.md](CHANGELOG.md) for the full version history.
 
 ### Planned Features
 
-- Add property to display reading progress for in-progress books
+- Allow option to respect location of existing notes on subsequent syncs ([16](https://github.com/aliceinwaterdeep/obsidian-hardcover/issues/16))
 
 ### Under Consideration
 
@@ -231,6 +231,7 @@ See [CHANGELOG.md](CHANGELOG.md) for the full version history.
 - Improve read dates handling: only show both `firstRead` `lastRead` when they differ, otherwise show a single `readDate`
 - Provide edition title as a separate field alongside book title
 - Make cover image dimensions configurable in settings
+- Add property to display reading progress for in-progress books
 
 _Feel free to [open an issue](https://github.com/aliceinwaterdeep/obsidian-hardcover/issues) if you find bugs or have a feature idea!_
 

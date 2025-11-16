@@ -1,4 +1,4 @@
-import { TFile, Vault } from "obsidian";
+import { normalizePath, TFile, Vault } from "obsidian";
 import { CONTENT_DELIMITER } from "src/config/constants";
 import { FIELD_DEFINITIONS } from "src/config/fieldDefinitions";
 
@@ -33,35 +33,37 @@ export class NoteService {
 
 			const formattedMetadata = this.applyWikilinkFormatting(bookMetadata);
 
-			// create frontmatter and full note content with delimiter
-			const frontmatter = this.createFrontmatter(formattedMetadata);
-			const noteContent = this.createNoteContent(
-				frontmatter,
-				formattedMetadata
-			);
+			// prepare frontmatter with proper ordering and filtering
+			const frontmatterData = this.prepareFrontmatter(formattedMetadata);
 
-			let file;
-			if (await this.vault.adapter.exists(fullPath)) {
-				// if file exists, write to it and then get the file reference
-				await this.vault.adapter.write(fullPath, noteContent);
+			// create body content only
+			const bodyContent = this.createBodyContent(formattedMetadata);
 
-				const abstractFile = this.vault.getAbstractFileByPath(fullPath);
-				if (abstractFile instanceof TFile) {
-					file = abstractFile;
-				} else {
-					return null;
-				}
+			// check if file exists
+			const existingFile = this.vault.getFileByPath(fullPath);
+			let file: TFile;
+
+			if (existingFile) {
+				await this.vault.modify(existingFile, bodyContent);
+				file = existingFile;
 
 				if (IS_DEV) {
 					// console.log(`Updated note: ${fullPath}`);
 				}
 			} else {
-				// create new file
-				file = await this.vault.create(fullPath, noteContent);
+				file = await this.vault.create(fullPath, bodyContent);
 				if (IS_DEV) {
 					// console.log(`Created note: ${fullPath}`);
 				}
 			}
+
+			// add frontmatter using processFrontMatter
+			await this.plugin.app.fileManager.processFrontMatter(
+				file,
+				(frontmatter) => {
+					Object.assign(frontmatter, frontmatterData);
+				}
+			);
 
 			return file;
 		} catch (error) {
@@ -76,28 +78,28 @@ export class NoteService {
 	): Promise<TFile | null> {
 		try {
 			const originalPath = existingFile.path;
-			const existingContent = await this.vault.read(existingFile);
+			const existingContent = await this.vault.cachedRead(existingFile);
 
 			const formattedMetadata = this.applyWikilinkFormatting(bookMetadata);
+			const { bodyContent, ...frontmatterData } = formattedMetadata;
 
-			const frontmatter = this.createFrontmatter(formattedMetadata);
-			const newContent = this.createNoteContent(frontmatter, formattedMetadata);
-			// check if the delimiter exists in the current content
+			// create new body content
+			const newBodyContent = this.createBodyContent(formattedMetadata);
+
+			// check if delimiter exists in the current content
 			const delimiterIndex = existingContent.indexOf(CONTENT_DELIMITER);
-
 			let updatedContent: string;
+
 			if (delimiterIndex !== -1) {
-				// preserve original content after it
 				const userContent = existingContent.substring(
 					delimiterIndex + CONTENT_DELIMITER.length
 				);
-
-				updatedContent = newContent.replace(
+				updatedContent = newBodyContent.replace(
 					`${CONTENT_DELIMITER}\n\n`,
 					`${CONTENT_DELIMITER}${userContent}`
 				);
 			} else {
-				updatedContent = newContent;
+				updatedContent = newBodyContent;
 			}
 
 			const newPath = this.generateNotePath(
@@ -112,9 +114,7 @@ export class NoteService {
 
 			// check if the file needs to be renamed
 			if (originalPath !== newPath) {
-				await this.vault.process(existingFile, (data) => {
-					return updatedContent;
-				});
+				await this.vault.modify(existingFile, updatedContent);
 				await this.vault.rename(existingFile, newPath);
 
 				if (IS_DEV) {
@@ -122,21 +122,41 @@ export class NoteService {
 					// 	`Updated and renamed note: ${originalPath} -> ${newPath}`
 					// );
 				}
-				// get the new file reference after renaming
-				const renamedFile = this.vault.getAbstractFileByPath(newPath);
-				if (renamedFile instanceof TFile) {
-					return renamedFile;
-				} else {
-					return null;
-				}
-			} else {
-				await this.vault.process(existingFile, (data) => {
-					return updatedContent;
-				});
 
-				if (IS_DEV) {
-					// console.log(`Updated note: ${originalPath}`);
-				}
+				// get the new file reference after renaming
+				const renamedFile = this.vault.getFileByPath(newPath);
+				if (!renamedFile) return null;
+
+				// update frontmatter
+				const frontmatterData = this.prepareFrontmatter(formattedMetadata);
+
+				await this.plugin.app.fileManager.processFrontMatter(
+					renamedFile,
+					(frontmatter) => {
+						// clear existing
+						for (const key in frontmatter) {
+							delete frontmatter[key];
+						}
+						// add prepared frontmatter
+						Object.assign(frontmatter, frontmatterData);
+					}
+				);
+
+				return renamedFile;
+			} else {
+				// update content and frontmatter
+				await this.vault.modify(existingFile, updatedContent);
+
+				await this.plugin.app.fileManager.processFrontMatter(
+					existingFile,
+					(frontmatter) => {
+						// clear and replace
+						for (const key in frontmatter) {
+							delete frontmatter[key];
+						}
+						Object.assign(frontmatter, frontmatterData);
+					}
+				);
 
 				return existingFile;
 			}
@@ -155,9 +175,7 @@ export class NoteService {
 			bookMetadata
 		);
 
-		let basePath = this.fileUtils.normalizePath(
-			this.plugin.settings.targetFolder
-		);
+		let basePath = normalizePath(this.plugin.settings.targetFolder);
 
 		if (groupingSettings.enabled) {
 			const directories = this.buildDirectoryPath(
@@ -248,8 +266,8 @@ export class NoteService {
 		return null;
 	}
 
-	private createNoteContent(frontmatter: string, bookMetadata: any): string {
-		let content = this.getFrontmatterString(frontmatter);
+	private createBodyContent(bookMetadata: any): string {
+		let content = "";
 
 		// add title
 		const title = this.getBookTitle(bookMetadata);
@@ -308,8 +326,8 @@ export class NoteService {
 	private async ensureFolderExists(folderPath: string): Promise<void> {
 		if (!folderPath) return;
 
-		const exists = await this.vault.adapter.exists(folderPath);
-		if (!exists) {
+		const folder = this.vault.getFolderByPath(folderPath);
+		if (!folder) {
 			if (IS_DEV) {
 				// console.log(`Creating folder: ${folderPath}`);
 			}
@@ -317,27 +335,20 @@ export class NoteService {
 		}
 	}
 
-	private getFrontmatterString(frontmatter: string) {
-		return `---\n${frontmatter}\n---\n\n`;
-	}
-
-	private createFrontmatter(metadata: Record<string, any>): string {
-		// exclude bodyContent from frontmatter
+	private prepareFrontmatter(
+		metadata: Record<string, any>
+	): Record<string, any> {
 		const { bodyContent, ...frontmatterData } = metadata;
-
-		const frontmatterEntries: string[] = [];
+		const prepared: Record<string, any> = {};
 
 		// first add hardcoverBookId as the first property
 		if (frontmatterData.hardcoverBookId !== undefined) {
-			frontmatterEntries.push(
-				`hardcoverBookId: ${frontmatterData.hardcoverBookId}`
-			);
+			prepared.hardcoverBookId = frontmatterData.hardcoverBookId;
 		}
 
 		// add all other properties in the order defined in FIELD_DEFINITIONS
 		const allFieldPropertyNames = FIELD_DEFINITIONS.flatMap((field) => {
 			const fieldSettings = this.plugin.settings.fieldsSettings[field.key];
-
 			const propertyNames = [fieldSettings.propertyName];
 
 			// add start/end property names for activity date fields
@@ -355,7 +366,6 @@ export class NoteService {
 		// add properties in the defined order
 		for (const propName of allFieldPropertyNames) {
 			if (!frontmatterData.hasOwnProperty(propName)) continue;
-
 			// skip hardcoverBookId as we already added it
 			if (propName === "hardcoverBookId") continue;
 
@@ -364,32 +374,24 @@ export class NoteService {
 			// skip undefined/null values
 			if (value === undefined || value === null) continue;
 
-			if (Array.isArray(value)) {
-				frontmatterEntries.push(`${propName}: ${JSON.stringify(value)}`);
-			} else if (typeof value === "string") {
-				if (
-					propName ===
-					this.plugin.settings.fieldsSettings.description.propertyName
-				) {
+			if (
+				propName ===
+				this.plugin.settings.fieldsSettings.description.propertyName
+			) {
+				if (typeof value === "string") {
 					// remove all \n sequences and replace with spaces to avoid frontmatter issues
 					const cleanValue = value.replace(/\\n/g, " ").trim();
 					// remove any multiple spaces that might result
 					const finalValue = cleanValue.replace(/\s+/g, " ");
-					frontmatterEntries.push(
-						`${propName}: "${finalValue.replace(/"/g, '\\"')}"`
-					);
-				} else {
-					// for other string fields, just escape quotes
-					frontmatterEntries.push(
-						`${propName}: "${value.replace(/"/g, '\\"')}"`
-					);
+					prepared[propName] = finalValue;
 				}
 			} else {
-				frontmatterEntries.push(`${propName}: ${value}`);
+				// for everything else, just add it directly: Obsidian's processFrontMatter will handle arrays, strings, etc.
+				prepared[propName] = value;
 			}
 		}
 
-		return frontmatterEntries.join("\n");
+		return prepared;
 	}
 
 	private formatReviewText(reviewText: string): string {
@@ -418,12 +420,6 @@ export class NoteService {
 		try {
 			const folderPath = this.plugin.settings.targetFolder;
 
-			const folderExists = await this.vault.adapter.exists(folderPath);
-			if (!folderExists) {
-				// console.debug(`Specified target folder doesn't exist: ${folderPath}`);
-				return null;
-			}
-
 			// get all markdown files in the folder
 			const folder = this.vault.getFolderByPath(folderPath);
 			if (!folder) {
@@ -435,18 +431,11 @@ export class NoteService {
 			for (const file of folder.children) {
 				// only check markdown files
 				if (file instanceof TFile && file.extension === "md") {
-					const content = await this.vault.read(file);
+					const fileCache = this.plugin.app.metadataCache.getFileCache(file);
+					const frontmatter = fileCache?.frontmatter;
 
-					// check if it has frontmatter
-					const frontmatterMatch = content.match(/^---\n([\s\S]*?)\n---/);
-					if (frontmatterMatch) {
-						const frontmatter = frontmatterMatch[1];
-
-						// check if hardcoverBookId matches
-						const idMatch = frontmatter.match(/hardcoverBookId:\s*(\d+)/);
-						if (idMatch && parseInt(idMatch[1]) === hardcoverBookId) {
-							return file;
-						}
+					if (frontmatter && frontmatter.hardcoverBookId === hardcoverBookId) {
+						return file;
 					}
 				}
 			}
