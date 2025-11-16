@@ -41,16 +41,11 @@ export class NoteService {
 			);
 
 			let file;
-			if (this.vault.getFileByPath(fullPath) !== null) {
-				// if file exists, write to it and then get the file reference
-				await this.vault.adapter.write(fullPath, noteContent);
-
-				const abstractFile = this.vault.getAbstractFileByPath(fullPath);
-				if (abstractFile instanceof TFile) {
-					file = abstractFile;
-				} else {
-					return null;
-				}
+			const existingFile = this.vault.getFileByPath(fullPath);
+			if (existingFile) {
+				// if file exists, modify it using vault API
+				await this.vault.modify(existingFile, noteContent);
+				file = existingFile;
 
 				if (IS_DEV) {
 					// console.log(`Updated note: ${fullPath}`);
@@ -76,7 +71,7 @@ export class NoteService {
 	): Promise<TFile | null> {
 		try {
 			const originalPath = existingFile.path;
-			const existingContent = await this.vault.read(existingFile);
+			const existingContent = await this.vault.cachedRead(existingFile);
 
 			const formattedMetadata = this.applyWikilinkFormatting(bookMetadata);
 
@@ -429,7 +424,7 @@ export class NoteService {
 			for (const file of folder.children) {
 				// only check markdown files
 				if (file instanceof TFile && file.extension === "md") {
-					const content = await this.vault.read(file);
+					const content = await this.vault.cachedRead(file);
 
 					// check if it has frontmatter
 					const frontmatterMatch = content.match(/^---\n([\s\S]*?)\n---/);
