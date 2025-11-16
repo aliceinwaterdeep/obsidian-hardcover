@@ -1,9 +1,9 @@
-import * as https from "https";
+import { requestUrl } from "obsidian";
+
 import {
 	LibraryPageParams,
 	FetchLibraryParams,
 	PluginSettings,
-	NodeNetworkError,
 	UserList,
 } from "../types";
 import { GetUserIdResponse, GraphQLResponse, HardcoverUser } from "src/types";
@@ -28,102 +28,13 @@ export class HardcoverAPI {
 		this.queryBuilder = new QueryBuilder(settings); // update query builder
 	}
 
-	async makeRequest(
-		options: https.RequestOptions,
-		data?: string
-	): Promise<any> {
-		return new Promise((resolve, reject) => {
-			const req = https.request(options, (res) => {
-				let responseData = "";
-
-				res.on("data", (chunk) => {
-					responseData += chunk;
-				});
-
-				res.on("end", () => {
-					try {
-						if (
-							res.statusCode &&
-							res.statusCode >= 200 &&
-							res.statusCode < 300
-						) {
-							const jsonResponse = JSON.parse(responseData);
-							resolve(jsonResponse);
-						} else if (res.statusCode === 401 || res.statusCode === 403) {
-							reject(
-								new Error(
-									"Authentication failed: Your Hardcover API key appears to be invalid or expired. Please check your settings and update it."
-								)
-							);
-						} else if (res.statusCode === 429) {
-							reject(
-								new Error(
-									"Rate limit exceeded: Too many requests to Hardcover API. Please try again in a few minutes."
-								)
-							);
-						} else {
-							reject(
-								new Error(
-									`API request failed with status ${res.statusCode}: ${responseData}`
-								)
-							);
-						}
-					} catch (error) {
-						reject(new Error(`Failed to parse API response: ${error.message}`));
-					}
-				});
-			});
-
-			// timeout to prevent hanging requests
-			req.setTimeout(15000, () => {
-				req.destroy();
-				reject(
-					new Error(
-						"Request timed out. The Hardcover API may be experiencing issues or your internet connection is unstable."
-					)
-				);
-			});
-
-			req.on("error", (error: NodeNetworkError) => {
-				if (error.code === "ENOTFOUND") {
-					reject(
-						new Error(
-							"Unable to connect to Hardcover API. Please check your internet connection and try again later."
-						)
-					);
-				} else if (error.code === "ETIMEDOUT") {
-					reject(
-						new Error(
-							"Connection to Hardcover API timed out. Please check your internet connection and try again."
-						)
-					);
-				} else if (error.code === "ECONNREFUSED") {
-					reject(
-						new Error(
-							"Connection to Hardcover API was refused. The service may be down or unreachable."
-						)
-					);
-				} else {
-					reject(new Error(`Network error: ${error.message}`));
-				}
-			});
-
-			if (data) {
-				req.write(data);
-			}
-
-			req.end();
-		});
-	}
-
 	async graphqlRequest<T>(query: string, variables?: any): Promise<any> {
 		// console.log(query);
 
-		const data = JSON.stringify({
+		const body = JSON.stringify({
 			query,
 			variables,
 		});
-
 		// use resolved API key, or fall back to settings
 		let apiKey = await this.plugin.getApiKey();
 
@@ -138,24 +49,49 @@ export class HardcoverAPI {
 			apiKey = apiKey.substring(7);
 		}
 
-		const options = {
-			hostname: HARDCOVER_API.GRAPHQL_URL,
-			path: HARDCOVER_API.GRAPHQL_PATH,
-			method: "POST",
-			headers: {
-				Authorization: `Bearer ${apiKey}`,
-				"Content-Type": "application/json",
-				"Content-Length": data.length,
-			},
-		};
+		try {
+			const response = await requestUrl({
+				url: `https://${HARDCOVER_API.GRAPHQL_URL}${HARDCOVER_API.GRAPHQL_PATH}`,
+				method: "POST",
+				headers: {
+					Authorization: `Bearer ${apiKey}`,
+					"Content-Type": "application/json",
+				},
+				body: body,
+				throw: false,
+			});
 
-		const response: GraphQLResponse<T> = await this.makeRequest(options, data);
+			// handle HTTP errors
+			if (response.status === 401 || response.status === 403) {
+				throw new Error(
+					"Authentication failed: Your Hardcover API key appears to be invalid or expired. Please check your settings and update it."
+				);
+			} else if (response.status === 429) {
+				throw new Error(
+					"Rate limit exceeded: Too many requests to Hardcover API. Please try again in a few minutes."
+				);
+			} else if (response.status < 200 || response.status >= 300) {
+				throw new Error(
+					`API request failed with status ${response.status}: ${response.text}`
+				);
+			}
 
-		if (response.errors && response.errors.length > 0) {
-			throw new Error(`GraphQL Error: ${response.errors[0].message}`);
+			const data: GraphQLResponse<T> = response.json;
+
+			// handle GraphQL errors
+			if (data.errors && data.errors.length > 0) {
+				throw new Error(`GraphQL Error: ${data.errors[0].message}`);
+			}
+
+			return data.data;
+		} catch (error) {
+			if (error.message.includes("net::ERR")) {
+				throw new Error(
+					"Unable to connect to Hardcover API. Please check your internet connection and try again later."
+				);
+			}
+			throw error;
 		}
-
-		return response.data;
 	}
 
 	async fetchEntireLibrary({
