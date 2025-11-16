@@ -1,4 +1,4 @@
-import { TFile, Vault } from "obsidian";
+import { normalizePath, TFile, Vault } from "obsidian";
 import { CONTENT_DELIMITER } from "src/config/constants";
 import { FIELD_DEFINITIONS } from "src/config/fieldDefinitions";
 
@@ -150,9 +150,7 @@ export class NoteService {
 			bookMetadata
 		);
 
-		let basePath = this.fileUtils.normalizePath(
-			this.plugin.settings.targetFolder
-		);
+		let basePath = normalizePath(this.plugin.settings.targetFolder);
 
 		if (groupingSettings.enabled) {
 			const directories = this.buildDirectoryPath(
