@@ -1,5 +1,11 @@
 # Changelog
 
+### 1.6.0
+
+- New: Added grouping options for books with missing or multiple authors
+- Handle common suffixes in author name to improve directory organization
+- Fix empty release year in note filename
+
 ### 1.5.1
 
 - Improvements to comply with Obsidian plugin review guidelines

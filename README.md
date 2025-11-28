@@ -166,11 +166,38 @@ Notes are identified using the Hardcover Book ID (`hardcoverBookId` in the front
 - **Group by Series**: `Books/The Murderbot Diaries/book1.md`, `Books/Secret Projects/book2.md`
 - **Group by Author → Series**: `Books/Brandon Sanderson/Secret Projects/book1.md`
 
+#### Author Name Format
+
+When grouping by author, choose between:
+
+- **First Name Last Name** (default): `Brandon Sanderson/`
+- **Last Name, First Name**: `Sanderson, Brandon/`
+
+#### Advanced Options
+
+When grouping by author, you can configure how to handle edge cases:
+
+**Missing Author Handling**
+
+Some books may not have anyone marked as "Author" (graphic novels with Writers, books with only Editors, etc.). Choose how to handle these:
+
+- **Use fallback priority** (default): Writer → Editor → first available contributor
+- **Use fallback folder**: Places the book in a dedicated folder (customizable, default: "Various")
+
+**Multiple Authors Handling**
+
+Books with multiple authors (anthologies, essay collections) can be organized in two ways:
+
+- **Use first author** (default): Places the book under the first author listed
+- **Use collections folder**: Places the book in a dedicated folder (customizable, default: "Collections")
+
+> **Note**: These advanced settings only affect folder organization. The frontmatter metadata always reflects the actual data from Hardcover.
+
 #### Important Notes
 
 - **New files only**: This only organizes newly synced books. Existing notes stay where they are.
 - **Want to reorganize existing files?** Delete your book notes and re-sync to apply the new structure. **Consider backing up any manual edits first**.
-- **Multiple authors/series**: To avoid duplicate notes, the plugin uses the first author/series Hardcover provides.
+- **Multiple series**: Books in multiple series use the first series Hardcover provides to avoid duplicate notes.
 
 ## Note Format
 
