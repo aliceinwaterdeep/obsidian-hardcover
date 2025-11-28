@@ -101,3 +101,8 @@ export interface BookMetadata {
 	// allow for dynamic properties based on user custom property names
 	[key: string]: any;
 }
+
+export interface BookMetadataWithContributors {
+	metadata: BookMetadata;
+	rawContributors?: Record<any, any>[];
+}

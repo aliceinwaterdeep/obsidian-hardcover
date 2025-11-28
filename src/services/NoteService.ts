@@ -19,11 +19,15 @@ export class NoteService {
 		this.plugin = plugin;
 	}
 
-	async createNote(bookMetadata: BookMetadata): Promise<TFile | null> {
+	async createNote(
+		bookMetadata: BookMetadata,
+		rawContributors?: Record<any, any>[]
+	): Promise<TFile | null> {
 		try {
 			const fullPath = this.generateNotePath(
 				bookMetadata,
-				this.plugin.settings.grouping
+				this.plugin.settings.grouping,
+				rawContributors
 			);
 
 			const directoryPath = this.fileUtils.getDirectoryPath(fullPath);
@@ -74,7 +78,8 @@ export class NoteService {
 
 	async updateNote(
 		bookMetadata: BookMetadata,
-		existingFile: TFile
+		existingFile: TFile,
+		rawContributors?: Record<any, any>[]
 	): Promise<TFile | null> {
 		try {
 			const originalPath = existingFile.path;
@@ -104,7 +109,8 @@ export class NoteService {
 
 			const newPath = this.generateNotePath(
 				bookMetadata,
-				this.plugin.settings.grouping
+				this.plugin.settings.grouping,
+				rawContributors
 			);
 
 			const directoryPath = this.fileUtils.getDirectoryPath(newPath);
@@ -168,7 +174,8 @@ export class NoteService {
 
 	public generateNotePath(
 		bookMetadata: BookMetadata,
-		groupingSettings: GroupingSettings
+		groupingSettings: GroupingSettings,
+		rawContributors?: Record<any, any>[]
 	): string {
 		const filename = this.fileUtils.processFilenameTemplate(
 			this.plugin.settings.filenameTemplate,
@@ -181,7 +188,8 @@ export class NoteService {
 		if (groupingSettings.enabled) {
 			const directories = this.buildDirectoryPath(
 				bookMetadata,
-				groupingSettings
+				groupingSettings,
+				rawContributors
 			);
 
 			if (directories) {
