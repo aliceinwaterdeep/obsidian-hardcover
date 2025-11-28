@@ -539,22 +539,56 @@ export class NoteService {
 	}
 
 	private formatNameAsLastFirst(name: string): string {
+		name = name.trim();
 		// if name already contains a comma, assume it's already in "Last, First" format
 		if (name.includes(",")) {
 			return name;
 		}
 
-		// split on last space
-		const lastSpaceIndex = name.lastIndexOf(" ");
+		const parts = name.split(/\s+/).filter((p) => p.length > 0);
 
-		// if no space found, return as is (single name)
-		if (lastSpaceIndex === -1) {
+		if (parts.length === 1) {
 			return name;
 		}
 
-		const firstName = name.substring(0, lastSpaceIndex).trim();
-		const lastName = name.substring(lastSpaceIndex + 1).trim();
+		// check for generational suffixes
+		const suffixes = [
+			"jr.",
+			"jr",
+			"junior",
+			"sr.",
+			"sr",
+			"senior",
+			"ii",
+			"iii",
+			"iv",
+			"v",
+			"vi",
+			"vii",
+			"viii",
+			"ix",
+			"x",
+		];
 
-		return `${lastName}, ${firstName}`;
+		let lastNameIndex = parts.length - 1;
+		let suffix = "";
+
+		// check if last part is a suffix
+		if (suffixes.includes(parts[lastNameIndex].toLowerCase())) {
+			suffix = parts[lastNameIndex];
+			lastNameIndex--;
+
+			// safety check
+			if (lastNameIndex < 0) {
+				return name; // malformed, return as-is
+			}
+		}
+
+		const lastName = parts[lastNameIndex];
+		const firstName = parts.slice(0, lastNameIndex).join(" ");
+
+		return suffix
+			? `${lastName} ${suffix}, ${firstName}`
+			: `${lastName}, ${firstName}`;
 	}
 }
