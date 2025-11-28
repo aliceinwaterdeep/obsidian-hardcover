@@ -239,6 +239,15 @@ export class NoteService {
 			return this.fileUtils.sanitizeFilename(authorName);
 		}
 
+		//  if no authors and using fallback folder, return the folder name
+		if (
+			this.plugin.settings.grouping.noAuthorBehavior === "useFallbackFolder"
+		) {
+			return this.fileUtils.sanitizeFilename(
+				this.plugin.settings.grouping.fallbackFolderName
+			);
+		}
+
 		return null;
 	}
 
