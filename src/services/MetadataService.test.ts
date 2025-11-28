@@ -76,7 +76,8 @@ describe("MetadataService", () => {
 
 	describe("buildMetadata", () => {
 		test("includes basic required fields", () => {
-			const result = metadataService.buildMetadata(MOCK_USER_BOOK);
+			const { metadata: result } =
+				metadataService.buildMetadata(MOCK_USER_BOOK);
 
 			expect(result.hardcoverBookId).toBe(12345);
 			expect(result.title).toBe("All Systems Red: Special Edition"); // edition source by default
@@ -88,13 +89,15 @@ describe("MetadataService", () => {
 			mockSettings.dataSourcePreferences.titleSource = "book";
 			metadataService.updateSettings(mockSettings);
 
-			const result = metadataService.buildMetadata(MOCK_USER_BOOK);
+			const { metadata: result } =
+				metadataService.buildMetadata(MOCK_USER_BOOK);
 			expect(result.title).toBe("All Systems Red");
 
 			mockSettings.dataSourcePreferences.titleSource = "edition";
 			metadataService.updateSettings(mockSettings);
 
-			const result2 = metadataService.buildMetadata(MOCK_USER_BOOK);
+			const { metadata: result2 } =
+				metadataService.buildMetadata(MOCK_USER_BOOK);
 			expect(result2.title).toBe("All Systems Red: Special Edition");
 		});
 
@@ -102,13 +105,15 @@ describe("MetadataService", () => {
 			mockSettings.dataSourcePreferences.coverSource = "book";
 			metadataService.updateSettings(mockSettings);
 
-			const result = metadataService.buildMetadata(MOCK_USER_BOOK);
+			const { metadata: result } =
+				metadataService.buildMetadata(MOCK_USER_BOOK);
 			expect(result.cover).toBe("https://example.com/book-cover.jpg");
 
 			mockSettings.dataSourcePreferences.coverSource = "edition";
 			metadataService.updateSettings(mockSettings);
 
-			const result2 = metadataService.buildMetadata(MOCK_USER_BOOK);
+			const { metadata: result2 } =
+				metadataService.buildMetadata(MOCK_USER_BOOK);
 			expect(result2.cover).toBe("https://example.com/edition-cover.jpg");
 		});
 
@@ -116,18 +121,21 @@ describe("MetadataService", () => {
 			mockSettings.dataSourcePreferences.releaseDateSource = "book";
 			metadataService.updateSettings(mockSettings);
 
-			const result = metadataService.buildMetadata(MOCK_USER_BOOK);
+			const { metadata: result } =
+				metadataService.buildMetadata(MOCK_USER_BOOK);
 			expect(result.releaseDate).toBe("2017-05-02");
 
 			mockSettings.dataSourcePreferences.releaseDateSource = "edition";
 			metadataService.updateSettings(mockSettings);
 
-			const result2 = metadataService.buildMetadata(MOCK_USER_BOOK);
+			const { metadata: result2 } =
+				metadataService.buildMetadata(MOCK_USER_BOOK);
 			expect(result2.releaseDate).toBe("2018-01-03");
 		});
 
 		test("extracts authors and contributors correctly", () => {
-			const result = metadataService.buildMetadata(MOCK_USER_BOOK);
+			const { metadata: result } =
+				metadataService.buildMetadata(MOCK_USER_BOOK);
 
 			expect(result.authors).toEqual([
 				"Martha Wells",
@@ -152,7 +160,9 @@ describe("MetadataService", () => {
 				user_book_reads: [],
 			};
 
-			const result = metadataService.buildMetadata(userBookWithMissingData);
+			const { metadata: result } = metadataService.buildMetadata(
+				userBookWithMissingData
+			);
 
 			expect(result.hardcoverBookId).toBe(12345);
 			expect(result.title).toBeDefined();
@@ -165,13 +175,15 @@ describe("MetadataService", () => {
 			mockSettings.dataSourcePreferences.authorsSource = "book";
 			metadataService.updateSettings(mockSettings);
 
-			const result = metadataService.buildMetadata(MOCK_USER_BOOK);
+			const { metadata: result } =
+				metadataService.buildMetadata(MOCK_USER_BOOK);
 			expect(result.authors).toEqual(["Martha Wells"]);
 
 			mockSettings.dataSourcePreferences.authorsSource = "edition";
 			metadataService.updateSettings(mockSettings);
 
-			const result2 = metadataService.buildMetadata(MOCK_USER_BOOK);
+			const { metadata: result2 } =
+				metadataService.buildMetadata(MOCK_USER_BOOK);
 			expect(result2.authors).toEqual([
 				"Martha Wells",
 				"Co-Author Name",
@@ -180,7 +192,8 @@ describe("MetadataService", () => {
 		});
 
 		test("extracts reading activity correctly", () => {
-			const result = metadataService.buildMetadata(MOCK_USER_BOOK);
+			const { metadata: result } =
+				metadataService.buildMetadata(MOCK_USER_BOOK);
 
 			expect(result.firstReadStart).toBe("2023-01-15T00:00:00Z");
 			expect(result.firstReadEnd).toBe("2023-01-20T00:00:00Z");
@@ -193,7 +206,8 @@ describe("MetadataService", () => {
 			mockSettings.statusMapping[3] = "Finished Reading";
 			metadataService.updateSettings(mockSettings);
 
-			const result = metadataService.buildMetadata(MOCK_USER_BOOK);
+			const { metadata: result } =
+				metadataService.buildMetadata(MOCK_USER_BOOK);
 			expect(result.status).toEqual(["Finished Reading"]);
 		});
 
@@ -203,7 +217,8 @@ describe("MetadataService", () => {
 			mockSettings.fieldsSettings.genres.enabled = false;
 			metadataService.updateSettings(mockSettings);
 
-			const result = metadataService.buildMetadata(MOCK_USER_BOOK);
+			const { metadata: result } =
+				metadataService.buildMetadata(MOCK_USER_BOOK);
 
 			expect(result.rating).toBeUndefined();
 			expect(result.description).toBeUndefined();
@@ -220,7 +235,8 @@ describe("MetadataService", () => {
 			mockSettings.fieldsSettings.status.propertyName = "readingStatus";
 			metadataService.updateSettings(mockSettings);
 
-			const result = metadataService.buildMetadata(MOCK_USER_BOOK);
+			const { metadata: result } =
+				metadataService.buildMetadata(MOCK_USER_BOOK);
 
 			expect(result.bookTitle).toBe("All Systems Red: Special Edition");
 			expect(result.myRating).toBe("5/5");
@@ -232,7 +248,8 @@ describe("MetadataService", () => {
 		});
 
 		test("includes body content for review", () => {
-			const result = metadataService.buildMetadata(MOCK_USER_BOOK);
+			const { metadata: result } =
+				metadataService.buildMetadata(MOCK_USER_BOOK);
 
 			expect(result.bodyContent.review).toBe("Murderbot is the best");
 			expect(result.bodyContent.title).toBe("All Systems Red: Special Edition");
@@ -246,7 +263,8 @@ describe("MetadataService", () => {
 			mockSettings.fieldsSettings.isbn13.enabled = true;
 			metadataService.updateSettings(mockSettings);
 
-			const result = metadataService.buildMetadata(MOCK_USER_BOOK);
+			const { metadata: result } =
+				metadataService.buildMetadata(MOCK_USER_BOOK);
 
 			expect(result.isbn10).toBe("0765397528");
 			expect(result.isbn13).toBe("9780765397522");
@@ -257,7 +275,8 @@ describe("MetadataService", () => {
 			mockSettings.fieldsSettings.isbn13.enabled = false;
 			metadataService.updateSettings(mockSettings);
 
-			const result = metadataService.buildMetadata(MOCK_USER_BOOK);
+			const { metadata: result } =
+				metadataService.buildMetadata(MOCK_USER_BOOK);
 
 			expect(result.isbn10).toBeUndefined();
 			expect(result.isbn13).toBeUndefined();
