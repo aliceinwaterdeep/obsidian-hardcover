@@ -172,7 +172,8 @@ export class NoteService {
 	): string {
 		const filename = this.fileUtils.processFilenameTemplate(
 			this.plugin.settings.filenameTemplate,
-			bookMetadata
+			bookMetadata,
+			this.plugin.settings.fieldsSettings
 		);
 
 		let basePath = normalizePath(this.plugin.settings.targetFolder);
