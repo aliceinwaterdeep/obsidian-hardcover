@@ -1,4 +1,13 @@
 import { FileUtils } from "./FileUtils";
+import { DEFAULT_FIELDS_SETTINGS } from "../config/defaultSettings";
+
+jest.mock("obsidian", () => ({
+	normalizePath: (path: string) => {
+		// simple normalization for tests
+		if (!path) return "";
+		return path.replace(/\\/g, "/").replace(/\/+/g, "/");
+	},
+}));
 
 describe("FileUtils", () => {
 	const MOCK_BOOK = {
@@ -37,7 +46,8 @@ describe("FileUtils", () => {
 			expect(
 				fileUtils.processFilenameTemplate(
 					"${title} by ${authors} (${year})",
-					metadata
+					metadata,
+					DEFAULT_FIELDS_SETTINGS
 				)
 			).toBe("All Systems Red by Martha Wells (2017).md");
 		});
@@ -45,15 +55,46 @@ describe("FileUtils", () => {
 		test("handles missing data gracefully", () => {
 			const metadata = { title: MOCK_BOOK.title };
 			expect(
-				fileUtils.processFilenameTemplate("${title} (${year})", metadata)
+				fileUtils.processFilenameTemplate(
+					"${title} (${year})",
+					metadata,
+					DEFAULT_FIELDS_SETTINGS
+				)
 			).toBe("All Systems Red.md");
 		});
 
 		test("handles invalid release date", () => {
 			const metadata = { title: MOCK_BOOK.title, releaseDate: "invalid" };
 			expect(
-				fileUtils.processFilenameTemplate("${title} (${year})", metadata)
+				fileUtils.processFilenameTemplate(
+					"${title} (${year})",
+					metadata,
+					DEFAULT_FIELDS_SETTINGS
+				)
 			).toBe("All Systems Red.md");
+		});
+
+		test("handles custom property names", () => {
+			const customSettings = {
+				...DEFAULT_FIELDS_SETTINGS,
+				title: { enabled: true, propertyName: "bookTitle" },
+				authors: { enabled: true, propertyName: "bookAuthors" },
+				releaseDate: { enabled: true, propertyName: "publicationDate" },
+			};
+
+			const metadata = {
+				bookTitle: "All Systems Red",
+				publicationDate: "2017-05-02",
+				bookAuthors: ["Martha Wells"],
+			};
+
+			expect(
+				fileUtils.processFilenameTemplate(
+					"${title} by ${authors} (${year})",
+					metadata,
+					customSettings
+				)
+			).toBe("All Systems Red by Martha Wells (2017).md");
 		});
 	});
 
