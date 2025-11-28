@@ -2,6 +2,12 @@ export interface GroupingSettings {
 	enabled: boolean;
 	groupBy: "author" | "series" | "author-series";
 	authorFormat: "firstLast" | "lastFirst";
+
+	noAuthorBehavior: "useFallbackPriority" | "useFallbackFolder";
+	fallbackFolderName: string;
+
+	multipleAuthorsBehavior: "useFirst" | "useCollectionsFolder";
+	collectionsFolderName: string;
 }
 
 export interface PluginSettings {
@@ -97,4 +103,9 @@ export interface BookMetadata {
 	};
 	// allow for dynamic properties based on user custom property names
 	[key: string]: any;
+}
+
+export interface BookMetadataWithContributors {
+	metadata: BookMetadata;
+	rawContributors?: Record<any, any>[];
 }

@@ -196,7 +196,10 @@ export class SyncService {
 				const book = books[i];
 
 				try {
-					const metadata = metadataService.buildMetadata(book, bookToListsMap);
+					const { metadata, rawContributors } = metadataService.buildMetadata(
+						book,
+						bookToListsMap
+					);
 
 					// check if note already exists by checking hardcover book Id
 					const existingNote = await noteService.findNoteByHardcoverId(
@@ -205,11 +208,15 @@ export class SyncService {
 
 					if (existingNote) {
 						// update existing note
-						await noteService.updateNote(metadata, existingNote);
+						await noteService.updateNote(
+							metadata,
+							existingNote,
+							rawContributors
+						);
 						updatedNotesCount++;
 					} else {
 						// create new note
-						await noteService.createNote(metadata);
+						await noteService.createNote(metadata, rawContributors);
 						createdNotesCount++;
 					}
 				} catch (error) {

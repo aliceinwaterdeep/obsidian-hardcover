@@ -19,11 +19,15 @@ export class NoteService {
 		this.plugin = plugin;
 	}
 
-	async createNote(bookMetadata: BookMetadata): Promise<TFile | null> {
+	async createNote(
+		bookMetadata: BookMetadata,
+		rawContributors?: Record<any, any>[]
+	): Promise<TFile | null> {
 		try {
 			const fullPath = this.generateNotePath(
 				bookMetadata,
-				this.plugin.settings.grouping
+				this.plugin.settings.grouping,
+				rawContributors
 			);
 
 			const directoryPath = this.fileUtils.getDirectoryPath(fullPath);
@@ -74,7 +78,8 @@ export class NoteService {
 
 	async updateNote(
 		bookMetadata: BookMetadata,
-		existingFile: TFile
+		existingFile: TFile,
+		rawContributors?: Record<any, any>[]
 	): Promise<TFile | null> {
 		try {
 			const originalPath = existingFile.path;
@@ -104,7 +109,8 @@ export class NoteService {
 
 			const newPath = this.generateNotePath(
 				bookMetadata,
-				this.plugin.settings.grouping
+				this.plugin.settings.grouping,
+				rawContributors
 			);
 
 			const directoryPath = this.fileUtils.getDirectoryPath(newPath);
@@ -168,7 +174,8 @@ export class NoteService {
 
 	public generateNotePath(
 		bookMetadata: BookMetadata,
-		groupingSettings: GroupingSettings
+		groupingSettings: GroupingSettings,
+		rawContributors?: Record<any, any>[]
 	): string {
 		const filename = this.fileUtils.processFilenameTemplate(
 			this.plugin.settings.filenameTemplate,
@@ -181,7 +188,8 @@ export class NoteService {
 		if (groupingSettings.enabled) {
 			const directories = this.buildDirectoryPath(
 				bookMetadata,
-				groupingSettings
+				groupingSettings,
+				rawContributors
 			);
 
 			if (directories) {
@@ -194,7 +202,8 @@ export class NoteService {
 
 	public buildDirectoryPath(
 		bookMetadata: BookMetadata,
-		groupingSettings: GroupingSettings
+		groupingSettings: GroupingSettings,
+		rawContributors?: Record<any, any>[]
 	): string {
 		const pathComponents: string[] = [];
 
@@ -202,7 +211,10 @@ export class NoteService {
 			groupingSettings.groupBy === "author" ||
 			groupingSettings.groupBy === "author-series"
 		) {
-			const authorDirectory = this.getAuthorDirectory(bookMetadata);
+			const authorDirectory = this.getAuthorDirectory(
+				bookMetadata,
+				rawContributors
+			);
 
 			if (authorDirectory) {
 				pathComponents.push(authorDirectory);
@@ -223,10 +235,25 @@ export class NoteService {
 		return pathComponents.join("/");
 	}
 
-	private getAuthorDirectory(bookMetadata: BookMetadata): string | null {
+	private getAuthorDirectory(
+		bookMetadata: BookMetadata,
+		rawContributors?: Record<any, any>[]
+	): string | null {
 		const authorProperty =
 			this.plugin.settings.fieldsSettings.authors.propertyName;
 		const authors = bookMetadata[authorProperty];
+
+		// check if multiple authors and should use collections folder
+		if (
+			Array.isArray(authors) &&
+			authors.length > 1 &&
+			this.plugin.settings.grouping.multipleAuthorsBehavior ===
+				"useCollectionsFolder"
+		) {
+			return this.fileUtils.sanitizeFilename(
+				this.plugin.settings.grouping.collectionsFolderName
+			);
+		}
 
 		if (Array.isArray(authors) && authors.length > 0) {
 			let authorName = authors[0].replace(/[\[\]']+/g, "");
@@ -237,6 +264,34 @@ export class NoteService {
 			}
 
 			return this.fileUtils.sanitizeFilename(authorName);
+		}
+
+		//  if no authors and using fallback folder, return the folder name
+		if (
+			this.plugin.settings.grouping.noAuthorBehavior === "useFallbackFolder"
+		) {
+			return this.fileUtils.sanitizeFilename(
+				this.plugin.settings.grouping.fallbackFolderName
+			);
+		}
+
+		// if no authors and using fallback priority, try to find Writer/Editor/first contributor
+		if (
+			this.plugin.settings.grouping.noAuthorBehavior ===
+				"useFallbackPriority" &&
+			rawContributors
+		) {
+			const fallbackName = this.findFallbackAuthor(rawContributors);
+			if (fallbackName) {
+				let authorName = fallbackName;
+
+				// format the name based on settings
+				if (this.plugin.settings.grouping.authorFormat === "lastFirst") {
+					authorName = this.formatNameAsLastFirst(authorName);
+				}
+
+				return this.fileUtils.sanitizeFilename(authorName);
+			}
 		}
 
 		return null;
@@ -590,5 +645,44 @@ export class NoteService {
 		return suffix
 			? `${lastName} ${suffix}, ${firstName}`
 			: `${lastName}, ${firstName}`;
+	}
+
+	private findFallbackAuthor(
+		contributorsData: Record<any, any>[]
+	): string | null {
+		if (
+			!contributorsData ||
+			!Array.isArray(contributorsData) ||
+			contributorsData.length === 0
+		) {
+			return null;
+		}
+
+		// try Writer
+		const writers = contributorsData
+			.filter((item) => item.contribution === "Writer")
+			.map((item) => item.author?.name)
+			.filter((name) => !!name);
+
+		if (writers.length > 0) {
+			return writers[0];
+		}
+
+		// try Editor
+		const editors = contributorsData
+			.filter((item) => item.contribution === "Editor")
+			.map((item) => item.author?.name)
+			.filter((name) => !!name);
+
+		if (editors.length > 0) {
+			return editors[0];
+		}
+
+		// use first contributor available
+		const firstContributor = contributorsData
+			.map((item) => item.author?.name)
+			.filter((name) => !!name)[0];
+
+		return firstContributor || null;
 	}
 }

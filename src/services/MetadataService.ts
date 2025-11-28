@@ -1,6 +1,7 @@
 import { HARDCOVER_BOOKS_ROUTE, HARDCOVER_URL } from "src/config/constants";
 import {
 	BookMetadata,
+	BookMetadataWithContributors,
 	FieldsSettings,
 	HardcoverBookSeries,
 	HardcoverUserBook,
@@ -25,13 +26,15 @@ export class MetadataService {
 	buildMetadata(
 		userBook: HardcoverUserBook,
 		bookToListsMap?: Map<number, string[]> | null
-	): BookMetadata {
+	): BookMetadataWithContributors {
 		const { fieldsSettings, dataSourcePreferences } = this.settings;
 		const metadata: BookMetadata = {
 			// always include the Hardcover book id
 			hardcoverBookId: userBook.book_id,
 			bodyContent: {},
 		};
+
+		let rawContributorsForFallback: Record<any, any>[] | undefined;
 
 		const { titleSource, coverSource, releaseDateSource } =
 			dataSourcePreferences;
@@ -92,11 +95,13 @@ export class MetadataService {
 				book.cached_contributors
 			) {
 				authors = this.extractAuthors(book.cached_contributors);
+				rawContributorsForFallback = book.cached_contributors;
 			} else if (
 				dataSourcePreferences.authorsSource === "edition" &&
 				edition.cached_contributors
 			) {
 				authors = this.extractAuthors(edition.cached_contributors);
+				rawContributorsForFallback = edition.cached_contributors;
 			}
 
 			if (authors.length) {
@@ -240,7 +245,7 @@ export class MetadataService {
 			}
 		}
 
-		return metadata;
+		return { metadata, rawContributors: rawContributorsForFallback };
 	}
 
 	private mapStatus(statusId: number): string[] {
