@@ -243,6 +243,18 @@ export class NoteService {
 			this.plugin.settings.fieldsSettings.authors.propertyName;
 		const authors = bookMetadata[authorProperty];
 
+		// check if multiple authors and should use collections folder
+		if (
+			Array.isArray(authors) &&
+			authors.length > 1 &&
+			this.plugin.settings.grouping.multipleAuthorsBehavior ===
+				"useCollectionsFolder"
+		) {
+			return this.fileUtils.sanitizeFilename(
+				this.plugin.settings.grouping.collectionsFolderName
+			);
+		}
+
 		if (Array.isArray(authors) && authors.length > 0) {
 			let authorName = authors[0].replace(/[\[\]']+/g, "");
 

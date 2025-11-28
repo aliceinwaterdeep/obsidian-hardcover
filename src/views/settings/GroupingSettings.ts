@@ -103,5 +103,43 @@ export function renderGroupingSettings(
 
 			fallbackFolderSetting.settingEl.style.borderTop = "none";
 		}
+
+		const multipleAuthorsSetting = new Setting(containerEl)
+			.setName("Multiple authors handling")
+			.setDesc("How to organize books with multiple 'Author' roles")
+			.addDropdown((dropdown) =>
+				dropdown
+					.addOption("useFirst", "Use first author")
+					.addOption("useCollectionsFolder", "Use collections folder")
+					.setValue(plugin.settings.grouping.multipleAuthorsBehavior)
+					.onChange(async (value: "useFirst" | "useCollectionsFolder") => {
+						plugin.settings.grouping.multipleAuthorsBehavior = value;
+						await plugin.saveSettings();
+						onSettingsChanged();
+					})
+			);
+
+		multipleAuthorsSetting.settingEl.style.borderTop = "none";
+
+		if (
+			plugin.settings.grouping.multipleAuthorsBehavior ===
+			"useCollectionsFolder"
+		) {
+			const collectionsFolderSetting = new Setting(containerEl)
+				.setName("Collections folder name")
+				.setDesc("Name for books with multiple 'Author' roles")
+				.addText((text) =>
+					text
+						.setPlaceholder("Collections")
+						.setValue(plugin.settings.grouping.collectionsFolderName)
+						.onChange(async (value) => {
+							plugin.settings.grouping.collectionsFolderName =
+								value || "Collections";
+							await plugin.saveSettings();
+						})
+				);
+
+			collectionsFolderSetting.settingEl.style.borderTop = "none";
+		}
 	}
 }
