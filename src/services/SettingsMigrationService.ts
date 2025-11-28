@@ -32,6 +32,10 @@ export class SettingsMigrationService {
 			settings = this.migrateToV5(settings);
 		}
 
+		if (currentVersion < 6) {
+			settings = this.migrateToV6(settings);
+		}
+
 		// update version number
 		settings.settingsVersion = DEFAULT_SETTINGS.settingsVersion;
 		return settings;
@@ -105,6 +109,18 @@ export class SettingsMigrationService {
 				enabled: false,
 				propertyName: "isbn13",
 			};
+		}
+
+		return settings;
+	}
+
+	private static migrateToV6(settings: PluginSettings): PluginSettings {
+		if (!("noAuthorBehavior" in settings.grouping)) {
+			(settings.grouping as any).noAuthorBehavior = "useFallbackPriority";
+		}
+
+		if (!("fallbackFolderName" in settings.grouping)) {
+			(settings.grouping as any).fallbackFolderName = "Various";
 		}
 
 		return settings;

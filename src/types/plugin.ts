@@ -2,6 +2,9 @@ export interface GroupingSettings {
 	enabled: boolean;
 	groupBy: "author" | "series" | "author-series";
 	authorFormat: "firstLast" | "lastFirst";
+
+	noAuthorBehavior: "useFallbackPriority" | "useFallbackFolder";
+	fallbackFolderName: string;
 }
 
 export interface PluginSettings {

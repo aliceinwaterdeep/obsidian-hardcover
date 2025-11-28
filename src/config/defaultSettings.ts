@@ -45,7 +45,7 @@ export const DEFAULT_FIELDS_SETTINGS: FieldsSettings = {
 export const DEFAULT_FILENAME_FORMAT = "${title} (${year})";
 
 export const DEFAULT_SETTINGS: PluginSettings = {
-	settingsVersion: 5,
+	settingsVersion: 6,
 	apiKey: "",
 	lastSyncTimestamp: "",
 	userId: null,
@@ -64,6 +64,8 @@ export const DEFAULT_SETTINGS: PluginSettings = {
 		enabled: false,
 		groupBy: "author",
 		authorFormat: "firstLast",
+		noAuthorBehavior: "useFallbackPriority",
+		fallbackFolderName: "Various",
 	},
 	filenameTemplate: DEFAULT_FILENAME_FORMAT,
 };
