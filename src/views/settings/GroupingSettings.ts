@@ -42,7 +42,7 @@ export function renderGroupingSettings(
 		groupByDropdown.settingEl.style.borderTop = "none";
 	}
 
-	// add author format checkbox, only show when grouping includes authors
+	// add author format and missing author settings, only show when grouping includes authors
 	if (
 		plugin.settings.grouping.enabled &&
 		(plugin.settings.grouping.groupBy === "author" ||
@@ -63,5 +63,45 @@ export function renderGroupingSettings(
 			);
 
 		authorFormatSetting.settingEl.style.borderTop = "none";
+
+		const missingAuthorSetting = new Setting(containerEl)
+			.setName("Missing author handling")
+			.setDesc("How to organize books with no 'Author' role")
+			.addDropdown((dropdown) =>
+				dropdown
+					.addOption(
+						"useFallbackPriority",
+						"Use fallback priority (Writer → Editor → first contributor)"
+					)
+					.addOption("useFallbackFolder", "Use fallback folder")
+					.setValue(plugin.settings.grouping.noAuthorBehavior)
+					.onChange(
+						async (value: "useFallbackPriority" | "useFallbackFolder") => {
+							plugin.settings.grouping.noAuthorBehavior = value;
+							await plugin.saveSettings();
+							onSettingsChanged();
+						}
+					)
+			);
+
+		missingAuthorSetting.settingEl.style.borderTop = "none";
+
+		// show folder name input only if useFallbackFolder is selected
+		if (plugin.settings.grouping.noAuthorBehavior === "useFallbackFolder") {
+			const fallbackFolderSetting = new Setting(containerEl)
+				.setName("Fallback folder name")
+				.setDesc("Name for books with missing authors")
+				.addText((text) =>
+					text
+						.setPlaceholder("Various")
+						.setValue(plugin.settings.grouping.fallbackFolderName)
+						.onChange(async (value) => {
+							plugin.settings.grouping.fallbackFolderName = value || "Various";
+							await plugin.saveSettings();
+						})
+				);
+
+			fallbackFolderSetting.settingEl.style.borderTop = "none";
+		}
 	}
 }
