@@ -1,4 +1,5 @@
 import { normalizePath } from "obsidian";
+import { FieldsSettings } from "src/types";
 
 export class FileUtils {
 	sanitizeFilename(name: string): string {
@@ -22,21 +23,29 @@ export class FileUtils {
 		return !normalizedPath || normalizedPath === "/";
 	}
 
-	processFilenameTemplate(template: string, metadata: any): string {
+	processFilenameTemplate(
+		template: string,
+		metadata: any,
+		fieldsSettings: FieldsSettings
+	): string {
 		let filename = template;
 
-		if (metadata.title) {
-			filename = filename.replace(/\${title}/g, metadata.title);
+		const titleProperty = fieldsSettings.title.propertyName;
+		if (metadata[titleProperty]) {
+			filename = filename.replace(/\${title}/g, metadata[titleProperty]);
 		}
 
-		if (metadata.authors && Array.isArray(metadata.authors)) {
-			const authorsString = metadata.authors.join(", ");
+		const authorsProperty = fieldsSettings.authors.propertyName;
+		if (metadata[authorsProperty] && Array.isArray(metadata[authorsProperty])) {
+			const authorsString = metadata[authorsProperty].join(", ");
 			filename = filename.replace(/\${authors}/g, authorsString);
 		}
 
-		if (metadata.releaseDate) {
+		const releaseDateProperty = fieldsSettings.releaseDate.propertyName;
+		if (metadata[releaseDateProperty]) {
 			try {
-				const year = new Date(metadata.releaseDate).getFullYear();
+				const year = new Date(metadata[releaseDateProperty]).getFullYear();
+
 				if (!isNaN(year)) {
 					filename = filename.replace(/\${year}/g, year.toString());
 				} else {
