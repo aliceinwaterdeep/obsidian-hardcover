@@ -66,6 +66,8 @@ export const DEFAULT_SETTINGS: PluginSettings = {
 		authorFormat: "firstLast",
 		noAuthorBehavior: "useFallbackPriority",
 		fallbackFolderName: "Various",
+		multipleAuthorsBehavior: "useFirst",
+		collectionsFolderName: "Collections",
 	},
 	filenameTemplate: DEFAULT_FILENAME_FORMAT,
 };

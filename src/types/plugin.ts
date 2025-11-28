@@ -5,6 +5,9 @@ export interface GroupingSettings {
 
 	noAuthorBehavior: "useFallbackPriority" | "useFallbackFolder";
 	fallbackFolderName: string;
+
+	multipleAuthorsBehavior: "useFirst" | "useCollectionsFolder";
+	collectionsFolderName: string;
 }
 
 export interface PluginSettings {

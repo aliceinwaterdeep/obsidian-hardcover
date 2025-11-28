@@ -123,6 +123,14 @@ export class SettingsMigrationService {
 			(settings.grouping as any).fallbackFolderName = "Various";
 		}
 
+		if (!("multipleAuthorsBehavior" in settings.grouping)) {
+			(settings.grouping as any).multipleAuthorsBehavior = "useFirst";
+		}
+
+		if (!("collectionsFolderName" in settings.grouping)) {
+			(settings.grouping as any).collectionsFolderName = "Collections";
+		}
+
 		return settings;
 	}
 
