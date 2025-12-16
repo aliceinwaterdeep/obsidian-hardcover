@@ -83,7 +83,12 @@ describe("NoteService", () => {
 			bodyContent: {},
 		};
 
-		const existingContent = `# Old Title
+		const existingContent = `---
+customKey: keep-me
+status: old-status
+---
+
+# Old Title
 
 ${CONTENT_DELIMITER}
 
@@ -140,6 +145,7 @@ User section
 			frontmatterObject = {
 				customKey: "keep-me",
 				status: "old-status",
+				"2025 TBR": true,
 			};
 		});
 
@@ -154,7 +160,14 @@ User section
 
 			const updatedFrontmatter = getFrontmatter();
 			expect(updatedFrontmatter.customKey).toBe("keep-me");
+			expect(updatedFrontmatter["2025 TBR"]).toBe(true);
 			expect(updatedFrontmatter.status).toBe("reading");
+			const keyOrder = Object.keys(updatedFrontmatter);
+			expect(keyOrder.slice(0, 3)).toEqual([
+				"customKey",
+				"status",
+				"2025 TBR",
+			]);
 			expect(mockVault.modify).toHaveBeenCalled();
 			expect(wasProcessCalled()).toBe(true);
 		});
@@ -170,9 +183,50 @@ User section
 
 			const updatedFrontmatter = getFrontmatter();
 			expect(updatedFrontmatter.customKey).toBeUndefined();
+			expect(updatedFrontmatter["2025 TBR"]).toBeUndefined();
 			expect(updatedFrontmatter.status).toBe("reading");
 			expect(mockVault.modify).toHaveBeenCalled();
 			expect(wasProcessCalled()).toBe(true);
+		});
+	});
+
+	describe("findNoteByHardcoverId", () => {
+		test("finds note in nested folders", async () => {
+			const mockFile = {
+				path: "HardcoverBooks/Author/Title.md",
+				extension: "md",
+			} as any;
+
+			const mockFolder = {
+				children: [
+					{
+						children: [mockFile],
+					},
+				],
+			};
+
+			const mockVault = {
+				getFolderByPath: jest.fn().mockReturnValue(mockFolder),
+			} as any;
+
+			const mockPlugin = {
+				settings: {
+					targetFolder: "HardcoverBooks",
+				},
+				app: {
+					metadataCache: {
+						getFileCache: jest.fn().mockReturnValue({
+							frontmatter: { hardcoverBookId: 440947 },
+						}),
+					},
+				},
+			} as any;
+
+			const service = new NoteService(mockVault, {} as any, mockPlugin);
+
+			const result = await service.findNoteByHardcoverId(440947);
+
+			expect(result).toBe(mockFile);
 		});
 	});
 });

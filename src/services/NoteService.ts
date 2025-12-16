@@ -84,6 +84,8 @@ export class NoteService {
 		try {
 			const originalPath = existingFile.path;
 			const existingContent = await this.vault.cachedRead(existingFile);
+			const { frontmatterText, bodyText: existingBodyText } =
+				this.extractFrontmatter(existingContent);
 
 			const formattedMetadata = this.applyWikilinkFormatting(bookMetadata);
 			const { bodyContent, ...frontmatterData } = formattedMetadata;
@@ -95,19 +97,20 @@ export class NoteService {
 			const newBodyContent = this.createBodyContent(formattedMetadata);
 
 			// check if delimiter exists in the current content
-			const delimiterIndex = existingContent.indexOf(CONTENT_DELIMITER);
+			const delimiterIndex = existingBodyText.indexOf(CONTENT_DELIMITER);
 			let updatedContent: string;
 
 			if (delimiterIndex !== -1) {
-				const userContent = existingContent.substring(
+				const userContent = existingBodyText.substring(
 					delimiterIndex + CONTENT_DELIMITER.length
 				);
-				updatedContent = newBodyContent.replace(
+				const updatedBody = newBodyContent.replace(
 					`${CONTENT_DELIMITER}\n\n`,
 					`${CONTENT_DELIMITER}${userContent}`
 				);
+				updatedContent = `${frontmatterText}${updatedBody}`;
 			} else {
-				updatedContent = newBodyContent;
+				updatedContent = `${frontmatterText}${newBodyContent}`;
 			}
 
 			const newPath = this.generateNotePath(
@@ -142,22 +145,12 @@ export class NoteService {
 				await this.plugin.app.fileManager.processFrontMatter(
 					renamedFile,
 					(frontmatter) => {
-						if (preserveCustomFrontmatter) {
-							// clear only plugin-managed keys; keep user-added properties
-							for (const key in frontmatter) {
-								if (managedFrontmatterKeys.has(key)) {
-									delete frontmatter[key];
-								}
-							}
-						} else {
-							// overwrite entire frontmatter
-							for (const key in frontmatter) {
-								delete frontmatter[key];
-							}
-						}
-
-						// add prepared frontmatter
-						Object.assign(frontmatter, frontmatterData);
+						this.updateFrontmatterObject(
+							frontmatter,
+							frontmatterData,
+							managedFrontmatterKeys,
+							preserveCustomFrontmatter
+						);
 					}
 				);
 
@@ -169,20 +162,12 @@ export class NoteService {
 				await this.plugin.app.fileManager.processFrontMatter(
 					existingFile,
 					(frontmatter) => {
-						if (preserveCustomFrontmatter) {
-							// clear only plugin-managed keys; keep user-added properties
-							for (const key in frontmatter) {
-								if (managedFrontmatterKeys.has(key)) {
-									delete frontmatter[key];
-								}
-							}
-						} else {
-							// overwrite entire frontmatter
-							for (const key in frontmatter) {
-								delete frontmatter[key];
-							}
-						}
-						Object.assign(frontmatter, frontmatterData);
+						this.updateFrontmatterObject(
+							frontmatter,
+							frontmatterData,
+							managedFrontmatterKeys,
+							preserveCustomFrontmatter
+						);
 					}
 				);
 
@@ -472,6 +457,46 @@ export class NoteService {
 		return prepared;
 	}
 
+	private updateFrontmatterObject(
+		frontmatter: Record<string, any>,
+		newData: Record<string, any>,
+		managedKeys: Set<string>,
+		preserveCustomFrontmatter: boolean
+	): void {
+		const original = { ...frontmatter };
+		const originalKeys = Object.keys(frontmatter);
+		const added = new Set<string>();
+
+		// clear existing keys
+		for (const key of originalKeys) {
+			delete frontmatter[key];
+		}
+
+		// first, follow the original order
+		for (const key of originalKeys) {
+			if (managedKeys.has(key)) {
+				if (key in newData) {
+					frontmatter[key] = newData[key];
+					added.add(key);
+				}
+				// if managed key missing from newData, drop it (stale)
+			} else if (preserveCustomFrontmatter) {
+				frontmatter[key] = original[key];
+				added.add(key);
+			}
+			// else: custom key removed when preservation disabled
+		}
+
+		// then append any new managed keys that weren't in the original order,
+		// preserving the order produced by prepareFrontmatter/newData
+		for (const key of Object.keys(newData)) {
+			if (!added.has(key)) {
+				frontmatter[key] = newData[key];
+				added.add(key);
+			}
+		}
+	}
+
 	private getManagedFrontmatterKeys(): Set<string> {
 		const keys = new Set<string>();
 
@@ -491,6 +516,20 @@ export class NoteService {
 		}
 
 		return keys;
+	}
+
+	private extractFrontmatter(content: string): {
+		frontmatterText: string;
+		bodyText: string;
+	} {
+		const match = content.match(/^---\n[\s\S]*?\n---\n/);
+		if (match) {
+			const frontmatterText = match[0];
+			const bodyText = content.slice(frontmatterText.length);
+			return { frontmatterText, bodyText };
+		}
+
+		return { frontmatterText: "", bodyText: content };
 	}
 
 	private formatReviewText(reviewText: string): string {
@@ -519,23 +558,14 @@ export class NoteService {
 		try {
 			const folderPath = this.plugin.settings.targetFolder;
 
-			// get all markdown files in the folder
-			const folder = this.vault.getFolderByPath(folderPath);
-			if (!folder) {
-				// console.debug(`Couldn't get folder object for: ${folderPath}`);
-				return null;
-			}
+			const files = this.getMarkdownFiles(folderPath);
 
-			// search through files in the folder
-			for (const file of folder.children) {
-				// only check markdown files
-				if (file instanceof TFile && file.extension === "md") {
-					const fileCache = this.plugin.app.metadataCache.getFileCache(file);
-					const frontmatter = fileCache?.frontmatter;
+			for (const file of files) {
+				const fileCache = this.plugin.app.metadataCache.getFileCache(file);
+				const frontmatter = fileCache?.frontmatter;
 
-					if (frontmatter && frontmatter.hardcoverBookId === hardcoverBookId) {
-						return file;
-					}
+				if (frontmatter && frontmatter.hardcoverBookId === hardcoverBookId) {
+					return file;
 				}
 			}
 
@@ -727,5 +757,25 @@ export class NoteService {
 			.filter((name) => !!name)[0];
 
 		return firstContributor || null;
+	}
+
+	private getMarkdownFiles(folderPath: string): TFile[] {
+		const folder = this.vault.getFolderByPath(folderPath);
+		if (!folder) return [];
+
+		const files: TFile[] = [];
+
+		const traverse = (current: any) => {
+			for (const child of current.children) {
+				if ((child instanceof TFile || child?.extension === "md") && child.extension === "md") {
+					files.push(child);
+				} else if (child?.children) {
+					traverse(child);
+				}
+			}
+		};
+
+		traverse(folder);
+		return files;
 	}
 }
