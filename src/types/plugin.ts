@@ -19,6 +19,7 @@ export interface PluginSettings {
 
 	// field configuration
 	fieldsSettings: FieldsSettings;
+	preserveCustomFrontmatter: boolean;
 
 	// data source preferences
 	dataSourcePreferences: {

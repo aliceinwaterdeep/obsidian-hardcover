@@ -36,6 +36,10 @@ export class SettingsMigrationService {
 			settings = this.migrateToV6(settings);
 		}
 
+		if (currentVersion < 7) {
+			settings = this.migrateToV7(settings);
+		}
+
 		// update version number
 		settings.settingsVersion = DEFAULT_SETTINGS.settingsVersion;
 		return settings;
@@ -43,6 +47,15 @@ export class SettingsMigrationService {
 
 	private static migrateToV1(settings: PluginSettings): PluginSettings {
 		// no real data migration needed for initial version
+		return settings;
+	}
+
+	private static migrateToV7(settings: PluginSettings): PluginSettings {
+		if (!("preserveCustomFrontmatter" in settings)) {
+			(settings as any).preserveCustomFrontmatter =
+				DEFAULT_SETTINGS.preserveCustomFrontmatter;
+		}
+
 		return settings;
 	}
 
