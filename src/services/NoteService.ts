@@ -87,6 +87,9 @@ export class NoteService {
 
 			const formattedMetadata = this.applyWikilinkFormatting(bookMetadata);
 			const { bodyContent, ...frontmatterData } = formattedMetadata;
+			const managedFrontmatterKeys = this.getManagedFrontmatterKeys();
+			const preserveCustomFrontmatter =
+				this.plugin.settings.preserveCustomFrontmatter !== false;
 
 			// create new body content
 			const newBodyContent = this.createBodyContent(formattedMetadata);
@@ -139,10 +142,20 @@ export class NoteService {
 				await this.plugin.app.fileManager.processFrontMatter(
 					renamedFile,
 					(frontmatter) => {
-						// clear existing
-						for (const key in frontmatter) {
-							delete frontmatter[key];
+						if (preserveCustomFrontmatter) {
+							// clear only plugin-managed keys; keep user-added properties
+							for (const key in frontmatter) {
+								if (managedFrontmatterKeys.has(key)) {
+									delete frontmatter[key];
+								}
+							}
+						} else {
+							// overwrite entire frontmatter
+							for (const key in frontmatter) {
+								delete frontmatter[key];
+							}
 						}
+
 						// add prepared frontmatter
 						Object.assign(frontmatter, frontmatterData);
 					}
@@ -156,9 +169,18 @@ export class NoteService {
 				await this.plugin.app.fileManager.processFrontMatter(
 					existingFile,
 					(frontmatter) => {
-						// clear and replace
-						for (const key in frontmatter) {
-							delete frontmatter[key];
+						if (preserveCustomFrontmatter) {
+							// clear only plugin-managed keys; keep user-added properties
+							for (const key in frontmatter) {
+								if (managedFrontmatterKeys.has(key)) {
+									delete frontmatter[key];
+								}
+							}
+						} else {
+							// overwrite entire frontmatter
+							for (const key in frontmatter) {
+								delete frontmatter[key];
+							}
 						}
 						Object.assign(frontmatter, frontmatterData);
 					}
@@ -448,6 +470,27 @@ export class NoteService {
 		}
 
 		return prepared;
+	}
+
+	private getManagedFrontmatterKeys(): Set<string> {
+		const keys = new Set<string>();
+
+		// hardcoverBookId is always managed by the plugin
+		keys.add("hardcoverBookId");
+
+		// add the property names defined in FIELD_DEFINITIONS (including activity date start/end)
+		for (const field of FIELD_DEFINITIONS) {
+			const fieldSettings = this.plugin.settings.fieldsSettings[field.key];
+			keys.add(fieldSettings.propertyName);
+
+			if (field.isActivityDateField) {
+				const activityField = fieldSettings as ActivityDateFieldConfig;
+				keys.add(activityField.startPropertyName);
+				keys.add(activityField.endPropertyName);
+			}
+		}
+
+		return keys;
 	}
 
 	private formatReviewText(reviewText: string): string {

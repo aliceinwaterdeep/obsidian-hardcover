@@ -36,6 +36,7 @@ describe("SettingsMigrationService", () => {
 				apiKey: "test-key",
 				fieldsSettings: DEFAULT_SETTINGS.fieldsSettings,
 				dataSourcePreferences: DEFAULT_SETTINGS.dataSourcePreferences,
+				preserveCustomFrontmatter: true,
 			} as PluginSettings;
 
 			const result = SettingsMigrationService.migrateSettings(v0Settings);
@@ -59,6 +60,7 @@ describe("SettingsMigrationService", () => {
 				dataSourcePreferences: DEFAULT_SETTINGS.dataSourcePreferences,
 				statusMapping: { 1: "Want to Read", 3: "Finished" },
 				filenameTemplate: "${title} by ${authors}",
+				preserveCustomFrontmatter: true,
 			} as PluginSettings;
 
 			const result = SettingsMigrationService.migrateSettings(userSettings);
@@ -78,6 +80,35 @@ describe("SettingsMigrationService", () => {
 				3: "Finished",
 			});
 			expect(result.filenameTemplate).toBe("${title} by ${authors}");
+			expect(result.preserveCustomFrontmatter).toBe(true);
+		});
+
+		test("adds preserveCustomFrontmatter with default when missing (v6 -> v7)", () => {
+			const v6Settings = {
+				settingsVersion: 6,
+				apiKey: "abc",
+				fieldsSettings: DEFAULT_SETTINGS.fieldsSettings,
+				dataSourcePreferences: DEFAULT_SETTINGS.dataSourcePreferences,
+			} as PluginSettings;
+
+			const result = SettingsMigrationService.migrateSettings(v6Settings);
+
+			expect(result.settingsVersion).toBe(DEFAULT_SETTINGS.settingsVersion);
+			expect(result.preserveCustomFrontmatter).toBe(true);
+		});
+
+		test("retains existing preserveCustomFrontmatter value during migration", () => {
+			const v6Settings = {
+				settingsVersion: 6,
+				apiKey: "abc",
+				fieldsSettings: DEFAULT_SETTINGS.fieldsSettings,
+				dataSourcePreferences: DEFAULT_SETTINGS.dataSourcePreferences,
+				preserveCustomFrontmatter: false,
+			} as PluginSettings;
+
+			const result = SettingsMigrationService.migrateSettings(v6Settings);
+
+			expect(result.preserveCustomFrontmatter).toBe(false);
 		});
 	});
 });
