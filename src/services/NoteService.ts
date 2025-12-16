@@ -1,4 +1,4 @@
-import { normalizePath, TFile, Vault } from "obsidian";
+import { normalizePath, TFile, TFolder, Vault } from "obsidian";
 import { CONTENT_DELIMITER } from "src/config/constants";
 import { FIELD_DEFINITIONS } from "src/config/fieldDefinitions";
 
@@ -149,7 +149,8 @@ export class NoteService {
 							frontmatter,
 							frontmatterData,
 							managedFrontmatterKeys,
-							preserveCustomFrontmatter
+							preserveCustomFrontmatter,
+							this.getManagedOrder(frontmatterData)
 						);
 					}
 				);
@@ -166,7 +167,8 @@ export class NoteService {
 							frontmatter,
 							frontmatterData,
 							managedFrontmatterKeys,
-							preserveCustomFrontmatter
+							preserveCustomFrontmatter,
+							this.getManagedOrder(frontmatterData)
 						);
 					}
 				);
@@ -461,11 +463,18 @@ export class NoteService {
 		frontmatter: Record<string, any>,
 		newData: Record<string, any>,
 		managedKeys: Set<string>,
-		preserveCustomFrontmatter: boolean
+		preserveCustomFrontmatter: boolean,
+		managedOrder: string[]
 	): void {
 		const original = { ...frontmatter };
 		const originalKeys = Object.keys(frontmatter);
 		const added = new Set<string>();
+
+		// if no managed order provided, fall back to newData order
+		const managedOrderToUse =
+			managedOrder && managedOrder.length > 0
+				? managedOrder
+				: Object.keys(newData);
 
 		// clear existing keys
 		for (const key of originalKeys) {
@@ -489,7 +498,7 @@ export class NoteService {
 
 		// then append any new managed keys that weren't in the original order,
 		// preserving the order produced by prepareFrontmatter/newData
-		for (const key of Object.keys(newData)) {
+		for (const key of managedOrderToUse) {
 			if (!added.has(key)) {
 				frontmatter[key] = newData[key];
 				added.add(key);
@@ -516,6 +525,10 @@ export class NoteService {
 		}
 
 		return keys;
+	}
+
+	private getManagedOrder(frontmatterData: Record<string, any>): string[] {
+		return Object.keys(frontmatterData);
 	}
 
 	private extractFrontmatter(content: string): {
@@ -769,7 +782,7 @@ export class NoteService {
 			for (const child of current.children) {
 				if ((child instanceof TFile || child?.extension === "md") && child.extension === "md") {
 					files.push(child);
-				} else if (child?.children) {
+				} else if ((typeof TFolder !== "undefined" && child instanceof TFolder) || child?.children) {
 					traverse(child);
 				}
 			}
