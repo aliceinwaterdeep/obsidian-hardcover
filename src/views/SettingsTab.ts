@@ -12,6 +12,7 @@ import {
 import {
 	addSyncButton,
 	renderLastSyncTimestampSetting,
+	renderStatusFilterSetting,
 	renderSyncInfoMessages,
 } from "./settings/SyncSettings";
 import { renderGroupingSettings } from "./settings/GroupingSettings";
@@ -50,6 +51,7 @@ export default class SettingsTab extends PluginSettingTab {
 		renderLastSyncTimestampSetting(containerEl, this.plugin, () =>
 			this.display()
 		);
+		renderStatusFilterSetting(containerEl, this.plugin);
 
 		// fields section
 		renderFieldSettings(containerEl, this.plugin, this.accordion);

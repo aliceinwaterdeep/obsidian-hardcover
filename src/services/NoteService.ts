@@ -1,4 +1,4 @@
-import { normalizePath, TFile, TFolder, Vault } from "obsidian";
+import { normalizePath, parseYaml, stringifyYaml, TFile, TFolder, Vault } from "obsidian";
 import { CONTENT_DELIMITER } from "src/config/constants";
 import { FIELD_DEFINITIONS } from "src/config/fieldDefinitions";
 
@@ -17,6 +17,37 @@ export class NoteService {
 		private plugin: ObsidianHardcover
 	) {
 		this.plugin = plugin;
+	}
+
+	/**
+	 * Force metadata cache refresh for files that might not have been indexed.
+	 * Call this at the end of sync to ensure all files are searchable.
+	 */
+	async refreshMetadataCache(folderPath: string): Promise<void> {
+		const files = this.getMarkdownFiles(folderPath);
+		let refreshedCount = 0;
+
+		for (const file of files) {
+			// Check if file is in metadata cache
+			const cache = this.plugin.app.metadataCache.getFileCache(file);
+
+			if (!cache || !cache.frontmatter) {
+				// File not in cache - trigger a re-read to force indexing
+				// Reading the file through the vault should trigger cache population
+				try {
+					const content = await this.vault.read(file);
+					// Trigger modify event to force cache update
+					await this.vault.modify(file, content);
+					refreshedCount++;
+				} catch (e) {
+					console.warn(`[Hardcover] Failed to refresh cache for ${file.path}:`, e);
+				}
+			}
+		}
+
+		if (refreshedCount > 0) {
+			console.log(`[Hardcover] Refreshed metadata cache for ${refreshedCount} files`);
+		}
 	}
 
 	async createNote(
@@ -43,31 +74,52 @@ export class NoteService {
 			// create body content only
 			const bodyContent = this.createBodyContent(formattedMetadata);
 
-			// check if file exists
-			const existingFile = this.vault.getFileByPath(fullPath);
+			// build full content with frontmatter in a single write
+			const frontmatterYaml = stringifyYaml(frontmatterData);
+			const fullContent = `---\n${frontmatterYaml}---\n${bodyContent}`;
+
+			// check if file exists at target path
+			let existingFile = this.vault.getFileByPath(fullPath);
 			let file: TFile;
 
 			if (existingFile) {
-				await this.vault.modify(existingFile, bodyContent);
-				file = existingFile;
+				// File exists at target path - update it
+				// This handles both same book updates AND different editions of the same title
+				// (e.g., hardcover vs paperback editions will share one note file)
+				const existingCache = this.plugin.app.metadataCache.getFileCache(existingFile);
+				const existingBookId = existingCache?.frontmatter?.hardcoverBookId;
+				const newBookId = frontmatterData.hardcoverBookId;
 
-				if (IS_DEV) {
-					// console.log(`Updated note: ${fullPath}`);
+				if (existingBookId !== undefined && existingBookId !== newBookId) {
+					// Different edition of same book - update with newer data
+					if (this.plugin.settings.debugLogging) {
+						console.log(
+							`[Hardcover] Updating "${fullPath}" (was ID ${existingBookId}, now ID ${newBookId}) - merging editions`
+						);
+					}
 				}
+
+				await this.vault.modify(existingFile, fullContent);
+				file = existingFile;
 			} else {
-				file = await this.vault.create(fullPath, bodyContent);
-				if (IS_DEV) {
-					// console.log(`Created note: ${fullPath}`);
+				try {
+					file = await this.vault.create(fullPath, fullContent);
+				} catch (error) {
+					// Handle race condition: file may have been created by another operation
+					if (error.message?.includes("File already exists")) {
+						existingFile = this.vault.getFileByPath(fullPath);
+						if (existingFile) {
+							// Just update the existing file (same title = same note)
+							await this.vault.modify(existingFile, fullContent);
+							file = existingFile;
+						} else {
+							throw error;
+						}
+					} else {
+						throw error;
+					}
 				}
 			}
-
-			// add frontmatter using processFrontMatter
-			await this.plugin.app.fileManager.processFrontMatter(
-				file,
-				(frontmatter) => {
-					Object.assign(frontmatter, frontmatterData);
-				}
-			);
 
 			return file;
 		} catch (error) {
@@ -84,34 +136,67 @@ export class NoteService {
 		try {
 			const originalPath = existingFile.path;
 			const existingContent = await this.vault.cachedRead(existingFile);
-			const { frontmatterText, bodyText: existingBodyText } =
-				this.extractFrontmatter(existingContent);
+			const { frontmatterData: existingFrontmatter, bodyText: existingBodyText } =
+				this.extractFrontmatterData(existingContent);
 
 			const formattedMetadata = this.applyWikilinkFormatting(bookMetadata);
-			const { bodyContent, ...frontmatterData } = formattedMetadata;
 			const managedFrontmatterKeys = this.getManagedFrontmatterKeys();
 			const preserveCustomFrontmatter =
 				this.plugin.settings.preserveCustomFrontmatter !== false;
 
+			// prepare new frontmatter data
+			const newFrontmatterData = this.prepareFrontmatter(formattedMetadata);
+
+			// merge frontmatter: preserve custom keys, update managed keys
+			const mergedFrontmatter: Record<string, any> = {};
+			this.updateFrontmatterObject(
+				mergedFrontmatter,
+				newFrontmatterData,
+				managedFrontmatterKeys,
+				preserveCustomFrontmatter,
+				this.getManagedOrder(newFrontmatterData)
+			);
+			// Copy existing values first, then apply merge logic
+			if (existingFrontmatter) {
+				const tempFrontmatter = { ...existingFrontmatter };
+				// Clear and rebuild with proper ordering
+				for (const key of Object.keys(mergedFrontmatter)) {
+					delete mergedFrontmatter[key];
+				}
+				this.updateFrontmatterObject(
+					tempFrontmatter,
+					newFrontmatterData,
+					managedFrontmatterKeys,
+					preserveCustomFrontmatter,
+					this.getManagedOrder(newFrontmatterData)
+				);
+				Object.assign(mergedFrontmatter, tempFrontmatter);
+			} else {
+				Object.assign(mergedFrontmatter, newFrontmatterData);
+			}
+
 			// create new body content
 			const newBodyContent = this.createBodyContent(formattedMetadata);
 
-			// check if delimiter exists in the current content
+			// check if delimiter exists in the current content - preserve user content after delimiter
 			const delimiterIndex = existingBodyText.indexOf(CONTENT_DELIMITER);
-			let updatedContent: string;
+			let finalBodyContent: string;
 
 			if (delimiterIndex !== -1) {
 				const userContent = existingBodyText.substring(
 					delimiterIndex + CONTENT_DELIMITER.length
 				);
-				const updatedBody = newBodyContent.replace(
+				finalBodyContent = newBodyContent.replace(
 					`${CONTENT_DELIMITER}\n\n`,
 					`${CONTENT_DELIMITER}${userContent}`
 				);
-				updatedContent = `${frontmatterText}${updatedBody}`;
 			} else {
-				updatedContent = `${frontmatterText}${newBodyContent}`;
+				finalBodyContent = newBodyContent;
 			}
+
+			// build full content with frontmatter in a single write
+			const frontmatterYaml = stringifyYaml(mergedFrontmatter);
+			const fullContent = `---\n${frontmatterYaml}---\n${finalBodyContent}`;
 
 			const newPath = this.generateNotePath(
 				bookMetadata,
@@ -126,57 +211,63 @@ export class NoteService {
 
 			// check if the file needs to be renamed
 			if (originalPath !== newPath) {
-				await this.vault.modify(existingFile, updatedContent);
-				await this.vault.rename(existingFile, newPath);
+				// Check if target path already exists (collision with different book)
+				const targetFile = this.vault.getFileByPath(newPath);
+				let finalPath = newPath;
 
-				if (IS_DEV) {
-					// console.log(
-					// 	`Updated and renamed note: ${originalPath} -> ${newPath}`
-					// );
+				if (targetFile) {
+					// Target path already has a file - this could be a different edition
+					// of the same book. Instead of creating duplicates, we'll delete
+					// our current file and update the target (same title = same note)
+					const targetCache = this.plugin.app.metadataCache.getFileCache(targetFile);
+					const targetBookId = targetCache?.frontmatter?.hardcoverBookId;
+					const thisBookId = mergedFrontmatter.hardcoverBookId;
+
+					if (targetBookId !== undefined && targetBookId !== thisBookId) {
+						if (this.plugin.settings.debugLogging) {
+							console.log(
+								`[Hardcover] Merging editions: "${existingFile.path}" (ID ${thisBookId}) -> "${newPath}" (ID ${targetBookId})`
+							);
+						}
+						// Delete current file and update target instead
+						await this.vault.delete(existingFile);
+						await this.vault.modify(targetFile, fullContent);
+						return targetFile;
+					}
 				}
 
+				await this.vault.modify(existingFile, fullContent);
+				await this.vault.rename(existingFile, finalPath);
+
 				// get the new file reference after renaming
-				const renamedFile = this.vault.getFileByPath(newPath);
-				if (!renamedFile) return null;
-
-				// update frontmatter
-				const frontmatterData = this.prepareFrontmatter(formattedMetadata);
-
-				await this.plugin.app.fileManager.processFrontMatter(
-					renamedFile,
-					(frontmatter) => {
-						this.updateFrontmatterObject(
-							frontmatter,
-							frontmatterData,
-							managedFrontmatterKeys,
-							preserveCustomFrontmatter,
-							this.getManagedOrder(frontmatterData)
-						);
-					}
-				);
-
-				return renamedFile;
+				const renamedFile = this.vault.getFileByPath(finalPath);
+				return renamedFile || null;
 			} else {
-				// update content and frontmatter
-				await this.vault.modify(existingFile, updatedContent);
-
-				await this.plugin.app.fileManager.processFrontMatter(
-					existingFile,
-					(frontmatter) => {
-						this.updateFrontmatterObject(
-							frontmatter,
-							frontmatterData,
-							managedFrontmatterKeys,
-							preserveCustomFrontmatter,
-							this.getManagedOrder(frontmatterData)
-						);
-					}
-				);
-
+				// update content in single write
+				await this.vault.modify(existingFile, fullContent);
 				return existingFile;
 			}
 		} catch (error) {
-			console.error("Error updating note:", error);
+			const titleProp = this.plugin.settings.fieldsSettings.title.propertyName;
+			const title = bookMetadata[titleProp] || "Unknown";
+			const bookId = bookMetadata.hardcoverBookId || "Unknown";
+			// Compute the path again for error logging
+			let attemptedPath = "Unknown";
+			try {
+				attemptedPath = this.generateNotePath(
+					bookMetadata,
+					this.plugin.settings.grouping,
+					rawContributors
+				);
+			} catch (e) {
+				// Ignore if path generation also fails
+			}
+			console.error(
+				`[Hardcover] Error updating note for "${title}" (ID: ${bookId})`,
+				`\n  Original: "${existingFile.path}"`,
+				`\n  Attempted: "${attemptedPath}"`,
+				`\n  Error:`, error.message
+			);
 			return null;
 		}
 	}
@@ -259,7 +350,7 @@ export class NoteService {
 			this.plugin.settings.grouping.multipleAuthorsBehavior ===
 				"useCollectionsFolder"
 		) {
-			return this.fileUtils.sanitizeFilename(
+			return this.fileUtils.sanitizeFolderName(
 				this.plugin.settings.grouping.collectionsFolderName
 			);
 		}
@@ -272,14 +363,14 @@ export class NoteService {
 				authorName = this.formatNameAsLastFirst(authorName);
 			}
 
-			return this.fileUtils.sanitizeFilename(authorName);
+			return this.fileUtils.sanitizeFolderName(authorName);
 		}
 
 		//  if no authors and using fallback folder, return the folder name
 		if (
 			this.plugin.settings.grouping.noAuthorBehavior === "useFallbackFolder"
 		) {
-			return this.fileUtils.sanitizeFilename(
+			return this.fileUtils.sanitizeFolderName(
 				this.plugin.settings.grouping.fallbackFolderName
 			);
 		}
@@ -299,7 +390,7 @@ export class NoteService {
 					authorName = this.formatNameAsLastFirst(authorName);
 				}
 
-				return this.fileUtils.sanitizeFilename(authorName);
+				return this.fileUtils.sanitizeFolderName(authorName);
 			}
 		}
 
@@ -325,7 +416,7 @@ export class NoteService {
 				seriesName = seriesName.replace(/\s*#\d+.*$/, "");
 			}
 
-			return this.fileUtils.sanitizeFilename(seriesName);
+			return this.fileUtils.sanitizeFolderName(seriesName);
 		}
 
 		return null;
@@ -393,10 +484,21 @@ export class NoteService {
 
 		const folder = this.vault.getFolderByPath(folderPath);
 		if (!folder) {
-			if (IS_DEV) {
-				// console.log(`Creating folder: ${folderPath}`);
+			try {
+				await this.vault.createFolder(folderPath);
+			} catch (error) {
+				// Handle race condition: another parallel operation may have created the folder
+				if (
+					error.message?.includes("Folder already exists") ||
+					error.message?.includes("File already exists")
+				) {
+					// This is fine - folder exists now which is what we wanted
+					return;
+				}
+				// Log the problematic path for debugging
+				console.error(`[Hardcover] Failed to create folder: "${folderPath}"`, error.message);
+				throw error;
 			}
-			await this.vault.createFolder(folderPath);
 		}
 	}
 
@@ -406,9 +508,12 @@ export class NoteService {
 		const { bodyContent, ...frontmatterData } = metadata;
 		const prepared: Record<string, any> = {};
 
-		// first add hardcoverBookId as the first property
+		// first add hardcoverBookId and hardcoverUpdatedAt as the first properties
 		if (frontmatterData.hardcoverBookId !== undefined) {
 			prepared.hardcoverBookId = frontmatterData.hardcoverBookId;
+		}
+		if (frontmatterData.hardcoverUpdatedAt !== undefined) {
+			prepared.hardcoverUpdatedAt = frontmatterData.hardcoverUpdatedAt;
 		}
 
 		// add all other properties in the order defined in FIELD_DEFINITIONS
@@ -431,8 +536,9 @@ export class NoteService {
 		// add properties in the defined order
 		for (const propName of allFieldPropertyNames) {
 			if (!frontmatterData.hasOwnProperty(propName)) continue;
-			// skip hardcoverBookId as we already added it
-			if (propName === "hardcoverBookId") continue;
+			// skip hardcoverBookId and hardcoverUpdatedAt as we already added them
+			if (propName === "hardcoverBookId" || propName === "hardcoverUpdatedAt")
+				continue;
 
 			const value = frontmatterData[propName];
 
@@ -509,8 +615,9 @@ export class NoteService {
 	private getManagedFrontmatterKeys(): Set<string> {
 		const keys = new Set<string>();
 
-		// hardcoverBookId is always managed by the plugin
+		// hardcoverBookId and hardcoverUpdatedAt are always managed by the plugin
 		keys.add("hardcoverBookId");
+		keys.add("hardcoverUpdatedAt");
 
 		// add the property names defined in FIELD_DEFINITIONS (including activity date start/end)
 		for (const field of FIELD_DEFINITIONS) {
@@ -545,6 +652,26 @@ export class NoteService {
 		return { frontmatterText: "", bodyText: content };
 	}
 
+	private extractFrontmatterData(content: string): {
+		frontmatterData: Record<string, any> | null;
+		bodyText: string;
+	} {
+		const match = content.match(/^---\n([\s\S]*?)\n---\n/);
+		if (match) {
+			const yamlContent = match[1];
+			const bodyText = content.slice(match[0].length);
+			try {
+				const frontmatterData = parseYaml(yamlContent) || {};
+				return { frontmatterData, bodyText };
+			} catch (e) {
+				// If YAML parsing fails, return null frontmatter
+				return { frontmatterData: null, bodyText };
+			}
+		}
+
+		return { frontmatterData: null, bodyText: content };
+	}
+
 	private formatReviewText(reviewText: string): string {
 		if (!reviewText) return "";
 
@@ -565,6 +692,27 @@ export class NoteService {
 			// for raw text apply basic formatting
 			return reviewText.replace(/\\"/g, '"').trim();
 		}
+	}
+
+	/**
+	 * Build an index of all existing notes by their hardcoverBookId.
+	 * Call this once at the start of sync for O(1) lookups instead of O(n) per book.
+	 */
+	buildNoteIndex(): Map<number, TFile> {
+		const index = new Map<number, TFile>();
+		const folderPath = this.plugin.settings.targetFolder;
+		const files = this.getMarkdownFiles(folderPath);
+
+		for (const file of files) {
+			const fileCache = this.plugin.app.metadataCache.getFileCache(file);
+			const frontmatter = fileCache?.frontmatter;
+
+			if (frontmatter && typeof frontmatter.hardcoverBookId === "number") {
+				index.set(frontmatter.hardcoverBookId, file);
+			}
+		}
+
+		return index;
 	}
 
 	async findNoteByHardcoverId(hardcoverBookId: number): Promise<TFile | null> {

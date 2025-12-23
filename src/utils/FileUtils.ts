@@ -6,6 +6,18 @@ export class FileUtils {
 		return name
 			.replace(/[\\/:*?"<>|]/g, "") // remove illegal characters
 			.replace(/\s+/g, " ") // replace multiple spaces with single space
+			.trim() // remove leading/trailing spaces
+			.replace(/\.+$/, "") // remove trailing dots (Obsidian doesn't allow them)
+			.replace(/\s+$/, ""); // remove any trailing spaces left after dot removal
+	}
+
+	/**
+	 * Sanitize a folder name - allows trailing dots (unlike filenames)
+	 */
+	sanitizeFolderName(name: string): string {
+		return name
+			.replace(/[\\/:*?"<>|]/g, "") // remove illegal characters
+			.replace(/\s+/g, " ") // replace multiple spaces with single space
 			.trim(); // remove leading/trailing spaces
 	}
 

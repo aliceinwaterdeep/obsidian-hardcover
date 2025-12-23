@@ -23,7 +23,7 @@ export class SyncService {
 
 	async startSync(options: { debugLimit?: number } = {}) {
 		const targetFolder = this.plugin.settings.targetFolder;
-		const { lastSyncTimestamp } = this.plugin.settings;
+		const { lastSyncTimestamp, statusFilter } = this.plugin.settings;
 
 		if (this.plugin.fileUtils.isRootOrEmpty(targetFolder)) {
 			new Notice(
@@ -42,33 +42,41 @@ export class SyncService {
 		const isDebugMode = options.debugLimit !== undefined;
 
 		try {
-			// get user ID if not there
-			const userId = await this.ensureUserId();
+			// Fetch user ID, book count, and lists in a single API call
+			const includeLists = this.plugin.settings.fieldsSettings.lists.enabled;
+			const syncInfo = await this.hardcoverAPI.fetchSyncInfo(
+				includeLists,
+				statusFilter.length > 0 ? statusFilter : undefined
+			);
 
-			// always get the latest book count before syncing
-			const currentBooksCount = await this.hardcoverAPI.fetchBooksCount(userId);
-
-			// update the stored books count
-			this.plugin.settings.booksCount = currentBooksCount;
+			// Update cached user ID and book count
+			this.plugin.settings.userId = syncInfo.userId;
+			this.plugin.settings.booksCount = syncInfo.booksCount;
 			await this.plugin.saveSettings();
 
 			const booksToProcess =
 				isDebugMode && options.debugLimit
-					? Math.min(options.debugLimit, currentBooksCount)
-					: currentBooksCount;
+					? Math.min(options.debugLimit, syncInfo.booksCount)
+					: syncInfo.booksCount;
 
 			// show debug notice if in debug mode
 			if (isDebugMode) {
-				// console.debug(
-				// 	`Debug sync: Processing ${booksToProcess}/${currentBooksCount} books`
-				// );
 				new Notice(`DEBUG MODE: Sync limited to ${booksToProcess} books`);
 			}
 
 			if (booksToProcess > 0) {
-				await this.syncBooks(userId, booksToProcess, isDebugMode);
+				await this.syncBooks(
+					syncInfo.userId,
+					booksToProcess,
+					isDebugMode,
+					syncInfo.userLists
+				);
 			} else {
-				new Notice("No books found in your Hardcover library.");
+				const filterMsg =
+					statusFilter.length > 0
+						? " (with current status filter)"
+						: "";
+				new Notice(`No books found in your Hardcover library${filterMsg}.`);
 			}
 		} catch (error) {
 			console.error("Sync failed:", error);
@@ -141,33 +149,47 @@ export class SyncService {
 	private async syncBooks(
 		userId: number,
 		totalBooks: number,
-		debugMode: boolean = false
+		debugMode: boolean = false,
+		userLists?: UserList[]
 	) {
-		const { lastSyncTimestamp } = this.plugin.settings;
+		const { lastSyncTimestamp, statusFilter, debugLogging } =
+			this.plugin.settings;
 		const { metadataService, noteService } = this.plugin;
 
 		const notice = new Notice("Syncing Hardcover library...", 0);
+		let currentStatus = "";
+
+		// Initialize progress tracking variables
+		const totalTasks = totalBooks * 2; // each book counts twice: one for fetch, one for the note creation
+		let completedTasks = 0;
+		let currentPhase = "Fetching books";
+
+		// Set up status callback for detailed progress
+		const updateNotice = () => {
+			const percentage = Math.round((completedTasks / totalTasks) * 100);
+			let message = `${currentPhase} (${percentage}%)`;
+			if (debugLogging && currentStatus) {
+				message += `\n${currentStatus}`;
+			}
+			notice.setMessage(message);
+		};
+
+		const updateProgress = (message: string) => {
+			currentPhase = message;
+			updateNotice();
+		};
+
+		this.hardcoverAPI.setStatusCallback((status) => {
+			currentStatus = status;
+			updateNotice();
+		});
 
 		try {
-			// fetch user lists if the lists field is enabled
+			// Build lists map if lists were fetched
 			let bookToListsMap: Map<number, string[]> | null = null;
-			if (this.plugin.settings.fieldsSettings.lists.enabled) {
-				try {
-					const userLists = await this.hardcoverAPI.fetchUserLists(userId);
-					bookToListsMap = this.buildBookToListsMap(userLists);
-				} catch (error) {
-					console.error("Error fetching user lists: ", error);
-					// continue sync without lists data
-				}
+			if (userLists) {
+				bookToListsMap = this.buildBookToListsMap(userLists);
 			}
-
-			const totalTasks = totalBooks * 2; // each book counts twice: one for fetch, one for the note creation
-			let completedTasks = 0;
-
-			const updateProgress = (message: string) => {
-				const percentage = Math.round((completedTasks / totalTasks) * 100);
-				notice.setMessage(`${message} (${percentage}%)`);
-			};
 
 			// Task 1: fetch data from API
 			updateProgress("Fetching books");
@@ -176,7 +198,8 @@ export class SyncService {
 				userId,
 				totalBooks,
 				updatedAfter: lastSyncTimestamp,
-				onProgress(current) {
+				statusFilter: statusFilter.length > 0 ? statusFilter : undefined,
+				onProgress: (current) => {
 					completedTasks = current;
 					updateProgress("Fetching books");
 				},
@@ -190,6 +213,15 @@ export class SyncService {
 			let failedBooksCount = 0;
 			let failedBooks: Array<{ id: number; title: string; error: string }> = [];
 
+			// Build index of existing notes for O(1) lookups (instead of O(n) per book)
+			updateProgress("Indexing existing notes");
+			const noteIndex = noteService.buildNoteIndex();
+			if (debugLogging) {
+				console.log(
+					`[Hardcover Sync] Built index of ${noteIndex.size} existing notes`
+				);
+			}
+
 			// Task 2: create notes
 			for (let i = 0; i < books.length; i++) {
 				updateProgress("Creating notes");
@@ -201,10 +233,8 @@ export class SyncService {
 						bookToListsMap
 					);
 
-					// check if note already exists by checking hardcover book Id
-					const existingNote = await noteService.findNoteByHardcoverId(
-						book.book_id
-					);
+					// check if note already exists using the pre-built index
+					const existingNote = noteIndex.get(book.book_id) || null;
 
 					if (existingNote) {
 						// update existing note
@@ -218,6 +248,12 @@ export class SyncService {
 						// create new note
 						await noteService.createNote(metadata, rawContributors);
 						createdNotesCount++;
+					}
+
+					// Yield to event loop periodically to let Obsidian's metadata cache catch up
+					// Small delay every 50 books gives the async indexer time to process
+					if ((i + 1) % 50 === 0) {
+						await new Promise((resolve) => setTimeout(resolve, 10));
 					}
 				} catch (error) {
 					console.error("Error processing book:", error);
@@ -254,6 +290,10 @@ export class SyncService {
 				await this.plugin.saveSettings();
 			}
 
+			// Refresh metadata cache for any files that weren't indexed
+			updateProgress("Refreshing cache");
+			await noteService.refreshMetadataCache(this.plugin.settings.targetFolder);
+
 			notice.hide();
 
 			let message = debugMode
@@ -277,6 +317,9 @@ export class SyncService {
 			console.error("Error syncing library:", error);
 			new Notice("Error syncing Hardcover library. Check console for details.");
 			throw error;
+		} finally {
+			// Clear the status callback
+			this.hardcoverAPI.setStatusCallback(null);
 		}
 	}
 }
