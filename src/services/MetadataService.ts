@@ -29,8 +29,9 @@ export class MetadataService {
 	): BookMetadataWithContributors {
 		const { fieldsSettings, dataSourcePreferences } = this.settings;
 		const metadata: BookMetadata = {
-			// always include the Hardcover book id
+			// always include the Hardcover book id and updated timestamp
 			hardcoverBookId: userBook.book_id,
+			hardcoverUpdatedAt: userBook.updated_at,
 			bodyContent: {},
 		};
 

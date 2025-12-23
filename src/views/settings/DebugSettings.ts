@@ -39,6 +39,19 @@ export function renderDebugInfo(
 		cls: "obhc-debug-info-item",
 	});
 
+	// Debug logging toggle
+	new Setting(debugContent)
+		.setName("Debug logging")
+		.setDesc(
+			"Show detailed sync progress in the notice and log to console. Useful for troubleshooting slow syncs or rate limiting."
+		)
+		.addToggle((toggle) => {
+			toggle.setValue(plugin.settings.debugLogging).onChange(async (value) => {
+				plugin.settings.debugLogging = value;
+				await plugin.saveSettings();
+			});
+		});
+
 	const button = addSyncButton({
 		containerEl: debugContent,
 		plugin: plugin,

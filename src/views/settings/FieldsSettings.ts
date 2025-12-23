@@ -18,6 +18,20 @@ export function renderFieldSettings(
 		.setName("Configure the data to include in your book notes")
 		.setHeading();
 
+	new Setting(containerEl)
+		.setName("Preserve custom frontmatter")
+		.setDesc(
+			"Keep any user-added frontmatter properties when syncing. Turn off to let Hardcover overwrite the entire frontmatter."
+		)
+		.addToggle((toggle) =>
+			toggle
+				.setValue(plugin.settings.preserveCustomFrontmatter)
+				.onChange(async (value) => {
+					plugin.settings.preserveCustomFrontmatter = value;
+					await plugin.saveSettings();
+				})
+		);
+
 	// create field groups div for better spacing
 	const fieldGroupsContainer = containerEl.createDiv({
 		cls: "field-groups-container",

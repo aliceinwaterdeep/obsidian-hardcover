@@ -19,6 +19,13 @@ export interface PluginSettings {
 
 	// field configuration
 	fieldsSettings: FieldsSettings;
+	preserveCustomFrontmatter: boolean;
+
+	// status filter - empty array means sync all statuses
+	statusFilter: number[];
+
+	// debug logging
+	debugLogging: boolean;
 
 	// data source preferences
 	dataSourcePreferences: {

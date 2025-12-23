@@ -10,7 +10,8 @@ export class QueryBuilder {
 	buildUserBooksQuery(
 		offset: number,
 		limit: number,
-		updatedAfter?: string
+		updatedAfter?: string,
+		statusFilter?: number[]
 	): string {
 		const fieldsSettings = this.settings.fieldsSettings;
 		const dataPrefs = this.settings.dataSourcePreferences;
@@ -20,17 +21,27 @@ export class QueryBuilder {
 		const editionFields = this.buildEditionFields(fieldsSettings, dataPrefs);
 		const readsFields = this.buildReadsFields(fieldsSettings);
 
-		// build where clause with optional timestamp filter
+		// build where clause with optional timestamp and status filters
 		let whereClause = `where: {user_id: {_eq: $userId}`;
 		if (updatedAfter) {
 			whereClause += `, updated_at: {_gt: $updatedAfter}`;
 		}
+		if (statusFilter && statusFilter.length > 0) {
+			whereClause += `, status_id: {_in: $statusIds}`;
+		}
 		whereClause += `}`;
 
+		// build variable declarations
+		let variableDeclarations = "$userId: Int!, $offset: Int!, $limit: Int!";
+		if (updatedAfter) {
+			variableDeclarations += ", $updatedAfter: timestamptz!";
+		}
+		if (statusFilter && statusFilter.length > 0) {
+			variableDeclarations += ", $statusIds: [Int!]!";
+		}
+
 		return `
-            query GetUserLibrary($userId: Int!, $offset: Int!, $limit: Int!${
-							updatedAfter ? ", $updatedAfter: timestamptz!" : ""
-						}) {
+            query GetUserLibrary(${variableDeclarations}) {
                 user_books(
                     ${whereClause}
                     order_by: {book_id: asc}
