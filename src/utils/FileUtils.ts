@@ -12,13 +12,15 @@ export class FileUtils {
 	}
 
 	/**
-	 * Sanitize a folder name - allows trailing dots (unlike filenames)
+	 * Sanitize a folder name (same rules as filenames - no trailing dots/spaces)
 	 */
 	sanitizeFolderName(name: string): string {
 		return name
 			.replace(/[\\/:*?"<>|]/g, "") // remove illegal characters
 			.replace(/\s+/g, " ") // replace multiple spaces with single space
-			.trim(); // remove leading/trailing spaces
+			.trim() // remove leading/trailing spaces
+			.replace(/\.+$/, "") // remove trailing dots
+			.replace(/\s+$/, ""); // remove any trailing spaces left after dot removal
 	}
 
 	normalizeText(text: string): string {
