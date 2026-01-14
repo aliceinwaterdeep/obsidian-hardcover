@@ -159,15 +159,23 @@ User section
 			await service.updateNote(baseMetadata as any, existingFile);
 
 			const updatedFrontmatter = getFrontmatter();
+
 			expect(updatedFrontmatter.customKey).toBe("keep-me");
 			expect(updatedFrontmatter["2025 TBR"]).toBe(true);
+
 			expect(updatedFrontmatter.status).toBe("reading");
+
 			const keyOrder = Object.keys(updatedFrontmatter);
-			expect(keyOrder.slice(0, 3)).toEqual([
-				"customKey",
-				"status",
-				"2025 TBR",
-			]);
+
+			const statusIndex = keyOrder.indexOf("status");
+			const customKeyIndex = keyOrder.indexOf("customKey");
+			const spacedKeyIndex = keyOrder.indexOf("2025 TBR");
+
+			expect(statusIndex).toBeLessThan(customKeyIndex);
+			expect(statusIndex).toBeLessThan(spacedKeyIndex);
+
+			expect(keyOrder[0]).toBe("hardcoverBookId");
+
 			expect(mockVault.modify).toHaveBeenCalled();
 			expect(wasProcessCalled()).toBe(true);
 		});
