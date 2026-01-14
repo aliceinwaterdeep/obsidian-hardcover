@@ -1,4 +1,4 @@
-import { requestUrl } from "obsidian";
+import { Notice, requestUrl } from "obsidian";
 
 import {
 	LibraryPageParams,
@@ -50,49 +50,69 @@ export class HardcoverAPI {
 			apiKey = apiKey.substring(7);
 		}
 
-		try {
-			const response = await requestUrl({
-				url: `https://${HARDCOVER_API.GRAPHQL_URL}${HARDCOVER_API.GRAPHQL_PATH}`,
-				method: "POST",
-				headers: {
-					Authorization: `Bearer ${apiKey}`,
-					"Content-Type": "application/json",
-				},
-				body: body,
-				throw: false,
-			});
+		const maxRetries = 3;
+		let retryCount = 0;
 
-			// handle HTTP errors
-			if (response.status === 401 || response.status === 403) {
-				throw new Error(
-					"Authentication failed: Your Hardcover API key appears to be invalid or expired. Please check your settings and update it."
-				);
-			} else if (response.status === 429) {
-				throw new Error(
-					"Rate limit exceeded: Too many requests to Hardcover API. Please try again in a few minutes."
-				);
-			} else if (response.status < 200 || response.status >= 300) {
-				throw new Error(
-					`API request failed with status ${response.status}: ${response.text}`
-				);
+		while (retryCount <= maxRetries) {
+			try {
+				const response = await requestUrl({
+					url: `https://${HARDCOVER_API.GRAPHQL_URL}${HARDCOVER_API.GRAPHQL_PATH}`,
+					method: "POST",
+					headers: {
+						Authorization: `Bearer ${apiKey}`,
+						"Content-Type": "application/json",
+					},
+					body: body,
+					throw: false,
+				});
+
+				// handle HTTP errors
+				if (response.status === 401 || response.status === 403) {
+					throw new Error(
+						"Authentication failed: Your Hardcover API key appears to be invalid or expired. Please check your settings and update it."
+					);
+				} else if (response.status === 429) {
+					// Rate limit hit - use exponential backoff and retry
+					retryCount++;
+					if (retryCount > maxRetries) {
+						throw new Error(
+							"Rate limit exceeded: Too many requests to Hardcover API. Please try again in a few minutes."
+						);
+					}
+					const backoffMs = Math.pow(2, retryCount) * 5000; // 10s, 20s, 40s
+					const backoffSecs = Math.round(backoffMs / 1000);
+					new Notice(
+						`Rate limited. Retrying in ${backoffSecs}s (attempt ${retryCount}/${maxRetries})...`
+					);
+					await this.delay(backoffMs);
+					continue; // retry the request
+				} else if (response.status < 200 || response.status >= 300) {
+					throw new Error(
+						`API request failed with status ${response.status}: ${response.text}`
+					);
+				}
+
+				const data: GraphQLResponse<T> = response.json;
+
+				// handle GraphQL errors
+				if (data.errors && data.errors.length > 0) {
+					throw new Error(`GraphQL Error: ${data.errors[0].message}`);
+				}
+
+				return data.data;
+			} catch (error) {
+				if (error.message.includes("net::ERR")) {
+					throw new Error(
+						"Unable to connect to Hardcover API. Please check your internet connection and try again later."
+					);
+				}
+				throw error;
 			}
-
-			const data: GraphQLResponse<T> = response.json;
-
-			// handle GraphQL errors
-			if (data.errors && data.errors.length > 0) {
-				throw new Error(`GraphQL Error: ${data.errors[0].message}`);
-			}
-
-			return data.data;
-		} catch (error) {
-			if (error.message.includes("net::ERR")) {
-				throw new Error(
-					"Unable to connect to Hardcover API. Please check your internet connection and try again later."
-				);
-			}
-			throw error;
 		}
+
+		throw new Error(
+			"Rate limit exceeded after retries. Please try again later."
+		);
 	}
 
 	async fetchEntireLibrary({
