@@ -1,4 +1,4 @@
-import { normalizePath, TFile, Vault } from "obsidian";
+import { normalizePath, TFile, TFolder, Vault } from "obsidian";
 import { CONTENT_DELIMITER } from "src/config/constants";
 import { FIELD_DEFINITIONS } from "src/config/fieldDefinitions";
 
@@ -84,27 +84,33 @@ export class NoteService {
 		try {
 			const originalPath = existingFile.path;
 			const existingContent = await this.vault.cachedRead(existingFile);
+			const { frontmatterText, bodyText: existingBodyText } =
+				this.extractFrontmatter(existingContent);
 
 			const formattedMetadata = this.applyWikilinkFormatting(bookMetadata);
 			const { bodyContent, ...frontmatterData } = formattedMetadata;
+			const managedFrontmatterKeys = this.getManagedFrontmatterKeys();
+			const preserveCustomFrontmatter =
+				this.plugin.settings.preserveCustomFrontmatter !== false;
 
 			// create new body content
 			const newBodyContent = this.createBodyContent(formattedMetadata);
 
 			// check if delimiter exists in the current content
-			const delimiterIndex = existingContent.indexOf(CONTENT_DELIMITER);
+			const delimiterIndex = existingBodyText.indexOf(CONTENT_DELIMITER);
 			let updatedContent: string;
 
 			if (delimiterIndex !== -1) {
-				const userContent = existingContent.substring(
+				const userContent = existingBodyText.substring(
 					delimiterIndex + CONTENT_DELIMITER.length
 				);
-				updatedContent = newBodyContent.replace(
+				const updatedBody = newBodyContent.replace(
 					`${CONTENT_DELIMITER}\n\n`,
 					`${CONTENT_DELIMITER}${userContent}`
 				);
+				updatedContent = `${frontmatterText}${updatedBody}`;
 			} else {
-				updatedContent = newBodyContent;
+				updatedContent = `${frontmatterText}${newBodyContent}`;
 			}
 
 			const newPath = this.generateNotePath(
@@ -139,12 +145,13 @@ export class NoteService {
 				await this.plugin.app.fileManager.processFrontMatter(
 					renamedFile,
 					(frontmatter) => {
-						// clear existing
-						for (const key in frontmatter) {
-							delete frontmatter[key];
-						}
-						// add prepared frontmatter
-						Object.assign(frontmatter, frontmatterData);
+						this.updateFrontmatterObject(
+							frontmatter,
+							frontmatterData,
+							managedFrontmatterKeys,
+							preserveCustomFrontmatter,
+							this.getManagedOrder(frontmatterData)
+						);
 					}
 				);
 
@@ -156,11 +163,13 @@ export class NoteService {
 				await this.plugin.app.fileManager.processFrontMatter(
 					existingFile,
 					(frontmatter) => {
-						// clear and replace
-						for (const key in frontmatter) {
-							delete frontmatter[key];
-						}
-						Object.assign(frontmatter, frontmatterData);
+						this.updateFrontmatterObject(
+							frontmatter,
+							frontmatterData,
+							managedFrontmatterKeys,
+							preserveCustomFrontmatter,
+							this.getManagedOrder(frontmatterData)
+						);
 					}
 				);
 
@@ -450,6 +459,92 @@ export class NoteService {
 		return prepared;
 	}
 
+	private updateFrontmatterObject(
+		frontmatter: Record<string, any>,
+		newData: Record<string, any>,
+		managedKeys: Set<string>,
+		preserveCustomFrontmatter: boolean,
+		managedOrder: string[]
+	): void {
+		const original = { ...frontmatter };
+		const originalKeys = Object.keys(frontmatter);
+		const added = new Set<string>();
+
+		// if no managed order provided, fall back to newData order
+		const managedOrderToUse =
+			managedOrder && managedOrder.length > 0
+				? managedOrder
+				: Object.keys(newData);
+
+		// clear existing keys
+		for (const key of originalKeys) {
+			delete frontmatter[key];
+		}
+
+		// first, follow the original order
+		for (const key of originalKeys) {
+			if (managedKeys.has(key)) {
+				if (key in newData) {
+					frontmatter[key] = newData[key];
+					added.add(key);
+				}
+				// if managed key missing from newData, drop it (stale)
+			} else if (preserveCustomFrontmatter) {
+				frontmatter[key] = original[key];
+				added.add(key);
+			}
+			// else: custom key removed when preservation disabled
+		}
+
+		// then append any new managed keys that weren't in the original order,
+		// preserving the order produced by prepareFrontmatter/newData
+		for (const key of managedOrderToUse) {
+			if (!added.has(key)) {
+				frontmatter[key] = newData[key];
+				added.add(key);
+			}
+		}
+	}
+
+	private getManagedFrontmatterKeys(): Set<string> {
+		const keys = new Set<string>();
+
+		// hardcoverBookId is always managed by the plugin
+		keys.add("hardcoverBookId");
+
+		// add the property names defined in FIELD_DEFINITIONS (including activity date start/end)
+		for (const field of FIELD_DEFINITIONS) {
+			const fieldSettings = this.plugin.settings.fieldsSettings[field.key];
+			keys.add(fieldSettings.propertyName);
+
+			if (field.isActivityDateField) {
+				const activityField = fieldSettings as ActivityDateFieldConfig;
+				keys.add(activityField.startPropertyName);
+				keys.add(activityField.endPropertyName);
+			}
+		}
+
+		return keys;
+	}
+
+	private getManagedOrder(frontmatterData: Record<string, any>): string[] {
+		return Object.keys(frontmatterData);
+	}
+
+	private extractFrontmatter(content: string): {
+		frontmatterText: string;
+		bodyText: string;
+	} {
+		const match = content.match(/^---\n[\s\S]*?\n---\n/);
+		if (match) {
+			const frontmatterText = match[0];
+			const bodyText = content.slice(frontmatterText.length);
+			return { frontmatterText, bodyText };
+		}
+
+		return { frontmatterText: "", bodyText: content };
+	}
+
 	private formatReviewText(reviewText: string): string {
 		if (!reviewText) return "";
 
@@ -476,23 +571,14 @@ export class NoteService {
 		try {
 			const folderPath = this.plugin.settings.targetFolder;
 
-			// get all markdown files in the folder
-			const folder = this.vault.getFolderByPath(folderPath);
-			if (!folder) {
-				// console.debug(`Couldn't get folder object for: ${folderPath}`);
-				return null;
-			}
+			const files = this.getMarkdownFiles(folderPath);
 
-			// search through files in the folder
-			for (const file of folder.children) {
-				// only check markdown files
-				if (file instanceof TFile && file.extension === "md") {
-					const fileCache = this.plugin.app.metadataCache.getFileCache(file);
-					const frontmatter = fileCache?.frontmatter;
+			for (const file of files) {
+				const fileCache = this.plugin.app.metadataCache.getFileCache(file);
+				const frontmatter = fileCache?.frontmatter;
 
-					if (frontmatter && frontmatter.hardcoverBookId === hardcoverBookId) {
-						return file;
-					}
+				if (frontmatter && frontmatter.hardcoverBookId === hardcoverBookId) {
+					return file;
 				}
 			}
 
@@ -684,5 +770,25 @@ export class NoteService {
 			.filter((name) => !!name)[0];
 
 		return firstContributor || null;
+	}
+
+	private getMarkdownFiles(folderPath: string): TFile[] {
+		const folder = this.vault.getFolderByPath(folderPath);
+		if (!folder) return [];
+
+		const files: TFile[] = [];
+
+		const traverse = (current: any) => {
+			for (const child of current.children) {
+				if ((child instanceof TFile || child?.extension === "md") && child.extension === "md") {
+					files.push(child);
+				} else if ((typeof TFolder !== "undefined" && child instanceof TFolder) || child?.children) {
+					traverse(child);
+				}
+			}
+		};
+
+		traverse(folder);
+		return files;
 	}
 }
