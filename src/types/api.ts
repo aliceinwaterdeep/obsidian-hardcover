@@ -1,3 +1,9 @@
+export interface SyncInfo {
+	userId: number;
+	booksCount: number;
+	userLists?: UserList[];
+}
+
 export interface HardcoverUser {
 	id: number;
 }

@@ -5,6 +5,7 @@ import {
 	FetchLibraryParams,
 	PluginSettings,
 	UserList,
+	SyncInfo,
 } from "../types";
 import { GetUserIdResponse, GraphQLResponse, HardcoverUser } from "src/types";
 import { QueryBuilder } from "./QueryBuilder";
@@ -202,6 +203,63 @@ export class HardcoverAPI {
 		} = data;
 
 		return count;
+	}
+
+	async fetchSyncInfo(
+		includeLists: boolean,
+		statusFilter?: number[]
+	): Promise<SyncInfo> {
+		// build the aggregate where clause
+		let aggregateWhere = "";
+		if (statusFilter && statusFilter.length > 0) {
+			aggregateWhere = `(where: {status_id: {_in: [${statusFilter.join(
+				","
+			)}]}})`;
+		}
+
+		// build the query dynamically based on what we need
+		const listsFragment = includeLists
+			? `
+		lists {
+			name
+			list_books {
+				book_id
+			}
+		}
+	`
+			: "";
+
+		const query = `
+		query GetSyncInfo {
+			me {
+				id
+				user_books_aggregate${aggregateWhere} {
+					aggregate {
+						count
+					}
+				}
+				${listsFragment}
+			}
+		}
+	`;
+
+		const data = await this.graphqlRequest(query);
+		const user = data.me[0];
+
+		if (!user?.id) {
+			throw new Error("No user ID found in response");
+		}
+
+		const result: SyncInfo = {
+			userId: user.id,
+			booksCount: user.user_books_aggregate?.aggregate?.count ?? 0,
+		};
+
+		if (includeLists && user.lists) {
+			result.userLists = user.lists;
+		}
+
+		return result;
 	}
 
 	async fetchUserLists(userId: number): Promise<UserList[]> {

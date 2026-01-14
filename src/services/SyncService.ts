@@ -23,7 +23,7 @@ export class SyncService {
 
 	async startSync(options: { debugLimit?: number } = {}) {
 		const targetFolder = this.plugin.settings.targetFolder;
-		const { lastSyncTimestamp } = this.plugin.settings;
+		const { lastSyncTimestamp, statusFilter } = this.plugin.settings;
 
 		if (this.plugin.fileUtils.isRootOrEmpty(targetFolder)) {
 			new Notice(
@@ -42,20 +42,22 @@ export class SyncService {
 		const isDebugMode = options.debugLimit !== undefined;
 
 		try {
-			// get user ID if not there
-			const userId = await this.ensureUserId();
+			// Fetch user ID, book count, and lists in a single API call
+			const includeLists = this.plugin.settings.fieldsSettings.lists.enabled;
+			const syncInfo = await this.hardcoverAPI.fetchSyncInfo(
+				includeLists,
+				statusFilter && statusFilter.length > 0 ? statusFilter : undefined
+			);
 
-			// always get the latest book count before syncing
-			const currentBooksCount = await this.hardcoverAPI.fetchBooksCount(userId);
-
-			// update the stored books count
-			this.plugin.settings.booksCount = currentBooksCount;
+			// Update cached user ID and book count
+			this.plugin.settings.userId = syncInfo.userId;
+			this.plugin.settings.booksCount = syncInfo.booksCount;
 			await this.plugin.saveSettings();
 
 			const booksToProcess =
 				isDebugMode && options.debugLimit
-					? Math.min(options.debugLimit, currentBooksCount)
-					: currentBooksCount;
+					? Math.min(options.debugLimit, syncInfo.booksCount)
+					: syncInfo.booksCount;
 
 			// show debug notice if in debug mode
 			if (isDebugMode) {
@@ -66,7 +68,12 @@ export class SyncService {
 			}
 
 			if (booksToProcess > 0) {
-				await this.syncBooks(userId, booksToProcess, isDebugMode);
+				await this.syncBooks(
+					syncInfo.userId,
+					booksToProcess,
+					isDebugMode,
+					syncInfo.userLists
+				);
 			} else {
 				new Notice("No books found in your Hardcover library.");
 			}
@@ -141,7 +148,8 @@ export class SyncService {
 	private async syncBooks(
 		userId: number,
 		totalBooks: number,
-		debugMode: boolean = false
+		debugMode: boolean = false,
+		userLists?: UserList[]
 	) {
 		const { lastSyncTimestamp, statusFilter } = this.plugin.settings;
 		const { metadataService, noteService } = this.plugin;
@@ -149,16 +157,9 @@ export class SyncService {
 		const notice = new Notice("Syncing Hardcover library...", 0);
 
 		try {
-			// fetch user lists if the lists field is enabled
 			let bookToListsMap: Map<number, string[]> | null = null;
-			if (this.plugin.settings.fieldsSettings.lists.enabled) {
-				try {
-					const userLists = await this.hardcoverAPI.fetchUserLists(userId);
-					bookToListsMap = this.buildBookToListsMap(userLists);
-				} catch (error) {
-					console.error("Error fetching user lists: ", error);
-					// continue sync without lists data
-				}
+			if (userLists) {
+				bookToListsMap = this.buildBookToListsMap(userLists);
 			}
 
 			const totalTasks = totalBooks * 2; // each book counts twice: one for fetch, one for the note creation
