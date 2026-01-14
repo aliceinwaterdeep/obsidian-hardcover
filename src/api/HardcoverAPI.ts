@@ -98,6 +98,7 @@ export class HardcoverAPI {
 		userId,
 		totalBooks,
 		updatedAfter,
+		statusFilter,
 		onProgress,
 	}: FetchLibraryParams): Promise<any[]> {
 		if (totalBooks === 0) {
@@ -128,6 +129,7 @@ export class HardcoverAPI {
 				offset: currentOffset,
 				limit,
 				updatedAfter,
+				statusFilter,
 			});
 			allBooks.push(...booksPage);
 
@@ -158,11 +160,13 @@ export class HardcoverAPI {
 		offset,
 		limit = 100,
 		updatedAfter,
+		statusFilter,
 	}: LibraryPageParams): Promise<any[]> {
 		const query = this.queryBuilder.buildUserBooksQuery(
 			offset,
 			limit,
-			updatedAfter
+			updatedAfter,
+			statusFilter
 		);
 
 		const variables = {
@@ -170,6 +174,9 @@ export class HardcoverAPI {
 			offset,
 			limit,
 			...(updatedAfter ? { updatedAfter } : {}),
+			...(statusFilter && statusFilter.length > 0
+				? { statusIds: statusFilter }
+				: {}),
 		};
 
 		const data = await this.graphqlRequest(query, variables);

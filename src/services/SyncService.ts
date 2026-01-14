@@ -143,7 +143,7 @@ export class SyncService {
 		totalBooks: number,
 		debugMode: boolean = false
 	) {
-		const { lastSyncTimestamp } = this.plugin.settings;
+		const { lastSyncTimestamp, statusFilter } = this.plugin.settings;
 		const { metadataService, noteService } = this.plugin;
 
 		const notice = new Notice("Syncing Hardcover library...", 0);
@@ -176,6 +176,7 @@ export class SyncService {
 				userId,
 				totalBooks,
 				updatedAfter: lastSyncTimestamp,
+				statusFilter: statusFilter.length > 0 ? statusFilter : undefined,
 				onProgress(current) {
 					completedTasks = current;
 					updateProgress("Fetching books");

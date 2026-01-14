@@ -40,6 +40,10 @@ export class SettingsMigrationService {
 			settings = this.migrateToV7(settings);
 		}
 
+		if (currentVersion < 8) {
+			settings = this.migrateToV8(settings);
+		}
+
 		// update version number
 		settings.settingsVersion = DEFAULT_SETTINGS.settingsVersion;
 		return settings;
@@ -47,15 +51,6 @@ export class SettingsMigrationService {
 
 	private static migrateToV1(settings: PluginSettings): PluginSettings {
 		// no real data migration needed for initial version
-		return settings;
-	}
-
-	private static migrateToV7(settings: PluginSettings): PluginSettings {
-		if (!("preserveCustomFrontmatter" in settings)) {
-			(settings as any).preserveCustomFrontmatter =
-				DEFAULT_SETTINGS.preserveCustomFrontmatter;
-		}
-
 		return settings;
 	}
 
@@ -142,6 +137,27 @@ export class SettingsMigrationService {
 
 		if (!("collectionsFolderName" in settings.grouping)) {
 			(settings.grouping as any).collectionsFolderName = "Collections";
+		}
+
+		return settings;
+	}
+
+	private static migrateToV7(settings: PluginSettings): PluginSettings {
+		if (!("preserveCustomFrontmatter" in settings)) {
+			(settings as any).preserveCustomFrontmatter =
+				DEFAULT_SETTINGS.preserveCustomFrontmatter;
+		}
+
+		return settings;
+	}
+
+	private static migrateToV8(settings: PluginSettings): PluginSettings {
+		if (!("statusFilter" in settings)) {
+			(settings as any).statusFilter = DEFAULT_SETTINGS.statusFilter;
+		}
+
+		if (!("debugLogging" in settings)) {
+			(settings as any).debugLogging = DEFAULT_SETTINGS.debugLogging;
 		}
 
 		return settings;
