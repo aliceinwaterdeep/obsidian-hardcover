@@ -528,7 +528,36 @@ export class NoteService {
 	}
 
 	private getManagedOrder(frontmatterData: Record<string, any>): string[] {
-		return Object.keys(frontmatterData);
+		const order: string[] = [];
+
+		// always start with hardcoverBookId
+		if ("hardcoverBookId" in frontmatterData) {
+			order.push("hardcoverBookId");
+		}
+
+		// follow the order defined in FIELD_DEFINITIONS to ensure consistent ordering
+		// even when fields are enabled/disabled/renamed in settings
+		for (const field of FIELD_DEFINITIONS) {
+			const fieldSettings = this.plugin.settings.fieldsSettings[field.key];
+			const propName = fieldSettings.propertyName;
+
+			if (propName in frontmatterData) {
+				order.push(propName);
+			}
+
+			// activity date fields have separate start/end properties
+			if (field.isActivityDateField) {
+				const activityField = fieldSettings as ActivityDateFieldConfig;
+				if (activityField.startPropertyName in frontmatterData) {
+					order.push(activityField.startPropertyName);
+				}
+				if (activityField.endPropertyName in frontmatterData) {
+					order.push(activityField.endPropertyName);
+				}
+			}
+		}
+
+		return order;
 	}
 
 	private extractFrontmatter(content: string): {
@@ -780,9 +809,15 @@ export class NoteService {
 
 		const traverse = (current: any) => {
 			for (const child of current.children) {
-				if ((child instanceof TFile || child?.extension === "md") && child.extension === "md") {
+				if (
+					(child instanceof TFile || child?.extension === "md") &&
+					child.extension === "md"
+				) {
 					files.push(child);
-				} else if ((typeof TFolder !== "undefined" && child instanceof TFolder) || child?.children) {
+				} else if (
+					(typeof TFolder !== "undefined" && child instanceof TFolder) ||
+					child?.children
+				) {
 					traverse(child);
 				}
 			}
