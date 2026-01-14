@@ -476,32 +476,41 @@ export class NoteService {
 				? managedOrder
 				: Object.keys(newData);
 
-		// clear existing keys
+		// build map for rename detection: if an old key's value matches a new managed key's value,
+		// it's likely a renamed property and shouldn't be preserved as custom
+		const newManagedValues = new Map<string, string>();
+		for (const key of managedKeys) {
+			if (key in newData) {
+				newManagedValues.set(JSON.stringify(newData[key]), key);
+			}
+		}
+
+		// clear frontmatter to rebuild it with proper ordering
 		for (const key of originalKeys) {
 			delete frontmatter[key];
 		}
 
-		// first, follow the original order
-		for (const key of originalKeys) {
-			if (managedKeys.has(key)) {
-				if (key in newData) {
-					frontmatter[key] = newData[key];
-					added.add(key);
-				}
-				// if managed key missing from newData, drop it (stale)
-			} else if (preserveCustomFrontmatter) {
-				frontmatter[key] = original[key];
-				added.add(key);
-			}
-			// else: custom key removed when preservation disabled
-		}
-
-		// then append any new managed keys that weren't in the original order,
-		// preserving the order produced by prepareFrontmatter/newData
+		// add all managed keys in their defined order (from FIELD_DEFINITIONS)
 		for (const key of managedOrderToUse) {
-			if (!added.has(key)) {
+			if (key in newData) {
 				frontmatter[key] = newData[key];
 				added.add(key);
+			}
+		}
+
+		// append custom keys at the end, skipping any that appear to be renamed managed keys
+		if (preserveCustomFrontmatter) {
+			for (const key of originalKeys) {
+				if (!managedKeys.has(key) && !added.has(key)) {
+					const oldValue = original[key];
+					const serialized = JSON.stringify(oldValue);
+
+					if (newManagedValues.has(serialized)) {
+						// value matches a managed key = likely a rename, skip it
+					} else {
+						frontmatter[key] = oldValue;
+					}
+				}
 			}
 		}
 	}
