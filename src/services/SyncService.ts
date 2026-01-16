@@ -1,5 +1,6 @@
 import { Notice } from "obsidian";
 import { HardcoverAPI } from "src/api/HardcoverAPI";
+import { HARDCOVER_STATUS_MAP } from "src/config/statusMapping";
 import ObsidianHardcover from "src/main";
 import { UserList } from "src/types";
 
@@ -25,6 +26,14 @@ export class SyncService {
 		const targetFolder = this.plugin.settings.targetFolder;
 		const { lastSyncTimestamp, statusFilter } = this.plugin.settings;
 
+		// prevent sync if no statuses selected
+		if (statusFilter.length === 0) {
+			new Notice(
+				"No reading statuses selected. Please select at least one status in settings, or select all to sync your entire library."
+			);
+			return;
+		}
+
 		if (this.plugin.fileUtils.isRootOrEmpty(targetFolder)) {
 			new Notice(
 				"Please specify a subfolder for your Hardcover books. Using the vault root is not supported."
@@ -46,9 +55,10 @@ export class SyncService {
 			const includeLists = this.plugin.settings.fieldsSettings.lists.enabled;
 
 			// only send filter if not all statuses are selected (optimization)
-			const allStatuses = [1, 2, 3, 5];
-			const isFilteringStatuses =
-				statusFilter.length > 0 && statusFilter.length < allStatuses.length;
+			const allStatuses = Object.keys(HARDCOVER_STATUS_MAP).map((id) =>
+				parseInt(id)
+			);
+			const isFilteringStatuses = statusFilter.length < allStatuses.length;
 
 			const userLibraryInfo = await this.hardcoverAPI.fetchUserLibraryInfo(
 				includeLists,

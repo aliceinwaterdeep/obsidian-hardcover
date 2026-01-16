@@ -132,3 +132,16 @@
 .obhc-source-link:hover {
 	background: var(--background-modifier-hover);
 }
+
+.status-filter-checkboxes {
+	display: flex;
+	flex-direction: column;
+	gap: 4px;
+}
+
+.status-filter-checkbox-label {
+	display: flex;
+	align-items: center;
+	gap: 4px;
+	cursor: pointer;
+}

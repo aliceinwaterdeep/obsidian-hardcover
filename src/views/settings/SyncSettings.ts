@@ -146,87 +146,69 @@ export function renderStatusFilterSetting(
 	containerEl: HTMLElement,
 	plugin: ObsidianHardcover
 ): void {
-	// Header setting
-	new Setting(containerEl)
-		.setName("Status filter")
+	const filterSetting = new Setting(containerEl)
+		.setName("Filter by reading status")
 		.setDesc(
-			"Only sync books with the selected statuses. If none are selected, all books will be synced. Existing notes are never deleted."
+			"Select which reading statuses to sync. Uncheck to exclude. All statuses synced by default."
 		);
 
-	// Create a container for the checkboxes
-	const checkboxContainer = containerEl.createDiv({
-		cls: "status-filter-checkboxes",
-	});
-	checkboxContainer.style.display = "flex";
-	checkboxContainer.style.flexWrap = "wrap";
-	checkboxContainer.style.gap = "12px";
-	checkboxContainer.style.marginBottom = "12px";
-	checkboxContainer.style.paddingLeft = "12px";
+	const allStatuses = Object.keys(HARDCOVER_STATUS_MAP).map((id) =>
+		parseInt(id)
+	);
 
-	// Add the filter note first so we can update it from checkbox handlers
-	const filterNote = containerEl.createDiv({
-		cls: "setting-item-description",
+	const filterNote = filterSetting.infoEl.createDiv({
+		cls: "setting-item-description status-filter-note",
 	});
-	filterNote.style.marginBottom = "12px";
-	filterNote.style.paddingLeft = "12px";
 
-	// Helper to update the filter note text
 	const updateFilterNote = () => {
-		const filter = plugin.settings.statusFilter || [];
-		filterNote.textContent =
-			filter.length === 0
-				? "Currently syncing: All books"
-				: `Currently syncing: ${filter
-						.map(
-							(id) =>
-								HARDCOVER_STATUS_MAP[id as keyof typeof HARDCOVER_STATUS_MAP] ||
-								`Unknown (${id})`
-						)
-						.join(", ")}`;
+		const filter = plugin.settings.statusFilter;
+
+		if (filter.length === 0) {
+			filterNote.textContent = "⚠️ No statuses selected: sync will do nothing";
+		} else if (filter.length === allStatuses.length) {
+			filterNote.textContent = "✓ Syncing all statuses";
+		} else {
+			const statusNames = filter
+				.map(
+					(id) => HARDCOVER_STATUS_MAP[id as keyof typeof HARDCOVER_STATUS_MAP]
+				)
+				.filter(Boolean)
+				.join(", ");
+			filterNote.textContent = `Syncing: ${statusNames}`;
+		}
 	};
 
-	// Set initial text
 	updateFilterNote();
 
-	// Create checkboxes for each status
-	const statusEntries = Object.entries(HARDCOVER_STATUS_MAP) as [
-		string,
-		string
-	][];
+	const checkboxContainer = filterSetting.controlEl.createDiv({
+		cls: "status-filter-checkboxes",
+	});
 
-	for (const [statusIdStr, statusName] of statusEntries) {
+	for (const [statusIdStr, statusName] of Object.entries(
+		HARDCOVER_STATUS_MAP
+	)) {
 		const statusId = parseInt(statusIdStr, 10);
 
 		const label = checkboxContainer.createEl("label", {
 			cls: "status-filter-checkbox-label",
 		});
-		label.style.display = "flex";
-		label.style.alignItems = "center";
-		label.style.gap = "4px";
-		label.style.cursor = "pointer";
 
 		const checkbox = label.createEl("input", {
 			type: "checkbox",
 		});
-		checkbox.checked = (plugin.settings.statusFilter || []).includes(statusId);
+		checkbox.checked = plugin.settings.statusFilter.includes(statusId);
 
 		checkbox.addEventListener("change", async () => {
-			const filter = plugin.settings.statusFilter || [];
+			const currentFilter = plugin.settings.statusFilter;
 
 			if (checkbox.checked) {
-				// Add to filter
-				if (!filter.includes(statusId)) {
-					filter.push(statusId);
-				}
+				plugin.settings.statusFilter = [...currentFilter, statusId];
 			} else {
-				// Remove from filter
-				const index = filter.indexOf(statusId);
-				if (index > -1) {
-					filter.splice(index, 1);
-				}
+				plugin.settings.statusFilter = currentFilter.filter(
+					(id) => id !== statusId
+				);
 			}
 
-			plugin.settings.statusFilter = filter;
 			await plugin.saveSettings();
 			updateFilterNote();
 		});
