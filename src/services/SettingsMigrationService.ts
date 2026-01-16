@@ -156,10 +156,6 @@ export class SettingsMigrationService {
 			(settings as any).statusFilter = DEFAULT_SETTINGS.statusFilter;
 		}
 
-		if (!("debugLogging" in settings)) {
-			(settings as any).debugLogging = DEFAULT_SETTINGS.debugLogging;
-		}
-
 		return settings;
 	}
 

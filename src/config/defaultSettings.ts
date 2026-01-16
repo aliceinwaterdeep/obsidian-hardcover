@@ -51,8 +51,7 @@ export const DEFAULT_SETTINGS: PluginSettings = {
 	userId: null,
 	booksCount: null,
 	preserveCustomFrontmatter: true,
-	statusFilter: [], // empty = sync all statuses
-	debugLogging: false,
+	statusFilter: [1, 2, 3, 5],
 	fieldsSettings: DEFAULT_FIELDS_SETTINGS,
 	dataSourcePreferences: {
 		titleSource: "edition",

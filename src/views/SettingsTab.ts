@@ -48,10 +48,10 @@ export default class SettingsTab extends PluginSettingTab {
 		);
 		renderGroupingSettings(containerEl, this.plugin, () => this.display());
 		renderFilenameTemplateSetting(containerEl, this.plugin);
+		renderStatusFilterSetting(containerEl, this.plugin);
 		renderLastSyncTimestampSetting(containerEl, this.plugin, () =>
 			this.display()
 		);
-		renderStatusFilterSetting(containerEl, this.plugin);
 
 		// fields section
 		renderFieldSettings(containerEl, this.plugin, this.accordion);

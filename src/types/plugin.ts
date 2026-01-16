@@ -24,9 +24,6 @@ export interface PluginSettings {
 	// status filter - empty array means sync all statuses
 	statusFilter: number[];
 
-	// debug logging
-	debugLogging: boolean;
-
 	// data source preferences
 	dataSourcePreferences: {
 		titleSource: DataSource;
