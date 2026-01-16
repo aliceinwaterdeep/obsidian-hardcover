@@ -119,7 +119,7 @@ export class HardcoverAPI {
 		userId,
 		totalBooks,
 		updatedAfter,
-		statusFilter,
+		status,
 		onProgress,
 	}: FetchLibraryParams): Promise<any[]> {
 		if (totalBooks === 0) {
@@ -150,7 +150,7 @@ export class HardcoverAPI {
 				offset: currentOffset,
 				limit,
 				updatedAfter,
-				statusFilter,
+				status,
 			});
 			allBooks.push(...booksPage);
 
@@ -181,13 +181,13 @@ export class HardcoverAPI {
 		offset,
 		limit = 100,
 		updatedAfter,
-		statusFilter,
+		status,
 	}: LibraryPageParams): Promise<any[]> {
 		const query = this.queryBuilder.buildUserBooksQuery(
 			offset,
 			limit,
 			updatedAfter,
-			statusFilter
+			status
 		);
 
 		const variables = {
@@ -195,9 +195,7 @@ export class HardcoverAPI {
 			offset,
 			limit,
 			...(updatedAfter ? { updatedAfter } : {}),
-			...(statusFilter && statusFilter.length > 0
-				? { statusIds: statusFilter }
-				: {}),
+			...(status && status.length > 0 ? { statusIds: status } : {}),
 		};
 
 		const data = await this.graphqlRequest(query, variables);
@@ -227,14 +225,12 @@ export class HardcoverAPI {
 
 	async fetchSyncInfo(
 		includeLists: boolean,
-		statusFilter?: number[]
+		status?: number[]
 	): Promise<SyncInfo> {
 		// build the aggregate where clause
 		let aggregateWhere = "";
-		if (statusFilter && statusFilter.length > 0) {
-			aggregateWhere = `(where: {status_id: {_in: [${statusFilter.join(
-				","
-			)}]}})`;
+		if (status && status.length > 0) {
+			aggregateWhere = `(where: {status_id: {_in: [${status.join(",")}]}})`;
 		}
 
 		// build the query dynamically based on what we need

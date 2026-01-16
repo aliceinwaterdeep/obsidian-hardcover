@@ -11,7 +11,7 @@ export class QueryBuilder {
 		offset: number,
 		limit: number,
 		updatedAfter?: string,
-		statusFilter?: number[]
+		status?: number[]
 	): string {
 		const fieldsSettings = this.settings.fieldsSettings;
 		const dataPrefs = this.settings.dataSourcePreferences;
@@ -20,13 +20,14 @@ export class QueryBuilder {
 		const bookFields = this.buildBookFields(fieldsSettings, dataPrefs);
 		const editionFields = this.buildEditionFields(fieldsSettings, dataPrefs);
 		const readsFields = this.buildReadsFields(fieldsSettings);
+		const hasStatusFilter = status && status.length > 0;
 
 		// build where clause with optional timestamp and status filters
 		let whereClause = `where: {user_id: {_eq: $userId}`;
 		if (updatedAfter) {
 			whereClause += `, updated_at: {_gt: $updatedAfter}`;
 		}
-		if (statusFilter && statusFilter.length > 0) {
+		if (hasStatusFilter) {
 			whereClause += `, status_id: {_in: $statusIds}`;
 		}
 		whereClause += `}`;
@@ -35,7 +36,7 @@ export class QueryBuilder {
 		if (updatedAfter) {
 			variableDeclarations += ", $updatedAfter: timestamptz!";
 		}
-		if (statusFilter && statusFilter.length > 0) {
+		if (hasStatusFilter) {
 			variableDeclarations += ", $statusIds: [Int!]!";
 		}
 

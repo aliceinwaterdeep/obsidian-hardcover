@@ -24,14 +24,14 @@ export interface LibraryPageParams {
 	offset: number;
 	limit: number;
 	updatedAfter?: string;
-	statusFilter?: number[];
+	status?: number[];
 }
 
 export interface FetchLibraryParams {
 	userId: number;
 	totalBooks: number;
 	updatedAfter?: string;
-	statusFilter?: number[];
+	status?: number[];
 	onProgress?: (current: number, total: number) => void;
 }
 
