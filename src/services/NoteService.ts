@@ -259,7 +259,7 @@ export class NoteService {
 			this.plugin.settings.grouping.multipleAuthorsBehavior ===
 				"useCollectionsFolder"
 		) {
-			return this.fileUtils.sanitizeFilename(
+			return this.fileUtils.sanitizeFolderName(
 				this.plugin.settings.grouping.collectionsFolderName
 			);
 		}
@@ -272,7 +272,7 @@ export class NoteService {
 				authorName = this.formatNameAsLastFirst(authorName);
 			}
 
-			return this.fileUtils.sanitizeFilename(authorName);
+			return this.fileUtils.sanitizeFolderName(authorName);
 		}
 
 		//  if no authors and using fallback folder, return the folder name
@@ -299,7 +299,7 @@ export class NoteService {
 					authorName = this.formatNameAsLastFirst(authorName);
 				}
 
-				return this.fileUtils.sanitizeFilename(authorName);
+				return this.fileUtils.sanitizeFolderName(authorName);
 			}
 		}
 
@@ -325,7 +325,7 @@ export class NoteService {
 				seriesName = seriesName.replace(/\s*#\d+.*$/, "");
 			}
 
-			return this.fileUtils.sanitizeFilename(seriesName);
+			return this.fileUtils.sanitizeFolderName(seriesName);
 		}
 
 		return null;
