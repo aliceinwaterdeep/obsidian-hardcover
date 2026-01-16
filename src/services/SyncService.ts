@@ -44,20 +44,26 @@ export class SyncService {
 		try {
 			// Fetch user ID, book count, and lists in a single API call
 			const includeLists = this.plugin.settings.fieldsSettings.lists.enabled;
-			const syncInfo = await this.hardcoverAPI.fetchUserLibraryInfo(
+
+			// only send filter if not all statuses are selected (optimization)
+			const allStatuses = [1, 2, 3, 5];
+			const isFilteringStatuses =
+				statusFilter.length > 0 && statusFilter.length < allStatuses.length;
+
+			const userLibraryInfo = await this.hardcoverAPI.fetchUserLibraryInfo(
 				includeLists,
-				statusFilter && statusFilter.length > 0 ? statusFilter : undefined
+				isFilteringStatuses ? statusFilter : undefined
 			);
 
 			// Update cached user ID and book count
-			this.plugin.settings.userId = syncInfo.userId;
-			this.plugin.settings.booksCount = syncInfo.booksCount;
+			this.plugin.settings.userId = userLibraryInfo.userId;
+			this.plugin.settings.booksCount = userLibraryInfo.booksCount;
 			await this.plugin.saveSettings();
 
 			const booksToProcess =
 				isDebugMode && options.debugLimit
-					? Math.min(options.debugLimit, syncInfo.booksCount)
-					: syncInfo.booksCount;
+					? Math.min(options.debugLimit, userLibraryInfo.booksCount)
+					: userLibraryInfo.booksCount;
 
 			// show debug notice if in debug mode
 			if (isDebugMode) {
@@ -69,10 +75,11 @@ export class SyncService {
 
 			if (booksToProcess > 0) {
 				await this.syncBooks(
-					syncInfo.userId,
+					userLibraryInfo.userId,
 					booksToProcess,
 					isDebugMode,
-					syncInfo.userLists
+					userLibraryInfo.userLists,
+					isFilteringStatuses
 				);
 			} else {
 				new Notice("No books found in your Hardcover library.");
@@ -149,7 +156,8 @@ export class SyncService {
 		userId: number,
 		totalBooks: number,
 		debugMode: boolean = false,
-		userLists?: UserList[]
+		userLists?: UserList[],
+		isFilteringStatuses: boolean = false
 	) {
 		const { lastSyncTimestamp, statusFilter } = this.plugin.settings;
 		const { metadataService, noteService } = this.plugin;
@@ -177,7 +185,7 @@ export class SyncService {
 				userId,
 				totalBooks,
 				updatedAfter: lastSyncTimestamp,
-				statusFilter: statusFilter.length > 0 ? statusFilter : undefined,
+				status: isFilteringStatuses ? statusFilter : undefined,
 				onProgress(current) {
 					completedTasks = current;
 					updateProgress("Fetching books");
