@@ -1,3 +1,9 @@
+export interface SyncInfo {
+	userId: number;
+	booksCount: number;
+	userLists?: UserList[];
+}
+
 export interface HardcoverUser {
 	id: number;
 }
@@ -18,12 +24,14 @@ export interface LibraryPageParams {
 	offset: number;
 	limit: number;
 	updatedAfter?: string;
+	statusFilter?: number[];
 }
 
 export interface FetchLibraryParams {
 	userId: number;
 	totalBooks: number;
 	updatedAfter?: string;
+	statusFilter?: number[];
 	onProgress?: (current: number, total: number) => void;
 }
 
