@@ -605,6 +605,27 @@ export class NoteService {
 		}
 	}
 
+	/**
+	 * Build an index of all existing notes by their hardcoverBookId.
+	 * Call this once at the start of sync for O(1) lookups instead of O(n) per book.
+	 */
+	buildNoteIndex(): Map<number, TFile> {
+		const index = new Map<number, TFile>();
+		const folderPath = this.plugin.settings.targetFolder;
+		const files = this.getMarkdownFiles(folderPath);
+
+		for (const file of files) {
+			const fileCache = this.plugin.app.metadataCache.getFileCache(file);
+			const frontmatter = fileCache?.frontmatter;
+
+			if (frontmatter && typeof frontmatter.hardcoverBookId === "number") {
+				index.set(frontmatter.hardcoverBookId, file);
+			}
+		}
+
+		return index;
+	}
+
 	async findNoteByHardcoverId(hardcoverBookId: number): Promise<TFile | null> {
 		try {
 			const folderPath = this.plugin.settings.targetFolder;

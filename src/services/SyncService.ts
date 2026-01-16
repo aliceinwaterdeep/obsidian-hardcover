@@ -192,6 +192,10 @@ export class SyncService {
 			let failedBooksCount = 0;
 			let failedBooks: Array<{ id: number; title: string; error: string }> = [];
 
+			// 	Build index of existing notes for O(1) lookups (instead of O(n) per book)
+			updateProgress("Indexing existing notes");
+			const noteIndex = noteService.buildNoteIndex();
+
 			// Task 2: create notes
 			for (let i = 0; i < books.length; i++) {
 				updateProgress("Creating notes");
@@ -203,10 +207,8 @@ export class SyncService {
 						bookToListsMap
 					);
 
-					// check if note already exists by checking hardcover book Id
-					const existingNote = await noteService.findNoteByHardcoverId(
-						book.book_id
-					);
+					// check if note already exists by checking hardcover book Id, using the pre-built index
+					const existingNote = noteIndex.get(book.book_id) || null;
 
 					if (existingNote) {
 						// update existing note
