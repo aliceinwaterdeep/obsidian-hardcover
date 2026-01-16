@@ -44,7 +44,7 @@ export class SyncService {
 		try {
 			// Fetch user ID, book count, and lists in a single API call
 			const includeLists = this.plugin.settings.fieldsSettings.lists.enabled;
-			const syncInfo = await this.hardcoverAPI.fetchSyncInfo(
+			const syncInfo = await this.hardcoverAPI.fetchUserLibraryInfo(
 				includeLists,
 				statusFilter && statusFilter.length > 0 ? statusFilter : undefined
 			);

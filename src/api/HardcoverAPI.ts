@@ -223,7 +223,7 @@ export class HardcoverAPI {
 		return count;
 	}
 
-	async fetchSyncInfo(
+	async fetchUserLibraryInfo(
 		includeLists: boolean,
 		status?: number[]
 	): Promise<SyncInfo> {
