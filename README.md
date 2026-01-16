@@ -14,12 +14,15 @@ Syncs your [Hardcover](https://hardcover.app) library to your Obsidian vault, cr
   - Basic info: Title, authors, publisher, release date
   - Reading data: Status, rating, read dates
   - Content: Description, genres, series information
+  - See [Fields](#fields) for the full list of available metadata
 - **Customizable Format**:
   - Choose which data to include in your notes
   - Configure property names to match your personal system
   - Select data source preferences (book vs. edition level)
 - **Directory Organization**:
   - Group your book notes by author and/or series
+- **Sync by status**:
+  - Configure a filter to only sync books of a specific status (e.g. Want to Read)
 - **User notes**: The plugin uses a delimiter system to separate plugin-generated content and user-added content. This means you can add your own notes (thoughts, quotes...) to a book note below the delimiter and it will be preserved during syncs.
 
 > [!WARNING]
@@ -249,18 +252,17 @@ See [CHANGELOG.md](CHANGELOG.md) for the full version history.
 
 ### Planned Features
 
-- Allow option to respect location of existing notes on subsequent syncs ([16](https://github.com/aliceinwaterdeep/obsidian-hardcover/issues/16))
+Feel free to have a look at the [plugin board](https://github.com/users/aliceinwaterdeep/projects/1/views/2) to know what I'm working on and what's in the pipeline.
 
 ### Under Consideration
 
-- Allow custom note template for body content ([#10](https://github.com/aliceinwaterdeep/obsidian-hardcover/issues/10))
-- Add optional timestamps (createdDate/lastModifiedDate) to frontmatter
-- Improve read dates handling: only show both `firstRead` `lastRead` when they differ, otherwise show a single `readDate`
-- Provide edition title as a separate field alongside book title
-- Make cover image dimensions configurable in settings
-- Add property to display reading progress for in-progress books
+Ideas for new features are collected [here](https://github.com/aliceinwaterdeep/obsidian-hardcover/discussions/categories/ideas)! Feel free to upvote the features you're interested in or suggest a new one. New ideas are always welcome!
+
+## Issues and Contributions
 
 _Feel free to [open an issue](https://github.com/aliceinwaterdeep/obsidian-hardcover/issues) if you find bugs or have a feature idea!_
+
+Contributions are more than welcome! It would be great if you could open an issue to discuss what you'd like to contribute to before opening a PR.
 
 ---
 

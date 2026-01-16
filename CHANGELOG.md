@@ -1,5 +1,25 @@
 # Changelog
 
+### 1.7.0
+
+#### New
+
+- Frontmatter Preservation: you can now add custom properties to your book notes and they will be preserved during syncs.
+- Sync by status: you can now decide to sync only specific statuses (Want to Read, Currently Reading, Read, or DNF). Syncs everything by default (no changes for existing users).
+
+#### Fixes
+
+- Target folders are now searched recursively, so notes are correctly updated instead of recreated when using grouping options
+- Better sanitization in place for names ending with a space or a dot
+
+#### Optimizations
+
+- Initial queries to fetch user library info are now combined to reduce the number of API calls
+- Added retry logic for status code 429
+- Faster sync lookups thanks to note indexing improvements
+
+Huge thanks to @escidmore for her work on all the above!
+
 ### 1.6.0
 
 - New: Added grouping options for books with missing or multiple authors
