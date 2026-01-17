@@ -8,7 +8,7 @@ export function renderGroupingSettings(
 	onSettingsChanged: () => void
 ): void {
 	new Setting(containerEl)
-		.setName("Organize into folders")
+		.setName("Group into subfolders")
 		.setDesc(
 			"Group your book notes into subdirectories for better organization"
 		)
@@ -141,5 +141,23 @@ export function renderGroupingSettings(
 
 			collectionsFolderSetting.settingEl.style.borderTop = "none";
 		}
+	}
+
+	if (plugin.settings.grouping.enabled) {
+		const autoOrganizeSetting = new Setting(containerEl)
+			.setName("Auto-organize notes")
+			.setDesc(
+				"When enabled, notes are automatically moved to match your grouping settings on every sync. When disabled, notes stay where you've placed them, preserving your manual organization."
+			)
+			.addToggle((toggle) =>
+				toggle
+					.setValue(plugin.settings.grouping.autoOrganizeFolders)
+					.onChange(async (value) => {
+						plugin.settings.grouping.autoOrganizeFolders = value;
+						await plugin.saveSettings();
+					})
+			);
+
+		autoOrganizeSetting.settingEl.style.borderTop = "none";
 	}
 }
