@@ -44,6 +44,10 @@ export class SettingsMigrationService {
 			settings = this.migrateToV8(settings);
 		}
 
+		if (currentVersion < 9) {
+			settings = this.migrateToV9(settings);
+		}
+
 		// update version number
 		settings.settingsVersion = DEFAULT_SETTINGS.settingsVersion;
 		return settings;
@@ -154,6 +158,14 @@ export class SettingsMigrationService {
 	private static migrateToV8(settings: PluginSettings): PluginSettings {
 		if (!("statusFilter" in settings)) {
 			(settings as any).statusFilter = DEFAULT_SETTINGS.statusFilter;
+		}
+
+		return settings;
+	}
+
+	private static migrateToV9(settings: PluginSettings): PluginSettings {
+		if (!("autoOrganizeFolders" in settings.grouping)) {
+			(settings.grouping as any).autoOrganizeFolders = true;
 		}
 
 		return settings;

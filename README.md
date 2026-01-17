@@ -196,11 +196,19 @@ Books with multiple authors (anthologies, essay collections) can be organized in
 
 > **Note**: These advanced settings only affect folder organization. The frontmatter metadata always reflects the actual data from Hardcover.
 
+#### Auto-organize Notes
+
+By default, the plugin automatically moves and renames notes to match your grouping settings on every sync. If you prefer to manually organize your book notes:
+
+- **Disable "Auto-organize notes"** to keep files where you've placed them
+- Notes will stay in their current folders, but filenames will still update if you change the filename template
+- New books will always follow your grouping settings
+
+> **Note**: If you manually rename folders and then add new books to those authors/series, the plugin will create new folders following the grouping settings, potentially splitting your collection. You'll need to manually consolidate these folders if desired.
+
 #### Important Notes
 
-- **New files only**: This only organizes newly synced books. Existing notes stay where they are.
-- **Want to reorganize existing files?** Delete your book notes and re-sync to apply the new structure. **Consider backing up any manual edits first**.
-- **Multiple series**: Books in multiple series use the first series Hardcover provides to avoid duplicate notes.
+- **Multiple series**: Books in multiple series use the first series Hardcover provides for grouping, to avoid duplicate notes.
 
 ## Note Format
 

@@ -8,6 +8,8 @@ export interface GroupingSettings {
 
 	multipleAuthorsBehavior: "useFirst" | "useCollectionsFolder";
 	collectionsFolderName: string;
+
+	autoOrganizeFolders: boolean;
 }
 
 export interface PluginSettings {

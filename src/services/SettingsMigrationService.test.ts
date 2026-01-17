@@ -89,6 +89,7 @@ describe("SettingsMigrationService", () => {
 				apiKey: "abc",
 				fieldsSettings: DEFAULT_SETTINGS.fieldsSettings,
 				dataSourcePreferences: DEFAULT_SETTINGS.dataSourcePreferences,
+				grouping: DEFAULT_SETTINGS.grouping,
 			} as PluginSettings;
 
 			const result = SettingsMigrationService.migrateSettings(v6Settings);
@@ -104,6 +105,7 @@ describe("SettingsMigrationService", () => {
 				fieldsSettings: DEFAULT_SETTINGS.fieldsSettings,
 				dataSourcePreferences: DEFAULT_SETTINGS.dataSourcePreferences,
 				preserveCustomFrontmatter: false,
+				grouping: DEFAULT_SETTINGS.grouping,
 			} as PluginSettings;
 
 			const result = SettingsMigrationService.migrateSettings(v6Settings);
