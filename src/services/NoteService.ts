@@ -119,24 +119,53 @@ export class NoteService {
 				rawContributors
 			);
 
-			const directoryPath = this.fileUtils.getDirectoryPath(newPath);
-			if (directoryPath) {
-				await this.ensureFolderExists(directoryPath);
+			// determine if we should auto-organize (move/rename)
+			const shouldAutoOrganize =
+				!this.plugin.settings.grouping.enabled ||
+				this.plugin.settings.grouping.autoOrganizeFolders;
+
+			// get current file's directory and filename
+			const currentDirectory = this.fileUtils.getDirectoryPath(originalPath);
+			const currentFilename = originalPath.substring(
+				currentDirectory ? currentDirectory.length + 1 : 0
+			);
+
+			// get new directory and filename
+			const newDirectory = this.fileUtils.getDirectoryPath(newPath);
+			const newFilename = newPath.substring(
+				newDirectory ? newDirectory.length + 1 : 0
+			);
+
+			// determine the actual target path based on auto-organize setting
+			let targetPath: string;
+			if (shouldAutoOrganize) {
+				// use the full new path (folder + filename)
+				targetPath = newPath;
+
+				// ensure target directory exists
+				if (newDirectory) {
+					await this.ensureFolderExists(newDirectory);
+				}
+			} else {
+				// keep current folder, but update filename
+				targetPath = currentDirectory
+					? `${currentDirectory}/${newFilename}`
+					: newFilename;
 			}
 
-			// check if the file needs to be renamed
-			if (originalPath !== newPath) {
+			// check if the file needs to be renamed/moved
+			if (originalPath !== targetPath) {
 				await this.vault.modify(existingFile, updatedContent);
-				await this.vault.rename(existingFile, newPath);
+				await this.vault.rename(existingFile, targetPath);
 
 				if (IS_DEV) {
 					// console.log(
-					// 	`Updated and renamed note: ${originalPath} -> ${newPath}`
+					// 	`Updated and renamed note: ${originalPath} -> ${targetPath}`
 					// );
 				}
 
 				// get the new file reference after renaming
-				const renamedFile = this.vault.getFileByPath(newPath);
+				const renamedFile = this.vault.getFileByPath(targetPath);
 				if (!renamedFile) return null;
 
 				// update frontmatter
@@ -157,7 +186,7 @@ export class NoteService {
 
 				return renamedFile;
 			} else {
-				// update content and frontmatter
+				// update content and frontmatter in place
 				await this.vault.modify(existingFile, updatedContent);
 
 				await this.plugin.app.fileManager.processFrontMatter(
