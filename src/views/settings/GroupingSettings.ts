@@ -143,7 +143,7 @@ export function renderGroupingSettings(
 		new Setting(containerEl)
 			.setName("Auto-organize notes")
 			.setDesc(
-				"When enabled, notes are automatically moved to match your grouping settings on every sync. When disabled, notes stay where you've placed them, preserving your manual organization."
+				"Automatically move notes to match your grouping settings on every sync (default behavior). Disable to keep notes where you've manually placed them. Note: manually renamed folders may result in split collections when new books are added."
 			)
 			.addToggle((toggle) =>
 				toggle
