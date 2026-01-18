@@ -25,3 +25,5 @@ data.json
 # yarn 2+ files
 .yarn/cache/
 .yarn/install-state.gz
+
+release.sh
