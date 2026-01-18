@@ -56,11 +56,16 @@ export interface ActivityDateFieldConfig extends FieldConfig {
 	endPropertyName: string;
 }
 
+export interface QuotesFieldConfig extends FieldConfig {
+	format: "blockquote" | "callout";
+}
+
 export interface FieldsSettings {
 	// user_books fields
 	rating: FieldConfig;
 	status: FieldConfig;
 	review: FieldConfig;
+	quotes: QuotesFieldConfig;
 
 	// book or edition fields
 	title: FieldConfig;

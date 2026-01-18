@@ -5,6 +5,7 @@ export const DEFAULT_FIELDS_SETTINGS: FieldsSettings = {
 	rating: { enabled: true, propertyName: "rating" },
 	status: { enabled: true, propertyName: "status" },
 	review: { enabled: true, propertyName: "review" },
+	quotes: { enabled: false, propertyName: "quotes", format: "blockquote" },
 
 	title: { enabled: true, propertyName: "title" },
 	cover: { enabled: true, propertyName: "cover" },
@@ -45,7 +46,7 @@ export const DEFAULT_FIELDS_SETTINGS: FieldsSettings = {
 export const DEFAULT_FILENAME_FORMAT = "${title} (${year})";
 
 export const DEFAULT_SETTINGS: PluginSettings = {
-	settingsVersion: 9,
+	settingsVersion: 10,
 	apiKey: "",
 	lastSyncTimestamp: "",
 	userId: null,

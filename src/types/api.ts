@@ -97,3 +97,7 @@ export interface UserList {
 		book_id: number;
 	}>;
 }
+
+export interface ReadingJournalQuote {
+	entry: string;
+}
