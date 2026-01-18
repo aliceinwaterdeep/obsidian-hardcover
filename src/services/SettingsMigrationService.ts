@@ -181,7 +181,12 @@ export class SettingsMigrationService {
 				enabled: false,
 				propertyName: "quotes",
 				format: "blockquote",
+				bodyHeading: "Quotes",
 			};
+		}
+
+		if (!("bodyHeading" in settings.fieldsSettings.review)) {
+			(settings.fieldsSettings.review as any).bodyHeading = "Review";
 		}
 
 		return settings;

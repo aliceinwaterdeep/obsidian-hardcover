@@ -49,6 +49,7 @@ export interface FieldConfig {
 	enabled: boolean;
 	propertyName: string;
 	wikilinks?: boolean;
+	bodyHeading?: string;
 }
 
 export interface ActivityDateFieldConfig extends FieldConfig {

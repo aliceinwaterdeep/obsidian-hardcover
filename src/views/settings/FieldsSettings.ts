@@ -53,12 +53,9 @@ function addFieldSettings(
 ): void {
 	const fieldSettings = plugin.settings.fieldsSettings[field.key];
 
-	if (
-		field.key !== "firstRead" &&
-		field.key !== "lastRead" &&
-		field.key !== "review" &&
-		field.key !== "quotes"
-	) {
+	const isBodyField = field.key === "review" || field.key === "quotes";
+
+	if (field.key !== "firstRead" && field.key !== "lastRead" && !isBodyField) {
 		new Setting(containerEl)
 			.setName("Property name")
 			.setDesc(`Frontmatter property name for ${field.name.toLowerCase()}`)
@@ -91,20 +88,32 @@ function addFieldSettings(
 			);
 	}
 
-	// add explanation for review field
-	if (field.key === "review") {
+	if (isBodyField) {
 		containerEl.createEl("p", {
-			text: "Review content appears in the note body, not as a frontmatter property.",
+			text: `${field.name} content appears in the note body, not as a frontmatter property.`,
 			cls: "setting-item-description",
 		});
+
+		const defaultHeading = field.key === "review" ? "My Review" : "Quotes";
+		new Setting(containerEl)
+			.setName("Section heading")
+			.setDesc(
+				`Heading text for the ${field.name.toLowerCase()} section in your notes`,
+			)
+			.addText((text) =>
+				text
+					.setPlaceholder(defaultHeading)
+					.setValue((fieldSettings as any).bodyHeading || defaultHeading)
+					.onChange(async (value) => {
+						(plugin.settings.fieldsSettings[field.key] as any).bodyHeading =
+							value || defaultHeading;
+						await plugin.saveSettings();
+					}),
+			);
 	}
 
+	// quotes specific format dropdown
 	if (field.key === "quotes") {
-		containerEl.createEl("p", {
-			text: "Quotes content appears in the note body, not as a frontmatter property.",
-			cls: "setting-item-description",
-		});
-
 		new Setting(containerEl)
 			.setName("Quote format")
 			.setDesc("Choose how quotes are displayed in your notes")

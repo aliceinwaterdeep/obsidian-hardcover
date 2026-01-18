@@ -637,20 +637,23 @@ export class NoteService {
 			formattedReview = reviewText.replace(/\\"/g, '"');
 		}
 
-		return `## My Review\n\n${formattedReview.trim()}\n\n`;
+		const heading =
+			this.plugin.settings.fieldsSettings.review.bodyHeading || "Review";
+		return `## ${heading}\n\n${formattedReview.trim()}\n\n`;
 	}
 
 	private formatQuotesSection(quotes: string[]): string {
-		const format = this.plugin.settings.fieldsSettings.quotes.format;
-		let content = "## Quotes\n\n";
+		const quotesSettings = this.plugin.settings.fieldsSettings.quotes;
+		const format = quotesSettings.format;
+		const heading = quotesSettings.bodyHeading || "Quotes";
+
+		let content = `## ${heading}\n\n`;
 
 		if (format === "callout") {
-			// callout format: > [!quote]\n> quote text
 			for (const quote of quotes) {
 				content += `> [!quote]\n> ${quote}\n\n`;
 			}
 		} else {
-			// blockquote format: > quote text
 			for (const quote of quotes) {
 				content += `> ${quote}\n\n`;
 			}
