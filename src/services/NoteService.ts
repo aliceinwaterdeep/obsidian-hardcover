@@ -398,10 +398,7 @@ export class NoteService {
 			this.plugin.settings.fieldsSettings.review.enabled &&
 			bookMetadata.bodyContent.review
 		) {
-			const formattedReview = this.formatReviewText(
-				bookMetadata.bodyContent.review,
-			);
-			content += `## My Review\n\n${formattedReview}\n\n`;
+			content += this.formatReviewSection(bookMetadata.bodyContent.review);
 		}
 
 		// add quotes section if enabled and quotes exist
@@ -621,13 +618,13 @@ export class NoteService {
 		return { frontmatterText: "", bodyText: content };
 	}
 
-	private formatReviewText(reviewText: string): string {
-		if (!reviewText) return "";
+	private formatReviewSection(reviewText: string): string {
+		let formattedReview = reviewText;
 
 		// check if the review already contains HTML
 		if (reviewText.includes("<p>") || reviewText.includes("<br>")) {
 			// convert HTML to markdown-friendly format
-			let formatted = reviewText
+			formattedReview = reviewText
 				.replace(/<p>/g, "")
 				.replace(/<\/p>/g, "\n\n")
 				.replace(/<br\s*\/?>/g, "\n")
@@ -635,12 +632,12 @@ export class NoteService {
 				.replace(/&amp;/g, "&")
 				.replace(/&lt;/g, "<")
 				.replace(/&gt;/g, ">");
-
-			return formatted.trim();
 		} else {
 			// for raw text apply basic formatting
-			return reviewText.replace(/\\"/g, '"').trim();
+			formattedReview = reviewText.replace(/\\"/g, '"');
 		}
+
+		return `## My Review\n\n${formattedReview.trim()}\n\n`;
 	}
 
 	private formatQuotesSection(quotes: string[]): string {
