@@ -14,6 +14,10 @@ describe("MetadataService", () => {
 		status_id: 3, // "Read"
 		review: "Murderbot is the best",
 		review_raw: null,
+		reading_journals: [
+			{ entry: "Quote one from the book" },
+			{ entry: "Quote two from the book" },
+		],
 		book: {
 			title: "All Systems Red",
 			description: "A sci-fi novella about a security android.",
@@ -161,7 +165,7 @@ describe("MetadataService", () => {
 			};
 
 			const { metadata: result } = metadataService.buildMetadata(
-				userBookWithMissingData
+				userBookWithMissingData,
 			);
 
 			expect(result.hardcoverBookId).toBe(12345);
@@ -254,8 +258,60 @@ describe("MetadataService", () => {
 			expect(result.bodyContent.review).toBe("Murderbot is the best");
 			expect(result.bodyContent.title).toBe("All Systems Red: Special Edition");
 			expect(result.bodyContent.coverUrl).toBe(
-				"https://example.com/edition-cover.jpg"
+				"https://example.com/edition-cover.jpg",
 			);
+		});
+
+		test("includes body content for quotes when enabled", () => {
+			mockSettings.fieldsSettings.quotes.enabled = true;
+			metadataService.updateSettings(mockSettings);
+
+			const { metadata: result } =
+				metadataService.buildMetadata(MOCK_USER_BOOK);
+
+			expect(result.bodyContent.quotes).toEqual([
+				"Quote one from the book",
+				"Quote two from the book",
+			]);
+		});
+
+		test("excludes quotes when disabled", () => {
+			mockSettings.fieldsSettings.quotes.enabled = false;
+			metadataService.updateSettings(mockSettings);
+
+			const { metadata: result } =
+				metadataService.buildMetadata(MOCK_USER_BOOK);
+
+			expect(result.bodyContent.quotes).toBeUndefined();
+		});
+
+		test("handles empty quotes array", () => {
+			mockSettings.fieldsSettings.quotes.enabled = true;
+			metadataService.updateSettings(mockSettings);
+
+			const userBookWithoutQuotes = {
+				...MOCK_USER_BOOK,
+				reading_journals: [],
+			};
+
+			const { metadata: result } = metadataService.buildMetadata(
+				userBookWithoutQuotes,
+			);
+
+			expect(result.bodyContent.quotes).toBeUndefined();
+		});
+
+		test("handles missing reading_journals field", () => {
+			mockSettings.fieldsSettings.quotes.enabled = true;
+			metadataService.updateSettings(mockSettings);
+
+			const { reading_journals, ...userBookWithoutJournals } = MOCK_USER_BOOK;
+
+			const { metadata: result } = metadataService.buildMetadata(
+				userBookWithoutJournals as any,
+			);
+
+			expect(result.bodyContent.quotes).toBeUndefined();
 		});
 
 		test("extracts ISBN fields when enabled", () => {
