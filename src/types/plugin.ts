@@ -111,6 +111,7 @@ export interface BookMetadata {
 		title?: string;
 		coverUrl?: string;
 		review?: string;
+		quotes?: string[];
 	};
 	// allow for dynamic properties based on user custom property names
 	[key: string]: any;
