@@ -25,7 +25,7 @@ export class MetadataService {
 
 	buildMetadata(
 		userBook: HardcoverUserBook,
-		bookToListsMap?: Map<number, string[]> | null
+		bookToListsMap?: Map<number, string[]> | null,
 	): BookMetadataWithContributors {
 		const { fieldsSettings, dataSourcePreferences } = this.settings;
 		const metadata: BookMetadata = {
@@ -45,7 +45,7 @@ export class MetadataService {
 		const currentTitleSource = titleSource === "book" ? book : edition;
 		if (currentTitleSource && currentTitleSource.title) {
 			const normalizedTitle = this.fileUtils.normalizeText(
-				currentTitleSource.title
+				currentTitleSource.title,
 			);
 			// add to frontmatter
 			metadata[fieldsSettings.title.propertyName] = normalizedTitle;
@@ -61,7 +61,7 @@ export class MetadataService {
 		// add status if enabled and exists
 		if (fieldsSettings.status.enabled && userBook.status_id !== null) {
 			metadata[fieldsSettings.status.propertyName] = this.mapStatus(
-				userBook.status_id
+				userBook.status_id,
 			);
 		}
 
@@ -75,6 +75,14 @@ export class MetadataService {
 			}
 
 			metadata.bodyContent.review = userReview;
+		}
+
+		// add quotes to bodyContent if enabled and exists
+		if (fieldsSettings.quotes.enabled && userBook.reading_journals) {
+			const quotes = userBook.reading_journals.map((q) => q.entry);
+			if (quotes.length > 0) {
+				metadata.bodyContent.quotes = quotes;
+			}
 		}
 
 		// add cover (from book or edition based on user settings)
@@ -122,13 +130,13 @@ export class MetadataService {
 				edition.cached_contributors
 			) {
 				otherContributors = this.extractContributors(
-					edition.cached_contributors
+					edition.cached_contributors,
 				);
 			}
 
 			if (otherContributors.length) {
 				const contributorStrings = otherContributors.map(
-					(c) => `${c.name} (${c.role})`
+					(c) => `${c.name} (${c.role})`,
 				);
 				metadata[fieldsSettings.contributors.propertyName] = contributorStrings;
 			}
@@ -152,15 +160,14 @@ export class MetadataService {
 
 		// add url
 		if (fieldsSettings.url.enabled && book.slug) {
-			metadata[
-				fieldsSettings.url.propertyName
-			] = `${HARDCOVER_URL}/${HARDCOVER_BOOKS_ROUTE}/${book.slug}`;
+			metadata[fieldsSettings.url.propertyName] =
+				`${HARDCOVER_URL}/${HARDCOVER_BOOKS_ROUTE}/${book.slug}`;
 		}
 
 		// add publisher
 		if (fieldsSettings.publisher.enabled && edition.publisher?.name) {
 			const publisherValue = this.fileUtils.normalizeText(
-				edition.publisher.name
+				edition.publisher.name,
 			);
 			metadata[fieldsSettings.publisher.propertyName] = publisherValue;
 		}
@@ -191,7 +198,7 @@ export class MetadataService {
 			book.cached_tags.Genre
 		) {
 			const genres = book.cached_tags.Genre.map((tag: any) => tag.tag).filter(
-				(genre: string) => !!genre
+				(genre: string) => !!genre,
 			);
 
 			if (genres.length > 0) {
@@ -275,7 +282,7 @@ export class MetadataService {
 					!item.contribution ||
 					item.contribution === "" ||
 					item.contribution === "Author" ||
-					this.hasNameAsRole(contributorsData) // treat as author
+					this.hasNameAsRole(contributorsData), // treat as author
 			)
 			.map((item) => item.author?.name)
 			.filter((name) => !!name) // remove any undefined/null names
@@ -285,7 +292,7 @@ export class MetadataService {
 	}
 
 	private extractContributors(
-		contributorsData: Record<any, any>[]
+		contributorsData: Record<any, any>[],
 	): Array<{ name: string; role: string }> {
 		if (!contributorsData || !Array.isArray(contributorsData)) {
 			return [];

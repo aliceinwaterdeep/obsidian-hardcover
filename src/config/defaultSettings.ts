@@ -4,7 +4,13 @@ import { HARDCOVER_STATUS_MAP } from "./statusMapping";
 export const DEFAULT_FIELDS_SETTINGS: FieldsSettings = {
 	rating: { enabled: true, propertyName: "rating" },
 	status: { enabled: true, propertyName: "status" },
-	review: { enabled: true, propertyName: "review" },
+	review: { enabled: true, propertyName: "review", bodyHeading: "Review" },
+	quotes: {
+		enabled: false,
+		propertyName: "quotes",
+		format: "blockquote",
+		bodyHeading: "Quotes",
+	},
 
 	title: { enabled: true, propertyName: "title" },
 	cover: { enabled: true, propertyName: "cover" },
@@ -45,7 +51,7 @@ export const DEFAULT_FIELDS_SETTINGS: FieldsSettings = {
 export const DEFAULT_FILENAME_FORMAT = "${title} (${year})";
 
 export const DEFAULT_SETTINGS: PluginSettings = {
-	settingsVersion: 9,
+	settingsVersion: 10,
 	apiKey: "",
 	lastSyncTimestamp: "",
 	userId: null,

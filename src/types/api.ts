@@ -45,6 +45,7 @@ export interface HardcoverUserBook {
 	book: HardcoverBook;
 	edition: HardcoverEdition;
 	user_book_reads: HardcoverUserBooksReads[];
+	reading_journals?: ReadingJournalQuote[];
 }
 
 interface HardcoverBook {
@@ -96,4 +97,8 @@ export interface UserList {
 	list_books: Array<{
 		book_id: number;
 	}>;
+}
+
+export interface ReadingJournalQuote {
+	entry: string;
 }

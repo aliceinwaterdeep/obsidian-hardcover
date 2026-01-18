@@ -14,20 +14,20 @@ export class NoteService {
 	constructor(
 		private vault: Vault,
 		private fileUtils: FileUtils,
-		private plugin: ObsidianHardcover
+		private plugin: ObsidianHardcover,
 	) {
 		this.plugin = plugin;
 	}
 
 	async createNote(
 		bookMetadata: BookMetadata,
-		rawContributors?: Record<any, any>[]
+		rawContributors?: Record<any, any>[],
 	): Promise<TFile | null> {
 		try {
 			const fullPath = this.generateNotePath(
 				bookMetadata,
 				this.plugin.settings.grouping,
-				rawContributors
+				rawContributors,
 			);
 
 			const directoryPath = this.fileUtils.getDirectoryPath(fullPath);
@@ -66,7 +66,7 @@ export class NoteService {
 				file,
 				(frontmatter) => {
 					Object.assign(frontmatter, frontmatterData);
-				}
+				},
 			);
 
 			return file;
@@ -79,7 +79,7 @@ export class NoteService {
 	async updateNote(
 		bookMetadata: BookMetadata,
 		existingFile: TFile,
-		rawContributors?: Record<any, any>[]
+		rawContributors?: Record<any, any>[],
 	): Promise<TFile | null> {
 		try {
 			const originalPath = existingFile.path;
@@ -102,11 +102,11 @@ export class NoteService {
 
 			if (delimiterIndex !== -1) {
 				const userContent = existingBodyText.substring(
-					delimiterIndex + CONTENT_DELIMITER.length
+					delimiterIndex + CONTENT_DELIMITER.length,
 				);
 				const updatedBody = newBodyContent.replace(
 					`${CONTENT_DELIMITER}\n\n`,
-					`${CONTENT_DELIMITER}${userContent}`
+					`${CONTENT_DELIMITER}${userContent}`,
 				);
 				updatedContent = `${frontmatterText}${updatedBody}`;
 			} else {
@@ -116,7 +116,7 @@ export class NoteService {
 			const newPath = this.generateNotePath(
 				bookMetadata,
 				this.plugin.settings.grouping,
-				rawContributors
+				rawContributors,
 			);
 
 			// determine if we should auto-organize (move/rename)
@@ -127,13 +127,13 @@ export class NoteService {
 			// get current file's directory and filename
 			const currentDirectory = this.fileUtils.getDirectoryPath(originalPath);
 			const currentFilename = originalPath.substring(
-				currentDirectory ? currentDirectory.length + 1 : 0
+				currentDirectory ? currentDirectory.length + 1 : 0,
 			);
 
 			// get new directory and filename
 			const newDirectory = this.fileUtils.getDirectoryPath(newPath);
 			const newFilename = newPath.substring(
-				newDirectory ? newDirectory.length + 1 : 0
+				newDirectory ? newDirectory.length + 1 : 0,
 			);
 
 			// determine the actual target path based on auto-organize setting
@@ -179,9 +179,9 @@ export class NoteService {
 							frontmatterData,
 							managedFrontmatterKeys,
 							preserveCustomFrontmatter,
-							this.getManagedOrder(frontmatterData)
+							this.getManagedOrder(frontmatterData),
 						);
-					}
+					},
 				);
 
 				return renamedFile;
@@ -197,9 +197,9 @@ export class NoteService {
 							frontmatterData,
 							managedFrontmatterKeys,
 							preserveCustomFrontmatter,
-							this.getManagedOrder(frontmatterData)
+							this.getManagedOrder(frontmatterData),
 						);
-					}
+					},
 				);
 
 				return existingFile;
@@ -213,12 +213,12 @@ export class NoteService {
 	public generateNotePath(
 		bookMetadata: BookMetadata,
 		groupingSettings: GroupingSettings,
-		rawContributors?: Record<any, any>[]
+		rawContributors?: Record<any, any>[],
 	): string {
 		const filename = this.fileUtils.processFilenameTemplate(
 			this.plugin.settings.filenameTemplate,
 			bookMetadata,
-			this.plugin.settings.fieldsSettings
+			this.plugin.settings.fieldsSettings,
 		);
 
 		let basePath = normalizePath(this.plugin.settings.targetFolder);
@@ -227,7 +227,7 @@ export class NoteService {
 			const directories = this.buildDirectoryPath(
 				bookMetadata,
 				groupingSettings,
-				rawContributors
+				rawContributors,
 			);
 
 			if (directories) {
@@ -241,7 +241,7 @@ export class NoteService {
 	public buildDirectoryPath(
 		bookMetadata: BookMetadata,
 		groupingSettings: GroupingSettings,
-		rawContributors?: Record<any, any>[]
+		rawContributors?: Record<any, any>[],
 	): string {
 		const pathComponents: string[] = [];
 
@@ -251,7 +251,7 @@ export class NoteService {
 		) {
 			const authorDirectory = this.getAuthorDirectory(
 				bookMetadata,
-				rawContributors
+				rawContributors,
 			);
 
 			if (authorDirectory) {
@@ -275,7 +275,7 @@ export class NoteService {
 
 	private getAuthorDirectory(
 		bookMetadata: BookMetadata,
-		rawContributors?: Record<any, any>[]
+		rawContributors?: Record<any, any>[],
 	): string | null {
 		const authorProperty =
 			this.plugin.settings.fieldsSettings.authors.propertyName;
@@ -289,7 +289,7 @@ export class NoteService {
 				"useCollectionsFolder"
 		) {
 			return this.fileUtils.sanitizeFolderName(
-				this.plugin.settings.grouping.collectionsFolderName
+				this.plugin.settings.grouping.collectionsFolderName,
 			);
 		}
 
@@ -309,7 +309,7 @@ export class NoteService {
 			this.plugin.settings.grouping.noAuthorBehavior === "useFallbackFolder"
 		) {
 			return this.fileUtils.sanitizeFilename(
-				this.plugin.settings.grouping.fallbackFolderName
+				this.plugin.settings.grouping.fallbackFolderName,
 			);
 		}
 
@@ -345,7 +345,7 @@ export class NoteService {
 
 			// extract series name from wikilink format: [[Series|Series #1]] -> Series
 			const wikilinkMatch = seriesName.match(
-				/^\[\[([^|\]]+)(?:\|[^\]]+)?\]\]$/
+				/^\[\[([^|\]]+)(?:\|[^\]]+)?\]\]$/,
 			);
 			if (wikilinkMatch) {
 				seriesName = wikilinkMatch[1];
@@ -398,10 +398,16 @@ export class NoteService {
 			this.plugin.settings.fieldsSettings.review.enabled &&
 			bookMetadata.bodyContent.review
 		) {
-			const formattedReview = this.formatReviewText(
-				bookMetadata.bodyContent.review
-			);
-			content += `## My Review\n\n${formattedReview}\n\n`;
+			content += this.formatReviewSection(bookMetadata.bodyContent.review);
+		}
+
+		// add quotes section if enabled and quotes exist
+		if (
+			this.plugin.settings.fieldsSettings.quotes.enabled &&
+			bookMetadata.bodyContent.quotes &&
+			bookMetadata.bodyContent.quotes.length > 0
+		) {
+			content += this.formatQuotesSection(bookMetadata.bodyContent.quotes);
 		}
 
 		// add obsidian-hardcover plugin delimiter
@@ -430,7 +436,7 @@ export class NoteService {
 	}
 
 	private prepareFrontmatter(
-		metadata: Record<string, any>
+		metadata: Record<string, any>,
 	): Record<string, any> {
 		const { bodyContent, ...frontmatterData } = metadata;
 		const prepared: Record<string, any> = {};
@@ -450,7 +456,7 @@ export class NoteService {
 				const activityField = fieldSettings as ActivityDateFieldConfig;
 				propertyNames.push(
 					activityField.startPropertyName,
-					activityField.endPropertyName
+					activityField.endPropertyName,
 				);
 			}
 
@@ -493,7 +499,7 @@ export class NoteService {
 		newData: Record<string, any>,
 		managedKeys: Set<string>,
 		preserveCustomFrontmatter: boolean,
-		managedOrder: string[]
+		managedOrder: string[],
 	): void {
 		const original = { ...frontmatter };
 		const originalKeys = Object.keys(frontmatter);
@@ -612,13 +618,13 @@ export class NoteService {
 		return { frontmatterText: "", bodyText: content };
 	}
 
-	private formatReviewText(reviewText: string): string {
-		if (!reviewText) return "";
+	private formatReviewSection(reviewText: string): string {
+		let formattedReview = reviewText;
 
 		// check if the review already contains HTML
 		if (reviewText.includes("<p>") || reviewText.includes("<br>")) {
 			// convert HTML to markdown-friendly format
-			let formatted = reviewText
+			formattedReview = reviewText
 				.replace(/<p>/g, "")
 				.replace(/<\/p>/g, "\n\n")
 				.replace(/<br\s*\/?>/g, "\n")
@@ -626,12 +632,34 @@ export class NoteService {
 				.replace(/&amp;/g, "&")
 				.replace(/&lt;/g, "<")
 				.replace(/&gt;/g, ">");
-
-			return formatted.trim();
 		} else {
 			// for raw text apply basic formatting
-			return reviewText.replace(/\\"/g, '"').trim();
+			formattedReview = reviewText.replace(/\\"/g, '"');
 		}
+
+		const heading =
+			this.plugin.settings.fieldsSettings.review.bodyHeading || "Review";
+		return `## ${heading}\n\n${formattedReview.trim()}\n\n`;
+	}
+
+	private formatQuotesSection(quotes: string[]): string {
+		const quotesSettings = this.plugin.settings.fieldsSettings.quotes;
+		const format = quotesSettings.format;
+		const heading = quotesSettings.bodyHeading || "Quotes";
+
+		let content = `## ${heading}\n\n`;
+
+		if (format === "callout") {
+			for (const quote of quotes) {
+				content += `> [!quote]\n> ${quote}\n\n`;
+			}
+		} else {
+			for (const quote of quotes) {
+				content += `> ${quote}\n\n`;
+			}
+		}
+
+		return content;
 	}
 
 	/**
@@ -674,7 +702,7 @@ export class NoteService {
 		} catch (error) {
 			console.error(
 				`Error finding note by Hardcover Book ID ${hardcoverBookId}:`,
-				error
+				error,
 			);
 			return null;
 		}
@@ -709,7 +737,7 @@ export class NoteService {
 		) {
 			formattedMetadata[settings.authors.propertyName] = this.formatAsWikilinks(
 				formattedMetadata[settings.authors.propertyName],
-				"authors"
+				"authors",
 			);
 		}
 
@@ -720,7 +748,7 @@ export class NoteService {
 			formattedMetadata[settings.contributors.propertyName] =
 				this.formatAsWikilinks(
 					formattedMetadata[settings.contributors.propertyName],
-					"contributors"
+					"contributors",
 				);
 		}
 
@@ -730,7 +758,7 @@ export class NoteService {
 		) {
 			formattedMetadata[settings.series.propertyName] = this.formatAsWikilinks(
 				formattedMetadata[settings.series.propertyName],
-				"series"
+				"series",
 			);
 		}
 
@@ -739,9 +767,8 @@ export class NoteService {
 			formattedMetadata[settings.publisher.propertyName]
 		) {
 			const publisherValue = formattedMetadata[settings.publisher.propertyName];
-			formattedMetadata[
-				settings.publisher.propertyName
-			] = `[[${publisherValue}]]`;
+			formattedMetadata[settings.publisher.propertyName] =
+				`[[${publisherValue}]]`;
 		}
 
 		if (
@@ -750,7 +777,7 @@ export class NoteService {
 		) {
 			formattedMetadata[settings.genres.propertyName] = this.formatAsWikilinks(
 				formattedMetadata[settings.genres.propertyName],
-				"genres"
+				"genres",
 			);
 		}
 
@@ -760,7 +787,7 @@ export class NoteService {
 		) {
 			formattedMetadata[settings.lists.propertyName] = this.formatAsWikilinks(
 				formattedMetadata[settings.lists.propertyName],
-				"lists"
+				"lists",
 			);
 		}
 
@@ -822,7 +849,7 @@ export class NoteService {
 	}
 
 	private findFallbackAuthor(
-		contributorsData: Record<any, any>[]
+		contributorsData: Record<any, any>[],
 	): string | null {
 		if (
 			!contributorsData ||

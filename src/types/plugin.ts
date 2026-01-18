@@ -49,6 +49,7 @@ export interface FieldConfig {
 	enabled: boolean;
 	propertyName: string;
 	wikilinks?: boolean;
+	bodyHeading?: string;
 }
 
 export interface ActivityDateFieldConfig extends FieldConfig {
@@ -56,11 +57,16 @@ export interface ActivityDateFieldConfig extends FieldConfig {
 	endPropertyName: string;
 }
 
+export interface QuotesFieldConfig extends FieldConfig {
+	format: "blockquote" | "callout";
+}
+
 export interface FieldsSettings {
 	// user_books fields
 	rating: FieldConfig;
 	status: FieldConfig;
 	review: FieldConfig;
+	quotes: QuotesFieldConfig;
 
 	// book or edition fields
 	title: FieldConfig;
@@ -106,6 +112,7 @@ export interface BookMetadata {
 		title?: string;
 		coverUrl?: string;
 		review?: string;
+		quotes?: string[];
 	};
 	// allow for dynamic properties based on user custom property names
 	[key: string]: any;

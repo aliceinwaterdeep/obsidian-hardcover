@@ -48,6 +48,10 @@ export class SettingsMigrationService {
 			settings = this.migrateToV9(settings);
 		}
 
+		if (currentVersion < 10) {
+			settings = this.migrateToV10(settings);
+		}
+
 		// update version number
 		settings.settingsVersion = DEFAULT_SETTINGS.settingsVersion;
 		return settings;
@@ -171,24 +175,20 @@ export class SettingsMigrationService {
 		return settings;
 	}
 
-	/**
-	 * Example function for future migrations
-	 * Can be used as a template when adding version 2
-	 */
-	/* 
-  private static migrateToV2(settings: PluginSettings): PluginSettings {
-    // Example: Add a new field with a default value
-    if (!('newSetting' in settings)) {
-      settings.newSetting = DEFAULT_SETTINGS.newSetting;
-    }
-    
-    // Example: Rename a field
-    if ('oldFieldName' in settings) {
-      settings.newFieldName = settings.oldFieldName;
-      delete settings.oldFieldName;
-    }
-    
-    return settings;
-  }
-  */
+	private static migrateToV10(settings: PluginSettings): PluginSettings {
+		if (!settings.fieldsSettings.quotes) {
+			(settings.fieldsSettings as any).quotes = {
+				enabled: false,
+				propertyName: "quotes",
+				format: "blockquote",
+				bodyHeading: "Quotes",
+			};
+		}
+
+		if (!("bodyHeading" in settings.fieldsSettings.review)) {
+			(settings.fieldsSettings.review as any).bodyHeading = "Review";
+		}
+
+		return settings;
+	}
 }

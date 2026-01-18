@@ -12,7 +12,7 @@ Syncs your [Hardcover](https://hardcover.app) library to your Obsidian vault, cr
 - **Incremental Updates**: Only sync books that have changed since your last sync
 - **Rich Metadata**: Store book information as frontmatter properties:
   - Basic info: Title, authors, publisher, release date
-  - Reading data: Status, rating, read dates
+  - Reading data: Status, rating, read dates, quotes from reading journal
   - Content: Description, genres, series information
   - See [Fields](#fields) for the full list of available metadata
 - **Customizable Format**:
@@ -70,7 +70,6 @@ If you installed this plugin manually before `1.1.0`:
 1. Get your Hardcover API key from [Hardcover](https://hardcover.app/account/api)
 2. Open Obsidian Settings and go to the "Hardcover" tab
 3. Configure your API key using one of these methods:
-
    - **Settings**: Enter your API key directly in the plugin settings
    - **Environment file**: Create a `.env` file in your vault root with:
      ```
@@ -131,6 +130,7 @@ Configure which fields to include in your book notes:
 - **Status**: Reading status (Want to Read, Currently Reading, etc.) - you can customize the text
 - **Rating**: Your 1-5 star rating
 - **Review**: Your written review
+- **Quotes**: Quotes saved in your Hardcover reading journal
 - **First Read**: Start and end dates of your first read
 - **Last Read**: Start and end dates of your most recent read
 - **Total Reads**: Number of times you've read the book
@@ -244,6 +244,12 @@ releaseDate: "2021-05-04"
 ## My Review
 
 Lorem ipsum dolor sit amet, consectetur adipiscing elit...
+
+## Quotes
+
+> "Human beings have a remarkable ability to accept the abnormal and make it normal."
+
+> "Grumpy. Angry. Stupid. How long since last sleep, question?"
 
 <!-- obsidian-hardcover-plugin-end -->
 

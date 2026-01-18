@@ -11,7 +11,7 @@ export class QueryBuilder {
 		offset: number,
 		limit: number,
 		updatedAfter?: string,
-		status?: number[]
+		status?: number[],
 	): string {
 		const fieldsSettings = this.settings.fieldsSettings;
 		const dataPrefs = this.settings.dataSourcePreferences;
@@ -85,12 +85,21 @@ export class QueryBuilder {
 			fields.push("review_raw");
 		}
 
+		if (settings.quotes.enabled) {
+			fields.push(`reading_journals(
+					where: {event: {_eq: "quote"}}
+					order_by: {created_at: asc}
+				) {
+					entry
+				}`);
+		}
+
 		return fields.join("\n                    ");
 	}
 
 	private buildBookFields(
 		settings: FieldsSettings,
-		dataPrefs: PluginSettings["dataSourcePreferences"]
+		dataPrefs: PluginSettings["dataSourcePreferences"],
 	): string {
 		const fields: string[] = ["title"]; // always include at least one field to avoid empty selection in the query
 
@@ -142,7 +151,7 @@ export class QueryBuilder {
 
 	private buildEditionFields(
 		settings: FieldsSettings,
-		dataPrefs: PluginSettings["dataSourcePreferences"]
+		dataPrefs: PluginSettings["dataSourcePreferences"],
 	): string {
 		const fields: string[] = ["title"]; // always include at least one field to avoid empty selection in the query
 

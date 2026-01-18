@@ -12,7 +12,7 @@ import { renderStatusMappingSettings } from "./StatusMappingSettings";
 export function renderFieldSettings(
 	containerEl: HTMLElement,
 	plugin: ObsidianHardcover,
-	accordion: Accordion
+	accordion: Accordion,
 ): void {
 	new Setting(containerEl)
 		.setName("Configure the data to include in your book notes")
@@ -21,7 +21,7 @@ export function renderFieldSettings(
 	new Setting(containerEl)
 		.setName("Preserve custom frontmatter")
 		.setDesc(
-			"Keep any user-added frontmatter properties when syncing. Turn off to let Hardcover overwrite the entire frontmatter."
+			"Keep any user-added frontmatter properties when syncing. Turn off to let Hardcover overwrite the entire frontmatter.",
 		)
 		.addToggle((toggle) =>
 			toggle
@@ -29,7 +29,7 @@ export function renderFieldSettings(
 				.onChange(async (value) => {
 					plugin.settings.preserveCustomFrontmatter = value;
 					await plugin.saveSettings();
-				})
+				}),
 		);
 
 	// create field groups div for better spacing
@@ -40,7 +40,7 @@ export function renderFieldSettings(
 	FIELD_DEFINITIONS.forEach((field) => {
 		const contentEl = accordion.renderAccordionField(
 			fieldGroupsContainer,
-			field
+			field,
 		);
 		addFieldSettings(contentEl, field, plugin);
 	});
@@ -49,15 +49,13 @@ export function renderFieldSettings(
 function addFieldSettings(
 	containerEl: HTMLElement,
 	field: FieldDefinition,
-	plugin: ObsidianHardcover
+	plugin: ObsidianHardcover,
 ): void {
 	const fieldSettings = plugin.settings.fieldsSettings[field.key];
 
-	if (
-		field.key !== "firstRead" &&
-		field.key !== "lastRead" &&
-		field.key !== "review"
-	) {
+	const isBodyField = field.key === "review" || field.key === "quotes";
+
+	if (field.key !== "firstRead" && field.key !== "lastRead" && !isBodyField) {
 		new Setting(containerEl)
 			.setName("Property name")
 			.setDesc(`Frontmatter property name for ${field.name.toLowerCase()}`)
@@ -69,7 +67,7 @@ function addFieldSettings(
 						plugin.settings.fieldsSettings[field.key].propertyName =
 							value || field.key;
 						await plugin.saveSettings();
-					})
+					}),
 			);
 	}
 
@@ -77,7 +75,7 @@ function addFieldSettings(
 		new Setting(containerEl)
 			.setName("Format as wikilinks")
 			.setDesc(
-				`Format ${field.name.toLowerCase()} as [[wikilinks]] for linked notes`
+				`Format ${field.name.toLowerCase()} as [[wikilinks]] for linked notes`,
 			)
 			.addToggle((toggle) =>
 				toggle
@@ -86,16 +84,49 @@ function addFieldSettings(
 						(plugin.settings.fieldsSettings[field.key] as any).wikilinks =
 							value;
 						await plugin.saveSettings();
-					})
+					}),
 			);
 	}
 
-	// add explanation for review field
-	if (field.key === "review") {
+	if (isBodyField) {
 		containerEl.createEl("p", {
-			text: "Review content appears in the note body, not as a frontmatter property.",
+			text: `${field.name} content appears in the note body, not as a frontmatter property.`,
 			cls: "setting-item-description",
 		});
+
+		const defaultHeading = field.key === "review" ? "My Review" : "Quotes";
+		new Setting(containerEl)
+			.setName("Section heading")
+			.setDesc(
+				`Heading text for the ${field.name.toLowerCase()} section in your notes`,
+			)
+			.addText((text) =>
+				text
+					.setPlaceholder(defaultHeading)
+					.setValue((fieldSettings as any).bodyHeading || defaultHeading)
+					.onChange(async (value) => {
+						(plugin.settings.fieldsSettings[field.key] as any).bodyHeading =
+							value || defaultHeading;
+						await plugin.saveSettings();
+					}),
+			);
+	}
+
+	// quotes specific format dropdown
+	if (field.key === "quotes") {
+		new Setting(containerEl)
+			.setName("Quote format")
+			.setDesc("Choose how quotes are displayed in your notes")
+			.addDropdown((dropdown) =>
+				dropdown
+					.addOption("blockquote", "Blockquote")
+					.addOption("callout", "Callout")
+					.setValue((fieldSettings as any).format || "blockquote")
+					.onChange(async (value: "blockquote" | "callout") => {
+						(plugin.settings.fieldsSettings.quotes as any).format = value;
+						await plugin.saveSettings();
+					}),
+			);
 	}
 
 	if (field.hasDataSource) {
@@ -106,7 +137,7 @@ function addFieldSettings(
 		new Setting(containerEl)
 			.setName("Data source")
 			.setDesc(
-				`Choose whether to use book-level or edition-level data for the ${field.name.toLowerCase()}.`
+				`Choose whether to use book-level or edition-level data for the ${field.name.toLowerCase()}.`,
 			)
 			.addDropdown((dropdown) => {
 				dropdown
@@ -126,14 +157,14 @@ function addFieldSettings(
 			field.key,
 			"start",
 			field.name,
-			plugin
+			plugin,
 		);
 		addActivityDatePropertyField(
 			containerEl,
 			field.key,
 			"end",
 			field.name,
-			plugin
+			plugin,
 		);
 	}
 
@@ -147,7 +178,7 @@ function addActivityDatePropertyField(
 	fieldKey: keyof FieldsSettings,
 	type: "start" | "end",
 	fieldName: string,
-	plugin: ObsidianHardcover
+	plugin: ObsidianHardcover,
 ): void {
 	const fieldSettings = plugin.settings.fieldsSettings[
 		fieldKey
