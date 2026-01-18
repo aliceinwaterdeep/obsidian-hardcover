@@ -22,9 +22,7 @@
 .obhc-settings .sync-setting-note {
 	margin-bottom: 5px;
 }
-.obhc-settings .mod-toggle {
-	border: none;
-}
+
 .obhc-settings .has-error {
 	border-color: var(--text-error) !important;
 }
