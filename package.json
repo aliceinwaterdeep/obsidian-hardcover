@@ -1,6 +1,6 @@
 {
 	"name": "obsidian-hardcover",
-	"version": "1.8.0",
+	"version": "1.8.1",
 	"version-tag-prefix": "",
 	"description": "Sync your Hardcover library to your notes.",
 	"main": "main.js",
