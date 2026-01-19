@@ -1,4 +1,4 @@
-import { setIcon, Setting } from "obsidian";
+import { setIcon, ToggleComponent } from "obsidian";
 import ObsidianHardcover from "src/main";
 import { FieldDefinition } from "src/types";
 
@@ -27,25 +27,20 @@ export class Accordion {
 		header.createSpan({ text: field.name });
 
 		if (field.key !== "title") {
-			const toggleSetting = new Setting(header);
-			toggleSetting.addToggle((toggle) => {
-				toggle.setValue(isEnabled).onChange(async (value) => {
-					this.plugin.settings.fieldsSettings[field.key].enabled = value;
-					await this.plugin.saveSettings();
+			const toggleContainer = header.createDiv({ cls: "obhc-field-toggle" });
+			const toggle = new ToggleComponent(toggleContainer);
+			toggle.setValue(isEnabled).onChange(async (value) => {
+				this.plugin.settings.fieldsSettings[field.key].enabled = value;
+				await this.plugin.saveSettings();
 
-					if (content) {
-						if (value) {
-							content.removeClass("obhc-disabled-settings");
-						} else {
-							content.addClass("obhc-disabled-settings");
-						}
+				if (content) {
+					if (value) {
+						content.removeClass("obhc-disabled-settings");
+					} else {
+						content.addClass("obhc-disabled-settings");
 					}
-				});
+				}
 			});
-
-			toggleSetting.settingEl.addClass("obhc-field-toggle");
-			toggleSetting.nameEl.remove();
-			toggleSetting.descEl.remove();
 		}
 
 		const contentWrapper = accordionContainer.createDiv({

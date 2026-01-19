@@ -94,12 +94,12 @@ export function addSyncButton(config: SyncButtonConfig): ButtonComponent {
 export function renderLastSyncTimestampSetting(
 	containerEl: HTMLElement,
 	plugin: ObsidianHardcover,
-	onSettingsChanged: () => void
+	onSettingsChanged: () => void,
 ): void {
 	new Setting(containerEl)
 		.setName("Last sync timestamp")
 		.setDesc(
-			"When provided, only books updated on Hardcover after this timestamp will be synced. Leave empty to sync your entire library. Example format: 2025-01-01T18:30:35.519934+00:00"
+			"When provided, only books updated on Hardcover after this timestamp will be synced. Leave empty to sync your entire library. Example format: 2025-01-01T18:30:35.519934+00:00",
 		)
 		.addExtraButton((button) => {
 			button
@@ -118,7 +118,7 @@ export function renderLastSyncTimestampSetting(
 				.onChange(async (value) => {
 					plugin.settings.lastSyncTimestamp = value;
 					await plugin.saveSettings();
-				})
+				}),
 		);
 }
 
@@ -144,16 +144,16 @@ export function renderSyncInfoMessages(containerEl: HTMLElement): void {
 
 export function renderStatusFilterSetting(
 	containerEl: HTMLElement,
-	plugin: ObsidianHardcover
+	plugin: ObsidianHardcover,
 ): void {
 	const filterSetting = new Setting(containerEl)
 		.setName("Filter by reading status")
 		.setDesc(
-			"Select which reading statuses to sync. Uncheck to exclude. All statuses synced by default."
+			"Select which reading statuses to sync. Uncheck to exclude. All statuses synced by default.",
 		);
 
 	const allStatuses = Object.keys(HARDCOVER_STATUS_MAP).map((id) =>
-		parseInt(id)
+		parseInt(id),
 	);
 
 	const filterNote = filterSetting.infoEl.createDiv({
@@ -170,7 +170,7 @@ export function renderStatusFilterSetting(
 		} else {
 			const statusNames = filter
 				.map(
-					(id) => HARDCOVER_STATUS_MAP[id as keyof typeof HARDCOVER_STATUS_MAP]
+					(id) => HARDCOVER_STATUS_MAP[id as keyof typeof HARDCOVER_STATUS_MAP],
 				)
 				.filter(Boolean)
 				.join(", ");
@@ -180,12 +180,12 @@ export function renderStatusFilterSetting(
 
 	updateFilterNote();
 
-	const checkboxContainer = filterSetting.controlEl.createDiv({
+	const checkboxContainer = filterSetting.settingEl.createDiv({
 		cls: "status-filter-checkboxes",
 	});
 
 	for (const [statusIdStr, statusName] of Object.entries(
-		HARDCOVER_STATUS_MAP
+		HARDCOVER_STATUS_MAP,
 	)) {
 		const statusId = parseInt(statusIdStr, 10);
 
@@ -205,7 +205,7 @@ export function renderStatusFilterSetting(
 				plugin.settings.statusFilter = [...currentFilter, statusId];
 			} else {
 				plugin.settings.statusFilter = currentFilter.filter(
-					(id) => id !== statusId
+					(id) => id !== statusId,
 				);
 			}
 

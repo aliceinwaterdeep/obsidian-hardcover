@@ -16,9 +16,7 @@
 .obhc-settings .nested-settings {
 	margin-left: 0;
 }
-.obhc-settings .setting-item:last-of-type {
-	padding-bottom: 0;
-}
+
 .obhc-settings .sync-setting-note {
 	margin-bottom: 5px;
 }
@@ -102,10 +100,6 @@
 .obhc-test-sync input {
 	width: 50px;
 	text-align: center;
-}
-.obhc-sync-cta {
-	border-top: none;
-	padding-top: 0;
 }
 
 .obhc-source-container {
