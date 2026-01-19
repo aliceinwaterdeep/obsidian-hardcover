@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.8.1
+
+Fixed some inconsistencies in the settings UI after Obsidian introduced UI changes with version 1.11.
+
 ## 1.8.0
 
 - Quotes sync: you can now sync your Hardcover reading journal quotes to your book notes. You can choose between blockquote or callout format. Thanks to @cln.e on Hardcover Discord for the suggestion!
