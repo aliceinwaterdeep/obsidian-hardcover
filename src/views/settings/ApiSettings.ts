@@ -42,18 +42,18 @@ export function renderApiTokenSetting(
 			});
 			envMessageEl.textContent =
 				"✅ API key loaded from .env file (takes priority over SecretStorage)";
+		} else {
+			setting.addComponent((component) => {
+				return new SecretComponent(plugin.app, component)
+					.setValue(plugin.settings.apiKey)
+					.onChange(async (value) => {
+						plugin.settings.apiKey = value;
+						await plugin.saveSettings();
+						onSettingsChanged();
+					});
+			});
 		}
 	};
-
-	setting.addComponent((component) => {
-		return new SecretComponent(plugin.app, component)
-			.setValue(plugin.settings.apiKey)
-			.onChange(async (value) => {
-				plugin.settings.apiKey = value;
-				await plugin.saveSettings();
-				onSettingsChanged();
-			});
-	});
 
 	// initial state
 	updateEnvMessage();
