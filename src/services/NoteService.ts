@@ -84,8 +84,18 @@ export class NoteService {
 		try {
 			const originalPath = existingFile.path;
 			const existingContent = await this.vault.cachedRead(existingFile);
-			const { frontmatterText, bodyText: existingBodyText } =
-				this.extractFrontmatter(existingContent);
+			const { bodyText: existingBodyText } = this.extractFrontmatter(
+				existingContent,
+				existingFile,
+			);
+
+			// read existing frontmatter before modifications
+			const existingFrontmatter: Record<string, any> = {};
+			const fileCache =
+				this.plugin.app.metadataCache.getFileCache(existingFile);
+			if (fileCache?.frontmatter) {
+				Object.assign(existingFrontmatter, fileCache.frontmatter);
+			}
 
 			const formattedMetadata = this.applyWikilinkFormatting(bookMetadata);
 			const { bodyContent, ...frontmatterData } = formattedMetadata;
@@ -104,13 +114,12 @@ export class NoteService {
 				const userContent = existingBodyText.substring(
 					delimiterIndex + CONTENT_DELIMITER.length,
 				);
-				const updatedBody = newBodyContent.replace(
+				updatedContent = newBodyContent.replace(
 					`${CONTENT_DELIMITER}\n\n`,
 					`${CONTENT_DELIMITER}${userContent}`,
 				);
-				updatedContent = `${frontmatterText}${updatedBody}`;
 			} else {
-				updatedContent = `${frontmatterText}${newBodyContent}`;
+				updatedContent = newBodyContent;
 			}
 
 			const newPath = this.generateNotePath(
@@ -153,6 +162,9 @@ export class NoteService {
 					: newFilename;
 			}
 
+			// prepare frontmatter data once
+			const frontmatterDataToWrite = this.prepareFrontmatter(formattedMetadata);
+
 			// check if the file needs to be renamed/moved
 			if (originalPath !== targetPath) {
 				await this.vault.modify(existingFile, updatedContent);
@@ -169,17 +181,18 @@ export class NoteService {
 				if (!renamedFile) return null;
 
 				// update frontmatter
-				const frontmatterData = this.prepareFrontmatter(formattedMetadata);
-
 				await this.plugin.app.fileManager.processFrontMatter(
 					renamedFile,
 					(frontmatter) => {
+						// restore the existing frontmatter
+						Object.assign(frontmatter, existingFrontmatter);
+						// update with new data
 						this.updateFrontmatterObject(
 							frontmatter,
-							frontmatterData,
+							frontmatterDataToWrite,
 							managedFrontmatterKeys,
 							preserveCustomFrontmatter,
-							this.getManagedOrder(frontmatterData),
+							this.getManagedOrder(frontmatterDataToWrite),
 						);
 					},
 				);
@@ -189,15 +202,19 @@ export class NoteService {
 				// update content and frontmatter in place
 				await this.vault.modify(existingFile, updatedContent);
 
+				// update frontmatter - CHANGED
 				await this.plugin.app.fileManager.processFrontMatter(
 					existingFile,
 					(frontmatter) => {
+						// First restore the existing frontmatter
+						Object.assign(frontmatter, existingFrontmatter);
+						// Then update with new data
 						this.updateFrontmatterObject(
 							frontmatter,
-							frontmatterData,
+							frontmatterDataToWrite,
 							managedFrontmatterKeys,
 							preserveCustomFrontmatter,
-							this.getManagedOrder(frontmatterData),
+							this.getManagedOrder(frontmatterDataToWrite),
 						);
 					},
 				);
@@ -604,18 +621,22 @@ export class NoteService {
 		return order;
 	}
 
-	private extractFrontmatter(content: string): {
-		frontmatterText: string;
+	private extractFrontmatter(
+		content: string,
+		file: TFile,
+	): {
 		bodyText: string;
 	} {
-		const match = content.match(/^---\n[\s\S]*?\n---\n/);
-		if (match) {
-			const frontmatterText = match[0];
-			const bodyText = content.slice(frontmatterText.length);
-			return { frontmatterText, bodyText };
+		const cache = this.plugin.app.metadataCache.getFileCache(file);
+		const frontmatterEnd = cache?.frontmatterPosition?.end;
+
+		if (frontmatterEnd !== undefined) {
+			const endOffset = frontmatterEnd.offset;
+			const bodyText = content.slice(endOffset);
+			return { bodyText };
 		}
 
-		return { frontmatterText: "", bodyText: content };
+		return { bodyText: content };
 	}
 
 	private formatReviewSection(reviewText: string): string {
