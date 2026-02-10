@@ -86,7 +86,10 @@ export default class ObsidianHardcover extends Plugin {
 			savedData.settingsVersion < DEFAULT_SETTINGS.settingsVersion
 		) {
 			// apply migrations
-			this.settings = SettingsMigrationService.migrateSettings(this.settings);
+			this.settings = SettingsMigrationService.migrateSettings(
+				this.settings,
+				this.app,
+			);
 
 			// save the migrated settings
 			await this.saveSettings();

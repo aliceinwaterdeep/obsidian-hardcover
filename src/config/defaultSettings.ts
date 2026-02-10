@@ -51,7 +51,7 @@ export const DEFAULT_FIELDS_SETTINGS: FieldsSettings = {
 export const DEFAULT_FILENAME_FORMAT = "${title} (${year})";
 
 export const DEFAULT_SETTINGS: PluginSettings = {
-	settingsVersion: 10,
+	settingsVersion: 11,
 	apiKey: "",
 	lastSyncTimestamp: "",
 	userId: null,
