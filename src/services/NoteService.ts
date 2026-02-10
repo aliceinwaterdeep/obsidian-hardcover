@@ -52,12 +52,12 @@ export class NoteService {
 				file = existingFile;
 
 				if (IS_DEV) {
-					// console.log(`Updated note: ${fullPath}`);
+					console.debug(`Updated note: ${fullPath}`);
 				}
 			} else {
 				file = await this.vault.create(fullPath, bodyContent);
 				if (IS_DEV) {
-					// console.log(`Created note: ${fullPath}`);
+					console.debug(`Created note: ${fullPath}`);
 				}
 			}
 
@@ -171,9 +171,9 @@ export class NoteService {
 				await this.vault.rename(existingFile, targetPath);
 
 				if (IS_DEV) {
-					// console.log(
-					// 	`Updated and renamed note: ${originalPath} -> ${targetPath}`
-					// );
+					console.debug(
+						`Updated and renamed note: ${originalPath} -> ${targetPath}`,
+					);
 				}
 
 				// get the new file reference after renaming
@@ -446,7 +446,7 @@ export class NoteService {
 		const folder = this.vault.getFolderByPath(folderPath);
 		if (!folder) {
 			if (IS_DEV) {
-				// console.log(`Creating folder: ${folderPath}`);
+				console.debug(`Creating folder: ${folderPath}`);
 			}
 			await this.vault.createFolder(folderPath);
 		}

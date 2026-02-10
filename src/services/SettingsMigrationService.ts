@@ -6,9 +6,9 @@ export class SettingsMigrationService {
 		const currentVersion = settings.settingsVersion || 0;
 
 		if (IS_DEV) {
-			// console.log(
-			// 	`Migrating settings from version ${currentVersion} to ${DEFAULT_SETTINGS.settingsVersion}`
-			// );
+			console.debug(
+				`Migrating settings from version ${currentVersion} to ${DEFAULT_SETTINGS.settingsVersion}`,
+			);
 		}
 
 		// apply migrations in sequence

@@ -21,7 +21,7 @@ export default class ObsidianHardcover extends Plugin {
 
 	async onload() {
 		if (IS_DEV) {
-			// console.log("Development mode");
+			console.debug("Development mode");
 		}
 
 		await this.loadSettings();
@@ -84,7 +84,7 @@ export default class ObsidianHardcover extends Plugin {
 			// save the migrated settings
 			await this.saveSettings();
 			if (IS_DEV) {
-				// console.log("Settings migration completed and saved");
+				console.debug("Settings migration completed and saved");
 			}
 		}
 	}
