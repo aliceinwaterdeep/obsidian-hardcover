@@ -30,6 +30,7 @@ Syncs your [Hardcover](https://hardcover.app) library to your Obsidian vault, cr
 
 ## Table of Contents
 
+- [Requirements](#requirements)
 - [Manual Installation](#manual-installation)
   - [Updating from Versions Before 1.1.0](#updating-from-versions-before-110)
 - [Setup](#setup)
@@ -43,6 +44,13 @@ Syncs your [Hardcover](https://hardcover.app) library to your Obsidian vault, cr
 - [Note Format](#note-format)
 - [Changelog](#changelog)
 - [Roadmap](#roadmap)
+
+## Requirements
+
+- **Obsidian 1.11.1 or later**
+- Hardcover API key (get it from [your account settings](https://hardcover.app/account/api))
+
+> **Note for existing users:** Version 1.9.0 introduced this requirement. If you're on an older version of Obsidian, stay on plugin version 1.8.1 or earlier.
 
 ## Manual Installation
 
@@ -70,13 +78,14 @@ If you installed this plugin manually before `1.1.0`:
 1. Get your Hardcover API key from [Hardcover](https://hardcover.app/account/api)
 2. Open Obsidian Settings and go to the "Hardcover" tab
 3. Configure your API key using one of these methods:
-   - **Settings**: Enter your API key directly in the plugin settings
+   - **SecretStorage** (recommended): Store your API key securely using Obsidian's encrypted SecretStorage. Click "Link..." in the API key setting to create or select a secret.
    - **Environment file**: Create a `.env` file in your vault root with:
-     ```
-     HARDCOVER_API_KEY=your_api_key_here
-     ```
 
-   > **Note:** If you use both methods, the `.env` file takes priority. The `.env` approach is recommended if you sync your vault with git to keep your API key out of backups.
+```
+     HARDCOVER_API_KEY=your_api_key_here
+```
+
+> **Note:** If you use both methods, the `.env` file takes priority. SecretStorage provides encrypted storage, while `.env` is useful if you are syncing your vault with git.
 
 4. Configure a target folder for your book notes (must be a subfolder, not vault root)
 5. Customize which fields to include and their property names

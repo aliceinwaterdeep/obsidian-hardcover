@@ -1,5 +1,19 @@
 # Changelog
 
+## 1.9.0
+
+### New
+
+- **BREAKING**: Requires Obsidian 1.11.1 or later
+- Migrated to SecretStorage API for secure API key management
+- API keys are now stored encrypted via Obsidian's SecretStorage instead of plain text
+- Existing API keys will be automatically migrated to SecretStorage on first load
+- .env file is still supported as before
+
+### Optimizations
+
+- Used MetadataCache API for frontmatter extraction (Obsidian best practice)
+
 ## 1.8.1
 
 Fixed some inconsistencies in the settings UI after Obsidian introduced UI changes with version 1.11.
