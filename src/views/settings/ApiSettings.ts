@@ -1,4 +1,4 @@
-import { Setting } from "obsidian";
+import { Setting, SecretComponent } from "obsidian";
 import ObsidianHardcover from "src/main";
 import { markSettingAsRequired } from "../ui/SettingsHelpers";
 import { HARDCOVER_API_KEY_URL } from "src/config/constants";
@@ -6,12 +6,8 @@ import { HARDCOVER_API_KEY_URL } from "src/config/constants";
 export function renderApiTokenSetting(
 	containerEl: HTMLElement,
 	plugin: ObsidianHardcover,
-	onSettingsChanged: () => void
+	onSettingsChanged: () => void,
 ): void {
-	let textComponent: any;
-	let envMessageEl: HTMLElement | null = null;
-	let clearButton: HTMLElement | null = null;
-
 	const setting = new Setting(containerEl).setName("Hardcover API key");
 
 	setting.descEl.empty();
@@ -25,75 +21,40 @@ export function renderApiTokenSetting(
 	});
 
 	setting.descEl.appendText(
-		"If you prefer, you can also add the key to a .env file in your vault root: HARDCOVER_API_KEY=your_key_here"
+		"Store your API key in SecretStorage (recommended), or add it to a .env file in your vault root: HARDCOVER_API_KEY=your_key_here",
 	);
 
 	markSettingAsRequired(setting);
 
-	const updateSettingState = async () => {
+	const updateEnvMessage = async () => {
 		const envApiKey = await plugin.envUtils.getHardcoverApiKey();
 
+		const existingMessage =
+			setting.controlEl.querySelector(".obhc-env-message");
+		if (existingMessage) {
+			existingMessage.remove();
+		}
+
+		// show message if .env is being used
 		if (envApiKey) {
-			// hide input field and clear button
-			if (textComponent) {
-				textComponent.inputEl.addClass("obhc-hidden");
-			}
-			if (clearButton) {
-				clearButton.addClass("obhc-hidden");
-			}
-
-			// show env message
-			if (!envMessageEl) {
-				envMessageEl = setting.controlEl.createDiv({ cls: "obhc-env-message" });
-				envMessageEl.textContent = "✅ API key loaded from .env file";
-			}
-			envMessageEl.removeClass("obhc-hidden");
-		} else {
-			// show input field and clear button
-			if (textComponent) {
-				textComponent.inputEl.removeClass("obhc-hidden");
-			}
-			if (clearButton) {
-				clearButton.removeClass("obhc-hidden");
-			}
-
-			// hide env message
-			if (envMessageEl) {
-				envMessageEl.addClass("obhc-hidden");
-			}
+			const envMessageEl = setting.controlEl.createDiv({
+				cls: "obhc-env-message",
+			});
+			envMessageEl.textContent =
+				"✅ API key loaded from .env file (takes priority over SecretStorage)";
 		}
 	};
 
-	setting
-		.addExtraButton((button) => {
-			clearButton = button.extraSettingsEl;
-			button
-				.setIcon("refresh-cw")
-				.setTooltip("Clear API key")
-				.onClick(async () => {
-					plugin.settings.apiKey = "";
-					await plugin.saveSettings();
-
-					// update the text field value
-					if (textComponent) {
-						textComponent.setValue("");
-					}
-					await updateSettingState();
-					onSettingsChanged();
-				});
-		})
-		.addText((text) => {
-			textComponent = text;
-			text
-				.setPlaceholder("Enter your API key")
-				.setValue(plugin.settings.apiKey)
-				.onChange(async (value) => {
-					plugin.settings.apiKey = value;
-					await plugin.saveSettings();
-					onSettingsChanged();
-				});
-		});
+	setting.addComponent((component) => {
+		return new SecretComponent(plugin.app, component)
+			.setValue(plugin.settings.apiKey)
+			.onChange(async (value) => {
+				plugin.settings.apiKey = value;
+				await plugin.saveSettings();
+				onSettingsChanged();
+			});
+	});
 
 	// initial state
-	updateSettingState();
+	updateEnvMessage();
 }

@@ -62,9 +62,16 @@ export default class ObsidianHardcover extends Plugin {
 			return envApiKey;
 		}
 
-		// fallback to plugin settings
-		const settingsApiKey = this.settings.apiKey?.trim();
-		return settingsApiKey && settingsApiKey != "" ? settingsApiKey : null;
+		// try SecretStorage
+		const secretName = this.settings.apiKey?.trim();
+		if (secretName && secretName !== "") {
+			const secret = this.app.secretStorage.getSecret(secretName);
+			if (secret) {
+				return secret;
+			}
+		}
+
+		return null;
 	}
 
 	async loadSettings() {
