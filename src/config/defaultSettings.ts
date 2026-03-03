@@ -63,7 +63,7 @@ export const DEFAULT_FRONTMATTER_FIELDS: FrontmatterFieldsSettings = {
 	readYears: { enabled: false, propertyName: "readYears" },
 };
 
-export const DEFAULT_FILENAME_FORMAT = "${title} (${year})";
+export const DEFAULT_FILENAME_FORMAT = "{{editionTitle}} ({{editionYear}})";
 
 export const DEFAULT_SETTINGS: PluginSettings = {
 	settingsVersion: 12,

@@ -43,44 +43,79 @@ export class FileUtils {
 		fieldsSettings: FrontmatterFieldsSettings,
 	): string {
 		let filename = template;
-
 		const frontmatter = metadata.frontmatter ?? metadata;
 
-		const titleProperty = fieldsSettings.editionTitle.propertyName;
-		const titleValue =
-			frontmatter[titleProperty] ??
-			frontmatter[fieldsSettings.bookTitle?.propertyName];
-		if (titleValue) {
-			filename = filename.replace(/\${title}/g, titleValue);
+		// {{editionTitle}}
+		const editionTitleValue =
+			frontmatter[fieldsSettings.editionTitle.propertyName];
+		if (editionTitleValue) {
+			filename = filename.replace(/\{\{editionTitle\}\}/g, editionTitleValue);
 		}
 
-		const authorsProperty = fieldsSettings.editionAuthors.propertyName;
-		const authorsValue = frontmatter[authorsProperty];
-		if (authorsValue && Array.isArray(authorsValue)) {
-			const authorsString = authorsValue.join(", ");
-			filename = filename.replace(/\${authors}/g, authorsString);
+		// {{bookTitle}}
+		const bookTitleValue = frontmatter[fieldsSettings.bookTitle.propertyName];
+		if (bookTitleValue) {
+			filename = filename.replace(/\{\{bookTitle\}\}/g, bookTitleValue);
 		}
 
-		const releaseDateProperty = fieldsSettings.editionReleaseDate.propertyName;
-		const releaseDateValue = frontmatter[releaseDateProperty];
-		if (releaseDateValue) {
+		// {{editionAuthors}}
+		const editionAuthorsValue =
+			frontmatter[fieldsSettings.editionAuthors.propertyName];
+		if (editionAuthorsValue && Array.isArray(editionAuthorsValue)) {
+			const authorsString = editionAuthorsValue.join(", ");
+			filename = filename.replace(/\{\{editionAuthors\}\}/g, authorsString);
+		}
+
+		// {{bookAuthors}}
+		const bookAuthorsValue =
+			frontmatter[fieldsSettings.bookAuthors.propertyName];
+		if (bookAuthorsValue && Array.isArray(bookAuthorsValue)) {
+			const authorsString = bookAuthorsValue.join(", ");
+			filename = filename.replace(/\{\{bookAuthors\}\}/g, authorsString);
+		}
+
+		// {{editionYear}}
+		const editionReleaseDateValue =
+			frontmatter[fieldsSettings.editionReleaseDate.propertyName];
+		if (editionReleaseDateValue) {
 			try {
-				const year = new Date(releaseDateValue).getFullYear();
-
+				const year = new Date(editionReleaseDateValue).getFullYear();
 				if (!isNaN(year)) {
-					filename = filename.replace(/\${year}/g, year.toString());
+					filename = filename.replace(/\{\{editionYear\}\}/g, year.toString());
 				} else {
-					filename = filename.replace(/\${year}/g, "");
+					filename = filename.replace(/\{\{editionYear\}\}/g, "");
 				}
 			} catch (error) {
-				console.error("Error extracting year from release date:", error);
-				filename = filename.replace(/\${year}/g, "");
+				console.error(
+					"Error extracting year from edition release date:",
+					error,
+				);
+				filename = filename.replace(/\{\{editionYear\}\}/g, "");
 			}
 		} else {
-			filename = filename.replace(/\${year}/g, "");
+			filename = filename.replace(/\{\{editionYear\}\}/g, "");
 		}
 
-		// only clean up empty brackets and extra spacing, but preserve user's intentional formatting
+		// {{bookYear}}
+		const bookReleaseDateValue =
+			frontmatter[fieldsSettings.bookReleaseDate.propertyName];
+		if (bookReleaseDateValue) {
+			try {
+				const year = new Date(bookReleaseDateValue).getFullYear();
+				if (!isNaN(year)) {
+					filename = filename.replace(/\{\{bookYear\}\}/g, year.toString());
+				} else {
+					filename = filename.replace(/\{\{bookYear\}\}/g, "");
+				}
+			} catch (error) {
+				console.error("Error extracting year from book release date:", error);
+				filename = filename.replace(/\{\{bookYear\}\}/g, "");
+			}
+		} else {
+			filename = filename.replace(/\{\{bookYear\}\}/g, "");
+		}
+
+		// clean up empty brackets and extra spacing
 		filename = filename
 			.replace(/\(\s*\)/g, "")
 			.replace(/\[\s*\]/g, "")
@@ -90,7 +125,8 @@ export class FileUtils {
 			.trim();
 
 		// replace any unsupported template variables with empty string
-		filename = filename.replace(/\${[^}]+}/g, "");
+		filename = filename.replace(/\{\{[^}]+\}\}/g, "");
+
 		return this.sanitizeFilename(filename) + ".md";
 	}
 

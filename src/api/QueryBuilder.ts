@@ -32,12 +32,12 @@ export class QueryBuilder {
 			}
 		}
 
-		// step 3: parse filename template for ${variables} // TODO: migrate these to common {{format}}
-		const filenameVarMatches = filenameTemplate.match(/\$\{(\w+)\}/g);
+		// step 3: parse filename template for {{variables}}
+		const filenameVarMatches = filenameTemplate.match(/\{\{(\w+)\}\}/g);
 		if (filenameVarMatches) {
 			for (const match of filenameVarMatches) {
-				// extract variable name: ${editionTitle} -> editionTitle
-				const varName = match.replace(/\$\{|\}/g, "");
+				// extract variable name: {{editionTitle}} -> editionTitle
+				const varName = match.replace(/\{\{|\}\}/g, "");
 				required.add(varName);
 			}
 		}

@@ -175,7 +175,48 @@ export function migrateToV12(settings: PluginSettings): PluginSettings {
 
 	settings.bodyTemplate = template.trim();
 
-	// step 6: clean up obsolete properties
+	// step 6: migrate filename template syntax from ${} to {{}}
+	let newFilenameTemplate = settings.filenameTemplate;
+
+	if (oldPrefs.titleSource === "book") {
+		newFilenameTemplate = newFilenameTemplate.replace(
+			/\$\{title\}/g,
+			"{{bookTitle}}",
+		);
+	} else {
+		newFilenameTemplate = newFilenameTemplate.replace(
+			/\$\{title\}/g,
+			"{{editionTitle}}",
+		);
+	}
+
+	if (oldPrefs.authorsSource === "book") {
+		newFilenameTemplate = newFilenameTemplate.replace(
+			/\$\{authors\}/g,
+			"{{bookAuthors}}",
+		);
+	} else {
+		newFilenameTemplate = newFilenameTemplate.replace(
+			/\$\{authors\}/g,
+			"{{editionAuthors}}",
+		);
+	}
+
+	if (oldPrefs.releaseDateSource === "book") {
+		newFilenameTemplate = newFilenameTemplate.replace(
+			/\$\{year\}/g,
+			"{{bookYear}}",
+		);
+	} else {
+		newFilenameTemplate = newFilenameTemplate.replace(
+			/\$\{year\}/g,
+			"{{editionYear}}",
+		);
+	}
+
+	settings.filenameTemplate = newFilenameTemplate;
+
+	// step 7: clean up obsolete properties
 	// remove old combined field configs
 	delete (settings.frontmatterFields as any).title;
 	delete (settings.frontmatterFields as any).cover;
