@@ -109,12 +109,41 @@ export interface FieldDefinition {
 export interface BookMetadata {
 	hardcoverBookId: number;
 	bodyContent: {
-		title?: string;
-		coverUrl?: string;
+		bookTitle?: string;
+		editionTitle?: string;
+		bookCover?: string;
+		editionCover?: string;
+		bookReleaseDate?: string;
+		editionReleaseDate?: string;
+		bookAuthors?: string[];
+		editionAuthors?: string[];
+		bookContributors?: string[];
+		editionContributors?: string[];
+
+		description?: string;
+		url?: string;
+		series?: string[];
+		genres?: string[];
+
+		publisher?: string[];
+		isbn10?: string;
+		isbn13?: string;
+
+		rating?: number;
+		status?: string[];
 		review?: string;
 		quotes?: string[];
+		lists?: string[];
+
+		firstReadStart?: string;
+		firstReadEnd?: string;
+		lastReadStart?: string;
+		lastReadEnd?: string;
+		totalReads?: number;
+		readYears?: number[];
 	};
-	// allow for dynamic properties based on user custom property names
+
+	// frontmatter properties based on user custom property names
 	[key: string]: any;
 }
 
