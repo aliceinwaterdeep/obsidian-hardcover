@@ -40,25 +40,32 @@ export class FileUtils {
 	processFilenameTemplate(
 		template: string,
 		metadata: any,
-		fieldsSettings: FrontmatterFieldsSettings
+		fieldsSettings: FrontmatterFieldsSettings,
 	): string {
 		let filename = template;
 
-		const titleProperty = fieldsSettings.title.propertyName;
-		if (metadata[titleProperty]) {
-			filename = filename.replace(/\${title}/g, metadata[titleProperty]);
+		const frontmatter = metadata.frontmatter ?? metadata;
+
+		const titleProperty = fieldsSettings.editionTitle.propertyName;
+		const titleValue =
+			frontmatter[titleProperty] ??
+			frontmatter[fieldsSettings.bookTitle?.propertyName];
+		if (titleValue) {
+			filename = filename.replace(/\${title}/g, titleValue);
 		}
 
-		const authorsProperty = fieldsSettings.authors.propertyName;
-		if (metadata[authorsProperty] && Array.isArray(metadata[authorsProperty])) {
-			const authorsString = metadata[authorsProperty].join(", ");
+		const authorsProperty = fieldsSettings.editionAuthors.propertyName;
+		const authorsValue = frontmatter[authorsProperty];
+		if (authorsValue && Array.isArray(authorsValue)) {
+			const authorsString = authorsValue.join(", ");
 			filename = filename.replace(/\${authors}/g, authorsString);
 		}
 
-		const releaseDateProperty = fieldsSettings.releaseDate.propertyName;
-		if (metadata[releaseDateProperty]) {
+		const releaseDateProperty = fieldsSettings.editionReleaseDate.propertyName;
+		const releaseDateValue = frontmatter[releaseDateProperty];
+		if (releaseDateValue) {
 			try {
-				const year = new Date(metadata[releaseDateProperty]).getFullYear();
+				const year = new Date(releaseDateValue).getFullYear();
 
 				if (!isNaN(year)) {
 					filename = filename.replace(/\${year}/g, year.toString());

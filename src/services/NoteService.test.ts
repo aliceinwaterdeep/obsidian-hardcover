@@ -76,10 +76,12 @@ describe("NoteService", () => {
 	describe("frontmatter preservation", () => {
 		const baseMetadata = {
 			hardcoverBookId: 123,
-			title: "New Title",
-			releaseDate: "2020-01-01",
-			authors: ["Author One"],
-			status: "reading",
+			frontmatter: {
+				title: "New Title",
+				releaseDate: "2020-01-01",
+				authors: ["Author One"],
+				status: "reading",
+			},
 			bodyContent: {},
 		};
 
@@ -117,6 +119,12 @@ User section
 					preserveCustomFrontmatter,
 				},
 				app: {
+					metadataCache: {
+						getFileCache: jest.fn().mockReturnValue({
+							frontmatter: { ...frontmatterObject },
+							frontmatterPosition: undefined,
+						}),
+					},
 					fileManager: {
 						processFrontMatter: jest.fn(async (_file: any, cb: any) => {
 							processCalled = true;

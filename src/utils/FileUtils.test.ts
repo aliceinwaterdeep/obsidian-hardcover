@@ -77,9 +77,9 @@ describe("FileUtils", () => {
 		test("handles custom property names", () => {
 			const customSettings = {
 				...DEFAULT_FRONTMATTER_FIELDS,
-				title: { enabled: true, propertyName: "bookTitle" },
-				authors: { enabled: true, propertyName: "bookAuthors" },
-				releaseDate: { enabled: true, propertyName: "publicationDate" },
+				editionTitle: { enabled: true, propertyName: "bookTitle" },
+				editionAuthors: { enabled: true, propertyName: "bookAuthors" },
+				editionReleaseDate: { enabled: true, propertyName: "publicationDate" },
 			};
 
 			const metadata = {

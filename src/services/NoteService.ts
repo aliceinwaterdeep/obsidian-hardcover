@@ -98,7 +98,6 @@ export class NoteService {
 			}
 
 			const formattedMetadata = this.applyWikilinkFormatting(bookMetadata);
-			const { bodyContent, ...frontmatterData } = formattedMetadata;
 			const managedFrontmatterKeys = this.getManagedFrontmatterKeys();
 			const preserveCustomFrontmatter =
 				this.plugin.settings.preserveCustomFrontmatter !== false;
@@ -295,8 +294,8 @@ export class NoteService {
 		rawContributors?: Record<any, any>[],
 	): string | null {
 		const authorProperty =
-			this.plugin.settings.frontmatterFields.authors.propertyName;
-		const authors = bookMetadata[authorProperty];
+			this.plugin.settings.frontmatterFields.editionAuthors.propertyName;
+		const authors = bookMetadata.frontmatter[authorProperty];
 
 		// check if multiple authors and should use collections folder
 		if (
@@ -355,7 +354,7 @@ export class NoteService {
 	private getSeriesDirectory(bookMetadata: BookMetadata): string | null {
 		const seriesProperty =
 			this.plugin.settings.frontmatterFields.series.propertyName;
-		const series = bookMetadata[seriesProperty];
+		const series = bookMetadata.frontmatter[seriesProperty];
 
 		if (Array.isArray(series) && series.length > 0) {
 			let seriesName = series[0];
@@ -537,9 +536,12 @@ export class NoteService {
 	}
 
 	private prepareFrontmatter(
-		metadata: Record<string, any>,
+		metadata: BookMetadata,
 	): Record<string, any> {
-		const { bodyContent, ...frontmatterData } = metadata;
+		const frontmatterData: Record<string, any> = {
+			hardcoverBookId: metadata.hardcoverBookId,
+			...metadata.frontmatter,
+		};
 		const prepared: Record<string, any> = {};
 
 		// first add hardcoverBookId as the first property
@@ -813,67 +815,100 @@ export class NoteService {
 	}
 
 	private applyWikilinkFormatting(metadata: BookMetadata): BookMetadata {
-		const formattedMetadata = { ...metadata };
-		const settings = this.plugin.settings.frontmatterFields;
+		const formattedMetadata = {
+			...metadata,
+			frontmatter: { ...metadata.frontmatter },
+		};
+		const { frontmatterFields, wikilinkSettings } = this.plugin.settings;
 
-		if (
-			settings.authors.wikilinks &&
-			formattedMetadata[settings.authors.propertyName]
-		) {
-			formattedMetadata[settings.authors.propertyName] = this.formatAsWikilinks(
-				formattedMetadata[settings.authors.propertyName],
-				"authors",
-			);
+		// Authors (book and edition)
+		if (wikilinkSettings.authors) {
+			const bookAuthorsProp = frontmatterFields.bookAuthors.propertyName;
+			if (formattedMetadata.frontmatter[bookAuthorsProp]) {
+				formattedMetadata.frontmatter[bookAuthorsProp] =
+					this.formatAsWikilinks(
+						formattedMetadata.frontmatter[bookAuthorsProp],
+						"authors",
+					);
+			}
+
+			const editionAuthorsProp = frontmatterFields.editionAuthors.propertyName;
+			if (formattedMetadata.frontmatter[editionAuthorsProp]) {
+				formattedMetadata.frontmatter[editionAuthorsProp] =
+					this.formatAsWikilinks(
+						formattedMetadata.frontmatter[editionAuthorsProp],
+						"authors",
+					);
+			}
 		}
 
+		// Contributors (book and edition)
+		if (wikilinkSettings.contributors) {
+			const bookContribProp = frontmatterFields.bookContributors.propertyName;
+			if (formattedMetadata.frontmatter[bookContribProp]) {
+				formattedMetadata.frontmatter[bookContribProp] =
+					this.formatAsWikilinks(
+						formattedMetadata.frontmatter[bookContribProp],
+						"contributors",
+					);
+			}
+
+			const editionContribProp =
+				frontmatterFields.editionContributors.propertyName;
+			if (formattedMetadata.frontmatter[editionContribProp]) {
+				formattedMetadata.frontmatter[editionContribProp] =
+					this.formatAsWikilinks(
+						formattedMetadata.frontmatter[editionContribProp],
+						"contributors",
+					);
+			}
+		}
+
+		// Series
 		if (
-			settings.contributors.wikilinks &&
-			formattedMetadata[settings.contributors.propertyName]
+			wikilinkSettings.series &&
+			formattedMetadata.frontmatter[frontmatterFields.series.propertyName]
 		) {
-			formattedMetadata[settings.contributors.propertyName] =
+			formattedMetadata.frontmatter[frontmatterFields.series.propertyName] =
 				this.formatAsWikilinks(
-					formattedMetadata[settings.contributors.propertyName],
-					"contributors",
+					formattedMetadata.frontmatter[frontmatterFields.series.propertyName],
+					"series",
 				);
 		}
 
+		// Publisher
 		if (
-			settings.series.wikilinks &&
-			formattedMetadata[settings.series.propertyName]
+			wikilinkSettings.publisher &&
+			formattedMetadata.frontmatter[frontmatterFields.publisher.propertyName]
 		) {
-			formattedMetadata[settings.series.propertyName] = this.formatAsWikilinks(
-				formattedMetadata[settings.series.propertyName],
-				"series",
-			);
-		}
-
-		if (
-			settings.publisher.wikilinks &&
-			formattedMetadata[settings.publisher.propertyName]
-		) {
-			const publisherValue = formattedMetadata[settings.publisher.propertyName];
-			formattedMetadata[settings.publisher.propertyName] =
+			const publisherValue =
+				formattedMetadata.frontmatter[frontmatterFields.publisher.propertyName];
+			formattedMetadata.frontmatter[frontmatterFields.publisher.propertyName] =
 				`[[${publisherValue}]]`;
 		}
 
+		// Genres
 		if (
-			settings.genres.wikilinks &&
-			formattedMetadata[settings.genres.propertyName]
+			wikilinkSettings.genres &&
+			formattedMetadata.frontmatter[frontmatterFields.genres.propertyName]
 		) {
-			formattedMetadata[settings.genres.propertyName] = this.formatAsWikilinks(
-				formattedMetadata[settings.genres.propertyName],
-				"genres",
-			);
+			formattedMetadata.frontmatter[frontmatterFields.genres.propertyName] =
+				this.formatAsWikilinks(
+					formattedMetadata.frontmatter[frontmatterFields.genres.propertyName],
+					"genres",
+				);
 		}
 
+		// Lists
 		if (
-			settings.lists.wikilinks &&
-			formattedMetadata[settings.lists.propertyName]
+			wikilinkSettings.lists &&
+			formattedMetadata.frontmatter[frontmatterFields.lists.propertyName]
 		) {
-			formattedMetadata[settings.lists.propertyName] = this.formatAsWikilinks(
-				formattedMetadata[settings.lists.propertyName],
-				"lists",
-			);
+			formattedMetadata.frontmatter[frontmatterFields.lists.propertyName] =
+				this.formatAsWikilinks(
+					formattedMetadata.frontmatter[frontmatterFields.lists.propertyName],
+					"lists",
+				);
 		}
 
 		return formattedMetadata;
