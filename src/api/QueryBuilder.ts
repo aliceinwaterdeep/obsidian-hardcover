@@ -2,9 +2,47 @@ import { FrontmatterFieldsSettings, PluginSettings } from "src/types";
 
 export class QueryBuilder {
 	private settings: PluginSettings;
+	private requiredFields: Set<string>;
 
 	constructor(settings: PluginSettings) {
 		this.settings = settings;
+		this.requiredFields = this.determineRequiredFields();
+	}
+
+	private determineRequiredFields(): Set<string> {
+		const required = new Set<string>();
+		const { frontmatterFields, bodyTemplate, filenameTemplate } = this.settings;
+
+		required.add("hardcoverBookId");
+
+		// step 1: check frontmatter enabled fields
+		for (const [fieldKey, fieldConfig] of Object.entries(frontmatterFields)) {
+			if (fieldConfig.enabled) {
+				required.add(fieldKey);
+			}
+		}
+
+		// step 2: parse body template for {{variables}}
+		const bodyVarMatches = bodyTemplate.match(/\{\{(\w+)\}\}/g);
+		if (bodyVarMatches) {
+			for (const match of bodyVarMatches) {
+				// extract variable name: {{bookTitle}} -> bookTitle
+				const varName = match.replace(/\{\{|\}\}/g, "");
+				required.add(varName);
+			}
+		}
+
+		// step 3: parse filename template for ${variables} // TODO: migrate these to common {{format}}
+		const filenameVarMatches = filenameTemplate.match(/\$\{(\w+)\}/g);
+		if (filenameVarMatches) {
+			for (const match of filenameVarMatches) {
+				// extract variable name: ${editionTitle} -> editionTitle
+				const varName = match.replace(/\$\{|\}/g, "");
+				required.add(varName);
+			}
+		}
+
+		return required;
 	}
 
 	buildUserBooksQuery(
@@ -14,11 +52,10 @@ export class QueryBuilder {
 		status?: number[],
 	): string {
 		const frontmatterFields = this.settings.frontmatterFields;
-		const dataPrefs = this.settings.dataSourcePreferences;
 
 		const userBooksFields = this.buildUserBooksFields(frontmatterFields);
-		const bookFields = this.buildBookFields(frontmatterFields, dataPrefs);
-		const editionFields = this.buildEditionFields(frontmatterFields, dataPrefs);
+		const bookFields = this.buildBookFields(frontmatterFields);
+		const editionFields = this.buildEditionFields(frontmatterFields);
 		const readsFields = this.buildReadsFields(frontmatterFields);
 		const hasStatusFilter = status && status.length > 0;
 
@@ -97,97 +134,85 @@ export class QueryBuilder {
 		return fields.join("\n                    ");
 	}
 
-	private buildBookFields(
-		settings: FrontmatterFieldsSettings,
-		dataPrefs: PluginSettings["dataSourcePreferences"],
-	): string {
-		const fields: string[] = ["title"]; // always include at least one field to avoid empty selection in the query
+	private buildBookFields(settings: FrontmatterFieldsSettings): string {
+		const fields: string[] = ["title"]; // always include at least title
 
-		// release date from book level (if preferred)
-		if (
-			settings.releaseDate.enabled &&
-			dataPrefs.releaseDateSource === "book"
-		) {
-			fields.push("release_date");
+		// helper to check if we need a field
+		const needsField = (fieldKey: string): boolean => {
+			return this.requiredFields.has(fieldKey);
+		};
+
+		if (needsField("bookTitle")) {
+			// title already in fields array
 		}
 
-		// cover from book level (if preferred)
-		if (settings.cover.enabled && dataPrefs.coverSource === "book") {
+		if (needsField("bookCover")) {
 			fields.push("cached_image");
 		}
 
-		if (settings.description.enabled) {
-			fields.push("description");
+		if (needsField("bookReleaseDate")) {
+			fields.push("release_date");
 		}
 
-		if (settings.url.enabled) {
-			fields.push("slug");
-		}
-
-		if (settings.series.enabled) {
-			fields.push(`book_series {
-				series {
-					name
-				}
-				position
-    	}`);
-		}
-
-		//  authors/contributors from book level (if preferred)
-		if (
-			(settings.authors.enabled && dataPrefs.authorsSource === "book") ||
-			(settings.contributors.enabled && dataPrefs.contributorsSource === "book")
-		) {
+		if (needsField("bookAuthors") || needsField("bookContributors")) {
 			fields.push("cached_contributors");
 		}
 
-		// genres
-		if (settings.genres.enabled) {
+		if (needsField("description")) {
+			fields.push("description");
+		}
+
+		if (needsField("url")) {
+			fields.push("slug");
+		}
+
+		if (needsField("series")) {
+			fields.push(`book_series {
+		series {
+			name
+		}
+		position
+	}`);
+		}
+
+		if (needsField("genres")) {
 			fields.push("cached_tags");
 		}
 
 		return fields.join("\n                        ");
 	}
 
-	private buildEditionFields(
-		settings: FrontmatterFieldsSettings,
-		dataPrefs: PluginSettings["dataSourcePreferences"],
-	): string {
-		const fields: string[] = ["title"]; // always include at least one field to avoid empty selection in the query
+	private buildEditionFields(settings: FrontmatterFieldsSettings): string {
+		const fields: string[] = ["title"]; // always include at least title
 
-		// release date from edition level (if preferred)
-		if (
-			settings.releaseDate.enabled &&
-			dataPrefs.releaseDateSource === "edition"
-		) {
-			fields.push("release_date");
-		}
+		// helper to check if we need a field
+		const needsField = (fieldKey: string): boolean => {
+			return this.requiredFields.has(fieldKey);
+		};
 
-		// cover from edition level (if preferred)
-		if (settings.cover.enabled && dataPrefs.coverSource === "edition") {
+		if (needsField("editionCover")) {
 			fields.push("cached_image");
 		}
 
-		// authors/contributors from edition level (if preferred)
-		if (
-			(settings.authors.enabled && dataPrefs.authorsSource === "edition") ||
-			(settings.contributors.enabled &&
-				dataPrefs.contributorsSource === "edition")
-		) {
+		if (needsField("editionReleaseDate")) {
+			fields.push("release_date");
+		}
+
+		if (needsField("editionAuthors") || needsField("editionContributors")) {
 			fields.push("cached_contributors");
 		}
 
-		if (settings.publisher.enabled) {
+		if (needsField("publisher")) {
 			fields.push(`publisher {
-                            name
-                        }`);
+		name
+	}`);
 		}
 
-		if (settings.isbn10.enabled) {
+		if (needsField("isbn10")) {
 			fields.push("isbn_10");
 		}
 
-		if (settings.isbn13.enabled) {
+		if (needsField("isbn13")) {
 			fields.push("isbn_13");
 		}
 
