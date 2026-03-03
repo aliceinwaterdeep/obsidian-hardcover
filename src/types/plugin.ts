@@ -26,13 +26,15 @@ export interface PluginSettings {
 	// status filter - empty array means sync all statuses
 	statusFilter: number[];
 
-	// data source preferences
-	dataSourcePreferences: {
-		titleSource: DataSource;
-		coverSource: DataSource;
-		releaseDateSource: DataSource;
-		authorsSource: DataSource;
-		contributorsSource: DataSource;
+	bodyTemplate: string;
+	quotesFormat: "blockquote" | "callout";
+	wikilinkSettings: {
+		authors: boolean;
+		contributors: boolean;
+		series: boolean;
+		publisher: boolean;
+		genres: boolean;
+		lists: boolean;
 	};
 
 	statusMapping: {
@@ -44,11 +46,9 @@ export interface PluginSettings {
 	filenameTemplate: string;
 }
 
-type DataSource = "book" | "edition";
 export interface FieldConfig {
 	enabled: boolean;
 	propertyName: string;
-	wikilinks?: boolean;
 	bodyHeading?: string;
 }
 
@@ -57,23 +57,24 @@ export interface ActivityDateFieldConfig extends FieldConfig {
 	endPropertyName: string;
 }
 
-export interface QuotesFieldConfig extends FieldConfig {
-	format: "blockquote" | "callout";
-}
-
 export interface FieldsSettings {
 	// user_books fields
 	rating: FieldConfig;
 	status: FieldConfig;
 	review: FieldConfig;
-	quotes: QuotesFieldConfig;
+	quotes: FieldConfig;
 
 	// book or edition fields
-	title: FieldConfig;
-	cover: FieldConfig;
-	authors: FieldConfig;
-	contributors: FieldConfig;
-	releaseDate: FieldConfig;
+	bookTitle: FieldConfig;
+	editionTitle: FieldConfig;
+	bookCover: FieldConfig;
+	editionCover: FieldConfig;
+	bookReleaseDate: FieldConfig;
+	editionReleaseDate: FieldConfig;
+	bookAuthors: FieldConfig;
+	editionAuthors: FieldConfig;
+	bookContributors: FieldConfig;
+	editionContributors: FieldConfig;
 
 	// book fields
 	description: FieldConfig;

@@ -3,46 +3,75 @@ import { FieldDefinition } from "src/types";
 // settings order can be rearranged by changing this
 export const FIELD_DEFINITIONS: FieldDefinition[] = [
 	{
-		key: "title",
-		name: "Title",
-		description: "Book title",
-		hasDataSource: true,
+		key: "bookTitle",
+		name: "Book Title",
+		description: "Title from book data",
+		supportsWikilinks: false,
+	},
+	{
+		key: "editionTitle",
+		name: "Edition Title",
+		description: "Title from edition data",
+		supportsWikilinks: false,
+	},
+	{
+		key: "bookCover",
+		name: "Book Cover",
+		description: "Cover image from book data",
+		supportsWikilinks: false,
+	},
+	{
+		key: "editionCover",
+		name: "Edition Cover",
+		description: "Cover image from edition data",
+		supportsWikilinks: false,
+	},
+	{
+		key: "bookReleaseDate",
+		name: "Book Release Date",
+		description: "Release date from book data",
+		supportsWikilinks: false,
+	},
+	{
+		key: "editionReleaseDate",
+		name: "Edition Release Date",
+		description: "Publication date from edition data",
+		supportsWikilinks: false,
+	},
+	{
+		key: "bookAuthors",
+		name: "Book Authors",
+		description: "Authors from book data",
+		supportsWikilinks: true,
+	},
+	{
+		key: "editionAuthors",
+		name: "Edition Authors",
+		description: "Authors from edition data",
+		supportsWikilinks: true,
+	},
+	{
+		key: "bookContributors",
+		name: "Book Contributors",
+		description: "Contributors from book data",
+		supportsWikilinks: true,
+	},
+	{
+		key: "editionContributors",
+		name: "Edition Contributors",
+		description: "Contributors from edition data",
+		supportsWikilinks: true,
 	},
 	{
 		key: "description",
 		name: "Description",
 		description: "Book description",
 	},
-	{
-		key: "cover",
-		name: "Cover",
-		description: "Book cover image",
-		hasDataSource: true,
-	},
-	{
-		key: "releaseDate",
-		name: "Release date",
-		description: "Publication date",
-		hasDataSource: true,
-	},
+
 	{
 		key: "series",
 		name: "Series",
 		description: "Series information",
-		supportsWikilinks: true,
-	},
-	{
-		key: "authors",
-		name: "Authors",
-		description: "Book authors",
-		hasDataSource: true,
-		supportsWikilinks: true,
-	},
-	{
-		key: "contributors",
-		name: "Contributors",
-		description: "Other contributors (translators, narrators, etc.)",
-		hasDataSource: true,
 		supportsWikilinks: true,
 	},
 	{
