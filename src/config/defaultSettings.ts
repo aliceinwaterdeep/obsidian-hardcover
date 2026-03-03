@@ -1,4 +1,4 @@
-import { FieldsSettings, PluginSettings } from "src/types";
+import { FrontmatterFieldsSettings, PluginSettings } from "src/types";
 import { HARDCOVER_STATUS_MAP } from "./statusMapping";
 
 export const DEFAULT_BODY_TEMPLATE = `# {{editionTitle}}
@@ -13,7 +13,7 @@ export const DEFAULT_BODY_TEMPLATE = `# {{editionTitle}}
 {{quotes}}
 `;
 
-export const DEFAULT_FIELDS_SETTINGS: FieldsSettings = {
+export const DEFAULT_FRONTMATTER_FIELDS: FrontmatterFieldsSettings = {
 	rating: { enabled: true, propertyName: "rating" },
 	status: { enabled: true, propertyName: "status" },
 	review: { enabled: true, propertyName: "review", bodyHeading: "Review" },
@@ -73,7 +73,7 @@ export const DEFAULT_SETTINGS: PluginSettings = {
 	booksCount: null,
 	preserveCustomFrontmatter: true,
 	statusFilter: [1, 2, 3, 5],
-	fieldsSettings: DEFAULT_FIELDS_SETTINGS,
+	frontmatterFields: DEFAULT_FRONTMATTER_FIELDS,
 	statusMapping: HARDCOVER_STATUS_MAP,
 	bodyTemplate: DEFAULT_BODY_TEMPLATE,
 	quotesFormat: "blockquote",

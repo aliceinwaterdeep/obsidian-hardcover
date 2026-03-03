@@ -20,7 +20,7 @@ export interface PluginSettings {
 	booksCount: number | null;
 
 	// field configuration
-	fieldsSettings: FieldsSettings;
+	frontmatterFields: FrontmatterFieldsSettings;
 	preserveCustomFrontmatter: boolean;
 
 	// status filter - empty array means sync all statuses
@@ -57,7 +57,7 @@ export interface ActivityDateFieldConfig extends FieldConfig {
 	endPropertyName: string;
 }
 
-export interface FieldsSettings {
+export interface FrontmatterFieldsSettings {
 	// user_books fields
 	rating: FieldConfig;
 	status: FieldConfig;
@@ -99,10 +99,9 @@ export interface FieldsSettings {
 }
 
 export interface FieldDefinition {
-	key: keyof FieldsSettings;
+	key: keyof FrontmatterFieldsSettings;
 	name: string;
 	description: string;
-	hasDataSource?: boolean;
 	isActivityDateField?: boolean;
 	supportsWikilinks?: boolean;
 }

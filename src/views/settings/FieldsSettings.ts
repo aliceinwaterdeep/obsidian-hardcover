@@ -4,7 +4,7 @@ import ObsidianHardcover from "src/main";
 import {
 	ActivityDateFieldConfig,
 	FieldDefinition,
-	FieldsSettings,
+	FrontmatterFieldsSettings,
 } from "src/types";
 import { Accordion } from "../ui/Accordion";
 import { renderStatusMappingSettings } from "./StatusMappingSettings";
@@ -51,7 +51,7 @@ function addFieldSettings(
 	field: FieldDefinition,
 	plugin: ObsidianHardcover,
 ): void {
-	const fieldSettings = plugin.settings.fieldsSettings[field.key];
+	const fieldSettings = plugin.settings.frontmatterFields[field.key];
 
 	const isBodyField = field.key === "review" || field.key === "quotes";
 
@@ -64,7 +64,7 @@ function addFieldSettings(
 					.setPlaceholder(field.key)
 					.setValue(fieldSettings.propertyName)
 					.onChange(async (value) => {
-						plugin.settings.fieldsSettings[field.key].propertyName =
+						plugin.settings.frontmatterFields[field.key].propertyName =
 							value || field.key;
 						await plugin.saveSettings();
 					}),
@@ -81,7 +81,7 @@ function addFieldSettings(
 				toggle
 					.setValue((fieldSettings as any).wikilinks || false)
 					.onChange(async (value) => {
-						(plugin.settings.fieldsSettings[field.key] as any).wikilinks =
+						(plugin.settings.frontmatterFields[field.key] as any).wikilinks =
 							value;
 						await plugin.saveSettings();
 					}),
@@ -105,7 +105,7 @@ function addFieldSettings(
 					.setPlaceholder(defaultHeading)
 					.setValue((fieldSettings as any).bodyHeading || defaultHeading)
 					.onChange(async (value) => {
-						(plugin.settings.fieldsSettings[field.key] as any).bodyHeading =
+						(plugin.settings.frontmatterFields[field.key] as any).bodyHeading =
 							value || defaultHeading;
 						await plugin.saveSettings();
 					}),
@@ -123,7 +123,7 @@ function addFieldSettings(
 					.addOption("callout", "Callout")
 					.setValue((fieldSettings as any).format || "blockquote")
 					.onChange(async (value: "blockquote" | "callout") => {
-						(plugin.settings.fieldsSettings.quotes as any).format = value;
+						(plugin.settings.frontmatterFields.quotes as any).format = value;
 						await plugin.saveSettings();
 					}),
 			);
@@ -175,12 +175,12 @@ function addFieldSettings(
 
 function addActivityDatePropertyField(
 	containerEl: HTMLElement,
-	fieldKey: keyof FieldsSettings,
+	fieldKey: keyof FrontmatterFieldsSettings,
 	type: "start" | "end",
 	fieldName: string,
 	plugin: ObsidianHardcover,
 ): void {
-	const fieldSettings = plugin.settings.fieldsSettings[
+	const fieldSettings = plugin.settings.frontmatterFields[
 		fieldKey
 	] as ActivityDateFieldConfig;
 	const propName = type === "start" ? "startPropertyName" : "endPropertyName";
@@ -194,7 +194,7 @@ function addActivityDatePropertyField(
 				.setPlaceholder(defaultValue)
 				.setValue(fieldSettings[propName])
 				.onChange(async (value) => {
-					(plugin.settings.fieldsSettings[fieldKey] as ActivityDateFieldConfig)[
+					(plugin.settings.frontmatterFields[fieldKey] as ActivityDateFieldConfig)[
 						propName
 					] = value || defaultValue;
 					await plugin.saveSettings();

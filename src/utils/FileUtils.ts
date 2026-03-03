@@ -1,5 +1,5 @@
 import { normalizePath } from "obsidian";
-import { FieldsSettings } from "src/types";
+import { FrontmatterFieldsSettings } from "src/types";
 
 export class FileUtils {
 	sanitizeFilename(name: string): string {
@@ -40,7 +40,7 @@ export class FileUtils {
 	processFilenameTemplate(
 		template: string,
 		metadata: any,
-		fieldsSettings: FieldsSettings
+		fieldsSettings: FrontmatterFieldsSettings
 	): string {
 		let filename = template;
 

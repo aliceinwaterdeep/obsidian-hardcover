@@ -235,7 +235,7 @@ export class NoteService {
 		const filename = this.fileUtils.processFilenameTemplate(
 			this.plugin.settings.filenameTemplate,
 			bookMetadata,
-			this.plugin.settings.fieldsSettings,
+			this.plugin.settings.frontmatterFields,
 		);
 
 		let basePath = normalizePath(this.plugin.settings.targetFolder);
@@ -295,7 +295,7 @@ export class NoteService {
 		rawContributors?: Record<any, any>[],
 	): string | null {
 		const authorProperty =
-			this.plugin.settings.fieldsSettings.authors.propertyName;
+			this.plugin.settings.frontmatterFields.authors.propertyName;
 		const authors = bookMetadata[authorProperty];
 
 		// check if multiple authors and should use collections folder
@@ -354,7 +354,7 @@ export class NoteService {
 
 	private getSeriesDirectory(bookMetadata: BookMetadata): string | null {
 		const seriesProperty =
-			this.plugin.settings.fieldsSettings.series.propertyName;
+			this.plugin.settings.frontmatterFields.series.propertyName;
 		const series = bookMetadata[seriesProperty];
 
 		if (Array.isArray(series) && series.length > 0) {
@@ -387,32 +387,32 @@ export class NoteService {
 
 		// add book cover if enabled
 		const hasCover =
-			this.plugin.settings.fieldsSettings.cover.enabled &&
-			bookMetadata[this.plugin.settings.fieldsSettings.cover.propertyName];
+			this.plugin.settings.frontmatterFields.cover.enabled &&
+			bookMetadata[this.plugin.settings.frontmatterFields.cover.propertyName];
 
 		if (hasCover) {
 			const coverProperty =
-				this.plugin.settings.fieldsSettings.cover.propertyName;
+				this.plugin.settings.frontmatterFields.cover.propertyName;
 			content += `![${escapedTitle} Cover|300](${bookMetadata[coverProperty]})\n\n`;
 		}
 
 		// add description if available
 		const hasDescription =
-			this.plugin.settings.fieldsSettings.description.enabled &&
+			this.plugin.settings.frontmatterFields.description.enabled &&
 			bookMetadata[
-				this.plugin.settings.fieldsSettings.description.propertyName
+				this.plugin.settings.frontmatterFields.description.propertyName
 			];
 
 		if (hasDescription) {
 			const descProperty =
-				this.plugin.settings.fieldsSettings.description.propertyName;
+				this.plugin.settings.frontmatterFields.description.propertyName;
 			// add extra spacing if there is a cover above
 			const spacing = hasCover ? "\n" : "";
 			content += `${spacing}${bookMetadata[descProperty]}\n\n`;
 		}
 
 		if (
-			this.plugin.settings.fieldsSettings.review.enabled &&
+			this.plugin.settings.frontmatterFields.review.enabled &&
 			bookMetadata.bodyContent.review
 		) {
 			content += this.formatReviewSection(bookMetadata.bodyContent.review);
@@ -420,7 +420,7 @@ export class NoteService {
 
 		// add quotes section if enabled and quotes exist
 		if (
-			this.plugin.settings.fieldsSettings.quotes.enabled &&
+			this.plugin.settings.frontmatterFields.quotes.enabled &&
 			bookMetadata.bodyContent.quotes &&
 			bookMetadata.bodyContent.quotes.length > 0
 		) {
@@ -435,7 +435,7 @@ export class NoteService {
 
 	private getBookTitle(bookMetadata: any) {
 		const titleProperty =
-			this.plugin.settings.fieldsSettings.title.propertyName;
+			this.plugin.settings.frontmatterFields.title.propertyName;
 
 		return bookMetadata[titleProperty] || "Untitled";
 	}
@@ -465,7 +465,7 @@ export class NoteService {
 
 		// add all other properties in the order defined in FIELD_DEFINITIONS
 		const allFieldPropertyNames = FIELD_DEFINITIONS.flatMap((field) => {
-			const fieldSettings = this.plugin.settings.fieldsSettings[field.key];
+			const fieldSettings = this.plugin.settings.frontmatterFields[field.key];
 			const propertyNames = [fieldSettings.propertyName];
 
 			// add start/end property names for activity date fields
@@ -493,7 +493,7 @@ export class NoteService {
 
 			if (
 				propName ===
-				this.plugin.settings.fieldsSettings.description.propertyName
+				this.plugin.settings.frontmatterFields.description.propertyName
 			) {
 				if (typeof value === "string") {
 					// remove all \n sequences and replace with spaces to avoid frontmatter issues
@@ -575,7 +575,7 @@ export class NoteService {
 
 		// add the property names defined in FIELD_DEFINITIONS (including activity date start/end)
 		for (const field of FIELD_DEFINITIONS) {
-			const fieldSettings = this.plugin.settings.fieldsSettings[field.key];
+			const fieldSettings = this.plugin.settings.frontmatterFields[field.key];
 			keys.add(fieldSettings.propertyName);
 
 			if (field.isActivityDateField) {
@@ -599,7 +599,7 @@ export class NoteService {
 		// follow the order defined in FIELD_DEFINITIONS to ensure consistent ordering
 		// even when fields are enabled/disabled/renamed in settings
 		for (const field of FIELD_DEFINITIONS) {
-			const fieldSettings = this.plugin.settings.fieldsSettings[field.key];
+			const fieldSettings = this.plugin.settings.frontmatterFields[field.key];
 			const propName = fieldSettings.propertyName;
 
 			if (propName in frontmatterData) {
@@ -659,12 +659,12 @@ export class NoteService {
 		}
 
 		const heading =
-			this.plugin.settings.fieldsSettings.review.bodyHeading || "Review";
+			this.plugin.settings.frontmatterFields.review.bodyHeading || "Review";
 		return `## ${heading}\n\n${formattedReview.trim()}\n\n`;
 	}
 
 	private formatQuotesSection(quotes: string[]): string {
-		const quotesSettings = this.plugin.settings.fieldsSettings.quotes;
+		const quotesSettings = this.plugin.settings.frontmatterFields.quotes;
 		const format = quotesSettings.format;
 		const heading = quotesSettings.bodyHeading || "Quotes";
 
@@ -750,7 +750,7 @@ export class NoteService {
 
 	private applyWikilinkFormatting(metadata: BookMetadata): BookMetadata {
 		const formattedMetadata = { ...metadata };
-		const settings = this.plugin.settings.fieldsSettings;
+		const settings = this.plugin.settings.frontmatterFields;
 
 		if (
 			settings.authors.wikilinks &&

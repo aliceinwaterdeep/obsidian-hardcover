@@ -76,12 +76,12 @@ export class SettingsMigrationService {
 			"genres",
 		] as const;
 
-		if (!settings.fieldsSettings) {
+		if (!settings.frontmatterFields) {
 			return settings;
 		}
 
 		for (const fieldKey of wikilinkFields) {
-			const fieldConfig = settings.fieldsSettings[fieldKey];
+			const fieldConfig = settings.frontmatterFields[fieldKey];
 			if (fieldConfig && !("wikilinks" in fieldConfig)) {
 				(fieldConfig as any).wikilinks = false;
 			}
@@ -102,8 +102,8 @@ export class SettingsMigrationService {
 	}
 
 	private static migrateToV4(settings: PluginSettings): PluginSettings {
-		if (!settings.fieldsSettings.lists) {
-			(settings.fieldsSettings as any).lists = {
+		if (!settings.frontmatterFields.lists) {
+			(settings.frontmatterFields as any).lists = {
 				enabled: false,
 				propertyName: "lists",
 				wikilinks: false,
@@ -118,15 +118,15 @@ export class SettingsMigrationService {
 			(settings.grouping as any).authorFormat = "firstLast";
 		}
 
-		if (!settings.fieldsSettings.isbn10) {
-			(settings.fieldsSettings as any).isbn10 = {
+		if (!settings.frontmatterFields.isbn10) {
+			(settings.frontmatterFields as any).isbn10 = {
 				enabled: false,
 				propertyName: "isbn10",
 			};
 		}
 
-		if (!settings.fieldsSettings.isbn13) {
-			(settings.fieldsSettings as any).isbn13 = {
+		if (!settings.frontmatterFields.isbn13) {
+			(settings.frontmatterFields as any).isbn13 = {
 				enabled: false,
 				propertyName: "isbn13",
 			};
@@ -181,8 +181,8 @@ export class SettingsMigrationService {
 	}
 
 	private static migrateToV10(settings: PluginSettings): PluginSettings {
-		if (!settings.fieldsSettings.quotes) {
-			(settings.fieldsSettings as any).quotes = {
+		if (!settings.frontmatterFields.quotes) {
+			(settings.frontmatterFields as any).quotes = {
 				enabled: false,
 				propertyName: "quotes",
 				format: "blockquote",
@@ -190,8 +190,8 @@ export class SettingsMigrationService {
 			};
 		}
 
-		if (!("bodyHeading" in settings.fieldsSettings.review)) {
-			(settings.fieldsSettings.review as any).bodyHeading = "Review";
+		if (!("bodyHeading" in settings.frontmatterFields.review)) {
+			(settings.frontmatterFields.review as any).bodyHeading = "Review";
 		}
 
 		return settings;

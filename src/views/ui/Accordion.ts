@@ -11,7 +11,7 @@ export class Accordion {
 	}
 
 	renderAccordionField(containerEl: HTMLElement, field: FieldDefinition) {
-		const fieldSettings = this.plugin.settings.fieldsSettings[field.key];
+		const fieldSettings = this.plugin.settings.frontmatterFields[field.key];
 		const isEnabled = fieldSettings.enabled;
 
 		const accordionContainer = containerEl.createDiv({ cls: "obhc-accordion" });
@@ -30,7 +30,7 @@ export class Accordion {
 			const toggleContainer = header.createDiv({ cls: "obhc-field-toggle" });
 			const toggle = new ToggleComponent(toggleContainer);
 			toggle.setValue(isEnabled).onChange(async (value) => {
-				this.plugin.settings.fieldsSettings[field.key].enabled = value;
+				this.plugin.settings.frontmatterFields[field.key].enabled = value;
 				await this.plugin.saveSettings();
 
 				if (content) {

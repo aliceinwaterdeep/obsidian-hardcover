@@ -18,7 +18,7 @@ describe("SettingsMigrationService", () => {
 				apiKey: "test-key",
 				lastSyncTimestamp: "2023-01-01T00:00:00Z",
 				userId: 123,
-				fieldsSettings: DEFAULT_SETTINGS.fieldsSettings,
+				frontmatterFields: DEFAULT_SETTINGS.frontmatterFields,
 				// missing settingsVersion field
 			};
 
@@ -34,7 +34,7 @@ describe("SettingsMigrationService", () => {
 			const v0Settings = {
 				settingsVersion: 0,
 				apiKey: "test-key",
-				fieldsSettings: DEFAULT_SETTINGS.fieldsSettings,
+				frontmatterFields: DEFAULT_SETTINGS.frontmatterFields,
 				dataSourcePreferences: DEFAULT_SETTINGS.dataSourcePreferences,
 				preserveCustomFrontmatter: true,
 			} as PluginSettings;
@@ -53,8 +53,8 @@ describe("SettingsMigrationService", () => {
 				userId: 456,
 				booksCount: 150,
 				targetFolder: "MyBooks",
-				fieldsSettings: {
-					...DEFAULT_SETTINGS.fieldsSettings,
+				frontmatterFields: {
+					...DEFAULT_SETTINGS.frontmatterFields,
 					rating: { enabled: false, propertyName: "myRating" },
 				},
 				dataSourcePreferences: DEFAULT_SETTINGS.dataSourcePreferences,
@@ -73,8 +73,8 @@ describe("SettingsMigrationService", () => {
 			expect(result.lastSyncTimestamp).toBe("2023-06-15T12:00:00Z");
 			expect(result.userId).toBe(456);
 			expect(result.targetFolder).toBe("MyBooks");
-			expect(result.fieldsSettings.rating.enabled).toBe(false);
-			expect(result.fieldsSettings.rating.propertyName).toBe("myRating");
+			expect(result.frontmatterFields.rating.enabled).toBe(false);
+			expect(result.frontmatterFields.rating.propertyName).toBe("myRating");
 			expect(result.statusMapping).toEqual({
 				1: "Want to Read",
 				3: "Finished",
@@ -87,7 +87,7 @@ describe("SettingsMigrationService", () => {
 			const v6Settings = {
 				settingsVersion: 6,
 				apiKey: "abc",
-				fieldsSettings: DEFAULT_SETTINGS.fieldsSettings,
+				frontmatterFields: DEFAULT_SETTINGS.frontmatterFields,
 				dataSourcePreferences: DEFAULT_SETTINGS.dataSourcePreferences,
 				grouping: DEFAULT_SETTINGS.grouping,
 			} as PluginSettings;
@@ -102,7 +102,7 @@ describe("SettingsMigrationService", () => {
 			const v6Settings = {
 				settingsVersion: 6,
 				apiKey: "abc",
-				fieldsSettings: DEFAULT_SETTINGS.fieldsSettings,
+				frontmatterFields: DEFAULT_SETTINGS.frontmatterFields,
 				dataSourcePreferences: DEFAULT_SETTINGS.dataSourcePreferences,
 				preserveCustomFrontmatter: false,
 				grouping: DEFAULT_SETTINGS.grouping,

@@ -1,4 +1,4 @@
-import { FieldsSettings, PluginSettings } from "src/types";
+import { FrontmatterFieldsSettings, PluginSettings } from "src/types";
 
 export class QueryBuilder {
 	private settings: PluginSettings;
@@ -13,13 +13,13 @@ export class QueryBuilder {
 		updatedAfter?: string,
 		status?: number[],
 	): string {
-		const fieldsSettings = this.settings.fieldsSettings;
+		const frontmatterFields = this.settings.frontmatterFields;
 		const dataPrefs = this.settings.dataSourcePreferences;
 
-		const userBooksFields = this.buildUserBooksFields(fieldsSettings);
-		const bookFields = this.buildBookFields(fieldsSettings, dataPrefs);
-		const editionFields = this.buildEditionFields(fieldsSettings, dataPrefs);
-		const readsFields = this.buildReadsFields(fieldsSettings);
+		const userBooksFields = this.buildUserBooksFields(frontmatterFields);
+		const bookFields = this.buildBookFields(frontmatterFields, dataPrefs);
+		const editionFields = this.buildEditionFields(frontmatterFields, dataPrefs);
+		const readsFields = this.buildReadsFields(frontmatterFields);
 		const hasStatusFilter = status && status.length > 0;
 
 		// build where clause with optional timestamp and status filters
@@ -68,7 +68,7 @@ export class QueryBuilder {
         `;
 	}
 
-	private buildUserBooksFields(settings: FieldsSettings): string {
+	private buildUserBooksFields(settings: FrontmatterFieldsSettings): string {
 		const fields: string[] = [];
 
 		if (settings.rating.enabled) {
@@ -98,7 +98,7 @@ export class QueryBuilder {
 	}
 
 	private buildBookFields(
-		settings: FieldsSettings,
+		settings: FrontmatterFieldsSettings,
 		dataPrefs: PluginSettings["dataSourcePreferences"],
 	): string {
 		const fields: string[] = ["title"]; // always include at least one field to avoid empty selection in the query
@@ -150,7 +150,7 @@ export class QueryBuilder {
 	}
 
 	private buildEditionFields(
-		settings: FieldsSettings,
+		settings: FrontmatterFieldsSettings,
 		dataPrefs: PluginSettings["dataSourcePreferences"],
 	): string {
 		const fields: string[] = ["title"]; // always include at least one field to avoid empty selection in the query
@@ -194,7 +194,7 @@ export class QueryBuilder {
 		return fields.join("\n                        ");
 	}
 
-	private buildReadsFields(settings: FieldsSettings): string {
+	private buildReadsFields(settings: FrontmatterFieldsSettings): string {
 		// only include reads if any read-related fields are enabled
 		if (
 			settings.firstRead.enabled ||

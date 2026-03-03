@@ -2,7 +2,7 @@ import { HARDCOVER_BOOKS_ROUTE, HARDCOVER_URL } from "src/config/constants";
 import {
 	BookMetadata,
 	BookMetadataWithContributors,
-	FieldsSettings,
+	FrontmatterFieldsSettings,
 	HardcoverBookSeries,
 	HardcoverUserBook,
 	HardcoverUserBooksReads,
@@ -27,7 +27,7 @@ export class MetadataService {
 		userBook: HardcoverUserBook,
 		bookToListsMap?: Map<number, string[]> | null,
 	): BookMetadataWithContributors {
-		const { fieldsSettings, dataSourcePreferences } = this.settings;
+		const { frontmatterFields, dataSourcePreferences } = this.settings;
 		const metadata: BookMetadata = {
 			// always include the Hardcover book id
 			hardcoverBookId: userBook.book_id,
@@ -48,25 +48,25 @@ export class MetadataService {
 				currentTitleSource.title,
 			);
 			// add to frontmatter
-			metadata[fieldsSettings.title.propertyName] = normalizedTitle;
+			metadata[frontmatterFields.title.propertyName] = normalizedTitle;
 			//add to body
 			metadata.bodyContent.title = normalizedTitle;
 		}
 
 		// add rating if enabled and exists
-		if (fieldsSettings.rating.enabled && userBook.rating !== null) {
-			metadata[fieldsSettings.rating.propertyName] = `${userBook.rating}/5`;
+		if (frontmatterFields.rating.enabled && userBook.rating !== null) {
+			metadata[frontmatterFields.rating.propertyName] = `${userBook.rating}/5`;
 		}
 
 		// add status if enabled and exists
-		if (fieldsSettings.status.enabled && userBook.status_id !== null) {
-			metadata[fieldsSettings.status.propertyName] = this.mapStatus(
+		if (frontmatterFields.status.enabled && userBook.status_id !== null) {
+			metadata[frontmatterFields.status.propertyName] = this.mapStatus(
 				userBook.status_id,
 			);
 		}
 
 		// add review to bodyContent if enabled and exists
-		if (fieldsSettings.review.enabled) {
+		if (frontmatterFields.review.enabled) {
 			let userReview;
 			if (userBook.review && userBook.review.trim()) {
 				userReview = userBook.review;
@@ -78,7 +78,7 @@ export class MetadataService {
 		}
 
 		// add quotes to bodyContent if enabled and exists
-		if (fieldsSettings.quotes.enabled && userBook.reading_journals) {
+		if (frontmatterFields.quotes.enabled && userBook.reading_journals) {
 			const quotes = userBook.reading_journals.map((q) => q.entry);
 			if (quotes.length > 0) {
 				metadata.bodyContent.quotes = quotes;
@@ -88,15 +88,15 @@ export class MetadataService {
 		// add cover (from book or edition based on user settings)
 		const currentCoverSource = coverSource === "book" ? book : edition;
 		const coverUrl = currentCoverSource.cached_image?.url;
-		if (fieldsSettings.cover.enabled && coverUrl) {
+		if (frontmatterFields.cover.enabled && coverUrl) {
 			// add to frontmatteer
-			metadata[fieldsSettings.cover.propertyName] = coverUrl;
+			metadata[frontmatterFields.cover.propertyName] = coverUrl;
 			// add to body
 			metadata.bodyContent.coverUrl = coverUrl;
 		}
 
 		// add authors
-		if (fieldsSettings.authors.enabled) {
+		if (frontmatterFields.authors.enabled) {
 			let authors: string[] = [];
 			if (
 				dataSourcePreferences.authorsSource === "book" &&
@@ -113,12 +113,12 @@ export class MetadataService {
 			}
 
 			if (authors.length) {
-				metadata[fieldsSettings.authors.propertyName] = authors;
+				metadata[frontmatterFields.authors.propertyName] = authors;
 			}
 		}
 
 		// add other contributors
-		if (fieldsSettings.contributors.enabled) {
+		if (frontmatterFields.contributors.enabled) {
 			let otherContributors: Array<{ name: string; role: string }> = [];
 			if (
 				dataSourcePreferences.contributorsSource === "book" &&
@@ -138,7 +138,7 @@ export class MetadataService {
 				const contributorStrings = otherContributors.map(
 					(c) => `${c.name} (${c.role})`,
 				);
-				metadata[fieldsSettings.contributors.propertyName] = contributorStrings;
+				metadata[frontmatterFields.contributors.propertyName] = contributorStrings;
 			}
 		}
 
@@ -146,54 +146,54 @@ export class MetadataService {
 		const currentReleaseDateSource =
 			releaseDateSource === "book" ? book : edition;
 		if (
-			fieldsSettings.releaseDate.enabled &&
+			frontmatterFields.releaseDate.enabled &&
 			currentReleaseDateSource.release_date
 		) {
-			metadata[fieldsSettings.releaseDate.propertyName] =
+			metadata[frontmatterFields.releaseDate.propertyName] =
 				currentReleaseDateSource.release_date;
 		}
 
 		// add description
-		if (fieldsSettings.description.enabled && book.description) {
-			metadata[fieldsSettings.description.propertyName] = book.description;
+		if (frontmatterFields.description.enabled && book.description) {
+			metadata[frontmatterFields.description.propertyName] = book.description;
 		}
 
 		// add url
-		if (fieldsSettings.url.enabled && book.slug) {
-			metadata[fieldsSettings.url.propertyName] =
+		if (frontmatterFields.url.enabled && book.slug) {
+			metadata[frontmatterFields.url.propertyName] =
 				`${HARDCOVER_URL}/${HARDCOVER_BOOKS_ROUTE}/${book.slug}`;
 		}
 
 		// add publisher
-		if (fieldsSettings.publisher.enabled && edition.publisher?.name) {
+		if (frontmatterFields.publisher.enabled && edition.publisher?.name) {
 			const publisherValue = this.fileUtils.normalizeText(
 				edition.publisher.name,
 			);
-			metadata[fieldsSettings.publisher.propertyName] = publisherValue;
+			metadata[frontmatterFields.publisher.propertyName] = publisherValue;
 		}
 
 		// add isbn-10
-		if (fieldsSettings.isbn10.enabled && edition.isbn_10) {
-			metadata[fieldsSettings.isbn10.propertyName] = edition.isbn_10;
+		if (frontmatterFields.isbn10.enabled && edition.isbn_10) {
+			metadata[frontmatterFields.isbn10.propertyName] = edition.isbn_10;
 		}
 
 		// add isbn-13
-		if (fieldsSettings.isbn13.enabled && edition.isbn_13) {
-			metadata[fieldsSettings.isbn13.propertyName] = edition.isbn_13;
+		if (frontmatterFields.isbn13.enabled && edition.isbn_13) {
+			metadata[frontmatterFields.isbn13.propertyName] = edition.isbn_13;
 		}
 
 		// add series
-		if (fieldsSettings.series.enabled && book.book_series) {
+		if (frontmatterFields.series.enabled && book.book_series) {
 			const seriesArray = this.extractSeriesInfo(book.book_series);
 
 			if (seriesArray.length > 0) {
-				metadata[fieldsSettings.series.propertyName] = seriesArray;
+				metadata[frontmatterFields.series.propertyName] = seriesArray;
 			}
 		}
 
 		// add genres
 		if (
-			fieldsSettings.genres.enabled &&
+			frontmatterFields.genres.enabled &&
 			book.cached_tags &&
 			book.cached_tags.Genre
 		) {
@@ -202,53 +202,53 @@ export class MetadataService {
 			);
 
 			if (genres.length > 0) {
-				metadata[fieldsSettings.genres.propertyName] = genres;
+				metadata[frontmatterFields.genres.propertyName] = genres;
 			}
 		}
 
 		// add lists
-		if (fieldsSettings.lists.enabled && bookToListsMap) {
+		if (frontmatterFields.lists.enabled && bookToListsMap) {
 			const lists = bookToListsMap.get(userBook.book_id);
 
 			if (lists && lists.length > 0) {
-				metadata[fieldsSettings.lists.propertyName] = lists;
+				metadata[frontmatterFields.lists.propertyName] = lists;
 			}
 		}
 
 		// add reading activity
 		if (
-			fieldsSettings.firstRead.enabled ||
-			fieldsSettings.lastRead.enabled ||
-			fieldsSettings.totalReads.enabled
+			frontmatterFields.firstRead.enabled ||
+			frontmatterFields.lastRead.enabled ||
+			frontmatterFields.totalReads.enabled
 		) {
 			const activity = this.extractReadingActivity(readingActivity);
 
 			// add first read
-			if (fieldsSettings.firstRead.enabled && activity.firstRead) {
-				metadata[fieldsSettings.firstRead.startPropertyName] =
+			if (frontmatterFields.firstRead.enabled && activity.firstRead) {
+				metadata[frontmatterFields.firstRead.startPropertyName] =
 					activity.firstRead.start;
 
-				metadata[fieldsSettings.firstRead.endPropertyName] =
+				metadata[frontmatterFields.firstRead.endPropertyName] =
 					activity.firstRead.end;
 			}
 
 			// add last read
-			if (fieldsSettings.lastRead.enabled && activity.lastRead) {
-				metadata[fieldsSettings.lastRead.startPropertyName] =
+			if (frontmatterFields.lastRead.enabled && activity.lastRead) {
+				metadata[frontmatterFields.lastRead.startPropertyName] =
 					activity.lastRead.start;
 
-				metadata[fieldsSettings.lastRead.endPropertyName] =
+				metadata[frontmatterFields.lastRead.endPropertyName] =
 					activity.lastRead.end;
 			}
 
 			// add number of total reads
-			if (fieldsSettings.totalReads.enabled && activity.totalReads) {
-				metadata[fieldsSettings.totalReads.propertyName] = activity.totalReads;
+			if (frontmatterFields.totalReads.enabled && activity.totalReads) {
+				metadata[frontmatterFields.totalReads.propertyName] = activity.totalReads;
 			}
 
 			// add read years
-			if (fieldsSettings.readYears.enabled && activity.readYears.length > 0) {
-				metadata[fieldsSettings.readYears.propertyName] = activity.readYears;
+			if (frontmatterFields.readYears.enabled && activity.readYears.length > 0) {
+				metadata[frontmatterFields.readYears.propertyName] = activity.readYears;
 			}
 		}
 

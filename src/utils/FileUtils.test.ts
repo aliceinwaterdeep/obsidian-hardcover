@@ -1,5 +1,5 @@
 import { FileUtils } from "./FileUtils";
-import { DEFAULT_FIELDS_SETTINGS } from "../config/defaultSettings";
+import { DEFAULT_FRONTMATTER_FIELDS } from "../config/defaultSettings";
 
 jest.mock("obsidian", () => ({
 	normalizePath: (path: string) => {
@@ -47,7 +47,7 @@ describe("FileUtils", () => {
 				fileUtils.processFilenameTemplate(
 					"${title} by ${authors} (${year})",
 					metadata,
-					DEFAULT_FIELDS_SETTINGS
+					DEFAULT_FRONTMATTER_FIELDS
 				)
 			).toBe("All Systems Red by Martha Wells (2017).md");
 		});
@@ -58,7 +58,7 @@ describe("FileUtils", () => {
 				fileUtils.processFilenameTemplate(
 					"${title} (${year})",
 					metadata,
-					DEFAULT_FIELDS_SETTINGS
+					DEFAULT_FRONTMATTER_FIELDS
 				)
 			).toBe("All Systems Red.md");
 		});
@@ -69,14 +69,14 @@ describe("FileUtils", () => {
 				fileUtils.processFilenameTemplate(
 					"${title} (${year})",
 					metadata,
-					DEFAULT_FIELDS_SETTINGS
+					DEFAULT_FRONTMATTER_FIELDS
 				)
 			).toBe("All Systems Red.md");
 		});
 
 		test("handles custom property names", () => {
 			const customSettings = {
-				...DEFAULT_FIELDS_SETTINGS,
+				...DEFAULT_FRONTMATTER_FIELDS,
 				title: { enabled: true, propertyName: "bookTitle" },
 				authors: { enabled: true, propertyName: "bookAuthors" },
 				releaseDate: { enabled: true, propertyName: "publicationDate" },

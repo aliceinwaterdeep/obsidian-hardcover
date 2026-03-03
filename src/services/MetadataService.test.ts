@@ -216,9 +216,9 @@ describe("MetadataService", () => {
 		});
 
 		test("respects field enable/disable settings", () => {
-			mockSettings.fieldsSettings.rating.enabled = false;
-			mockSettings.fieldsSettings.description.enabled = false;
-			mockSettings.fieldsSettings.genres.enabled = false;
+			mockSettings.frontmatterFields.rating.enabled = false;
+			mockSettings.frontmatterFields.description.enabled = false;
+			mockSettings.frontmatterFields.genres.enabled = false;
 			metadataService.updateSettings(mockSettings);
 
 			const { metadata: result } =
@@ -234,9 +234,9 @@ describe("MetadataService", () => {
 		});
 
 		test("uses custom property names from settings", () => {
-			mockSettings.fieldsSettings.title.propertyName = "bookTitle";
-			mockSettings.fieldsSettings.rating.propertyName = "myRating";
-			mockSettings.fieldsSettings.status.propertyName = "readingStatus";
+			mockSettings.frontmatterFields.title.propertyName = "bookTitle";
+			mockSettings.frontmatterFields.rating.propertyName = "myRating";
+			mockSettings.frontmatterFields.status.propertyName = "readingStatus";
 			metadataService.updateSettings(mockSettings);
 
 			const { metadata: result } =
@@ -263,7 +263,7 @@ describe("MetadataService", () => {
 		});
 
 		test("includes body content for quotes when enabled", () => {
-			mockSettings.fieldsSettings.quotes.enabled = true;
+			mockSettings.frontmatterFields.quotes.enabled = true;
 			metadataService.updateSettings(mockSettings);
 
 			const { metadata: result } =
@@ -276,7 +276,7 @@ describe("MetadataService", () => {
 		});
 
 		test("excludes quotes when disabled", () => {
-			mockSettings.fieldsSettings.quotes.enabled = false;
+			mockSettings.frontmatterFields.quotes.enabled = false;
 			metadataService.updateSettings(mockSettings);
 
 			const { metadata: result } =
@@ -286,7 +286,7 @@ describe("MetadataService", () => {
 		});
 
 		test("handles empty quotes array", () => {
-			mockSettings.fieldsSettings.quotes.enabled = true;
+			mockSettings.frontmatterFields.quotes.enabled = true;
 			metadataService.updateSettings(mockSettings);
 
 			const userBookWithoutQuotes = {
@@ -302,7 +302,7 @@ describe("MetadataService", () => {
 		});
 
 		test("handles missing reading_journals field", () => {
-			mockSettings.fieldsSettings.quotes.enabled = true;
+			mockSettings.frontmatterFields.quotes.enabled = true;
 			metadataService.updateSettings(mockSettings);
 
 			const { reading_journals, ...userBookWithoutJournals } = MOCK_USER_BOOK;
@@ -315,8 +315,8 @@ describe("MetadataService", () => {
 		});
 
 		test("extracts ISBN fields when enabled", () => {
-			mockSettings.fieldsSettings.isbn10.enabled = true;
-			mockSettings.fieldsSettings.isbn13.enabled = true;
+			mockSettings.frontmatterFields.isbn10.enabled = true;
+			mockSettings.frontmatterFields.isbn13.enabled = true;
 			metadataService.updateSettings(mockSettings);
 
 			const { metadata: result } =
@@ -327,8 +327,8 @@ describe("MetadataService", () => {
 		});
 
 		test("respects ISBN field enable/disable settings", () => {
-			mockSettings.fieldsSettings.isbn10.enabled = false;
-			mockSettings.fieldsSettings.isbn13.enabled = false;
+			mockSettings.frontmatterFields.isbn10.enabled = false;
+			mockSettings.frontmatterFields.isbn13.enabled = false;
 			metadataService.updateSettings(mockSettings);
 
 			const { metadata: result } =

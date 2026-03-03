@@ -52,7 +52,7 @@ export class SyncService {
 
 		try {
 			// Fetch user ID, book count, and lists in a single API call
-			const includeLists = this.plugin.settings.fieldsSettings.lists.enabled;
+			const includeLists = this.plugin.settings.frontmatterFields.lists.enabled;
 
 			// only send filter if not all statuses are selected (optimization)
 			const allStatuses = Object.keys(HARDCOVER_STATUS_MAP).map((id) =>
