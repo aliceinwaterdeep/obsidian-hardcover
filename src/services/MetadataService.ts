@@ -27,7 +27,7 @@ export class MetadataService {
 		userBook: HardcoverUserBook,
 		bookToListsMap?: Map<number, string[]> | null,
 	): BookMetadataWithContributors {
-		const { frontmatterFields, dataSourcePreferences } = this.settings;
+		const { frontmatterFields } = this.settings;
 		const metadata: BookMetadata = {
 			// always include the Hardcover book id
 			hardcoverBookId: userBook.book_id,
@@ -36,33 +36,54 @@ export class MetadataService {
 
 		let rawContributorsForFallback: Record<any, any>[] | undefined;
 
-		const { titleSource, coverSource, releaseDateSource } =
-			dataSourcePreferences;
-
 		const { book, edition, user_book_reads: readingActivity } = userBook;
 
-		// add title (from book or edition based on user settings)
-		const currentTitleSource = titleSource === "book" ? book : edition;
-		if (currentTitleSource && currentTitleSource.title) {
-			const normalizedTitle = this.fileUtils.normalizeText(
-				currentTitleSource.title,
-			);
-			// add to frontmatter
-			metadata[frontmatterFields.title.propertyName] = normalizedTitle;
-			//add to body
-			metadata.bodyContent.title = normalizedTitle;
+		// Book title
+		if (book?.title) {
+			const normalizedTitle = this.fileUtils.normalizeText(book.title);
+
+			// add to frontmatter if enabled
+			if (frontmatterFields.bookTitle.enabled) {
+				metadata[frontmatterFields.bookTitle.propertyName] = normalizedTitle;
+			}
+
+			// always add to bodyContent for template access
+			metadata.bodyContent.bookTitle = normalizedTitle;
+		}
+
+		// Edition title
+		if (edition?.title) {
+			const normalizedTitle = this.fileUtils.normalizeText(edition.title);
+
+			// add to frontmatter if enabled
+			if (frontmatterFields.editionTitle.enabled) {
+				metadata[frontmatterFields.editionTitle.propertyName] = normalizedTitle;
+			}
+
+			// always add to bodyContent for template access
+			metadata.bodyContent.editionTitle = normalizedTitle;
 		}
 
 		// add rating if enabled and exists
-		if (frontmatterFields.rating.enabled && userBook.rating !== null) {
-			metadata[frontmatterFields.rating.propertyName] = `${userBook.rating}/5`;
+		if (userBook.rating !== null) {
+			if (frontmatterFields.rating.enabled) {
+				metadata[frontmatterFields.rating.propertyName] = userBook.rating;
+			}
+
+			// always add to bodyContent
+			metadata.bodyContent.rating = userBook.rating;
 		}
 
 		// add status if enabled and exists
-		if (frontmatterFields.status.enabled && userBook.status_id !== null) {
-			metadata[frontmatterFields.status.propertyName] = this.mapStatus(
-				userBook.status_id,
-			);
+		if (userBook.status_id !== null) {
+			const statusArray = this.mapStatus(userBook.status_id);
+
+			if (frontmatterFields.status.enabled) {
+				metadata[frontmatterFields.status.propertyName] = statusArray;
+			}
+
+			// always add to bodyContent
+			metadata.bodyContent.status = statusArray;
 		}
 
 		// add review to bodyContent if enabled and exists
@@ -85,72 +106,143 @@ export class MetadataService {
 			}
 		}
 
-		// add cover (from book or edition based on user settings)
-		const currentCoverSource = coverSource === "book" ? book : edition;
-		const coverUrl = currentCoverSource.cached_image?.url;
-		if (frontmatterFields.cover.enabled && coverUrl) {
-			// add to frontmatteer
-			metadata[frontmatterFields.cover.propertyName] = coverUrl;
-			// add to body
-			metadata.bodyContent.coverUrl = coverUrl;
+		// Book cover
+		if (book?.cached_image?.url) {
+			const coverUrl = book.cached_image.url;
+
+			// add to frontmatter if enabled
+			if (frontmatterFields.bookCover.enabled) {
+				metadata[frontmatterFields.bookCover.propertyName] = coverUrl;
+			}
+
+			// always add to bodyContent
+			metadata.bodyContent.bookCover = coverUrl;
 		}
 
-		// add authors
-		if (frontmatterFields.authors.enabled) {
-			let authors: string[] = [];
-			if (
-				dataSourcePreferences.authorsSource === "book" &&
-				book.cached_contributors
-			) {
-				authors = this.extractAuthors(book.cached_contributors);
-				rawContributorsForFallback = book.cached_contributors;
-			} else if (
-				dataSourcePreferences.authorsSource === "edition" &&
-				edition.cached_contributors
-			) {
-				authors = this.extractAuthors(edition.cached_contributors);
+		// Edition cover
+		if (edition?.cached_image?.url) {
+			const coverUrl = edition.cached_image.url;
+
+			// add to frontmatter if enabled
+			if (frontmatterFields.editionCover.enabled) {
+				metadata[frontmatterFields.editionCover.propertyName] = coverUrl;
+			}
+
+			// always add to bodyContent
+			metadata.bodyContent.editionCover = coverUrl;
+		}
+
+		// Book authors
+		if (book?.cached_contributors) {
+			const authors = this.extractAuthors(book.cached_contributors);
+			rawContributorsForFallback = book.cached_contributors;
+
+			// add to frontmatter if enabled
+			if (frontmatterFields.bookAuthors.enabled && authors.length) {
+				metadata[frontmatterFields.bookAuthors.propertyName] = authors;
+			}
+
+			// always add to bodyContent
+			if (authors.length) {
+				metadata.bodyContent.bookAuthors = authors;
+			}
+		}
+
+		// Edition authors
+		if (edition?.cached_contributors) {
+			const authors = this.extractAuthors(edition.cached_contributors);
+			// set fallback if book authors weren't available
+			if (!rawContributorsForFallback) {
 				rawContributorsForFallback = edition.cached_contributors;
 			}
 
+			// add to frontmatter if enabled
+			if (frontmatterFields.editionAuthors.enabled && authors.length) {
+				metadata[frontmatterFields.editionAuthors.propertyName] = authors;
+			}
+
+			// always add to bodyContent
 			if (authors.length) {
-				metadata[frontmatterFields.authors.propertyName] = authors;
+				metadata.bodyContent.editionAuthors = authors;
 			}
 		}
 
-		// add other contributors
-		if (frontmatterFields.contributors.enabled) {
-			let otherContributors: Array<{ name: string; role: string }> = [];
+		// Book contributors
+		if (book?.cached_contributors) {
+			const otherContributors = this.extractContributors(
+				book.cached_contributors,
+			);
+
+			// add to frontmatter if enabled
 			if (
-				dataSourcePreferences.contributorsSource === "book" &&
-				book.cached_contributors
+				frontmatterFields.bookContributors.enabled &&
+				otherContributors.length
 			) {
-				otherContributors = this.extractContributors(book.cached_contributors);
-			} else if (
-				dataSourcePreferences.contributorsSource === "edition" &&
-				edition.cached_contributors
-			) {
-				otherContributors = this.extractContributors(
-					edition.cached_contributors,
+				const contributorStrings = otherContributors.map(
+					(c) => `${c.name} (${c.role})`,
 				);
+				metadata[frontmatterFields.bookContributors.propertyName] =
+					contributorStrings;
 			}
 
+			// always add to bodyContent
 			if (otherContributors.length) {
 				const contributorStrings = otherContributors.map(
 					(c) => `${c.name} (${c.role})`,
 				);
-				metadata[frontmatterFields.contributors.propertyName] = contributorStrings;
+				metadata.bodyContent.bookContributors = contributorStrings;
 			}
 		}
 
-		// add release date (from book or edition based on user settings)
-		const currentReleaseDateSource =
-			releaseDateSource === "book" ? book : edition;
-		if (
-			frontmatterFields.releaseDate.enabled &&
-			currentReleaseDateSource.release_date
-		) {
-			metadata[frontmatterFields.releaseDate.propertyName] =
-				currentReleaseDateSource.release_date;
+		// Edition contributors
+		if (edition?.cached_contributors) {
+			const otherContributors = this.extractContributors(
+				edition.cached_contributors,
+			);
+
+			// add to frontmatter if enabled
+			if (
+				frontmatterFields.editionContributors.enabled &&
+				otherContributors.length
+			) {
+				const contributorStrings = otherContributors.map(
+					(c) => `${c.name} (${c.role})`,
+				);
+				metadata[frontmatterFields.editionContributors.propertyName] =
+					contributorStrings;
+			}
+
+			// always add to bodyContent
+			if (otherContributors.length) {
+				const contributorStrings = otherContributors.map(
+					(c) => `${c.name} (${c.role})`,
+				);
+				metadata.bodyContent.editionContributors = contributorStrings;
+			}
+		}
+
+		// Book release date
+		if (book?.release_date) {
+			// add to frontmatter if enabled
+			if (frontmatterFields.bookReleaseDate.enabled) {
+				metadata[frontmatterFields.bookReleaseDate.propertyName] =
+					book.release_date;
+			}
+
+			// always add to bodyContent
+			metadata.bodyContent.bookReleaseDate = book.release_date;
+		}
+
+		// Edition release date
+		if (edition?.release_date) {
+			// add to frontmatter if enabled
+			if (frontmatterFields.editionReleaseDate.enabled) {
+				metadata[frontmatterFields.editionReleaseDate.propertyName] =
+					edition.release_date;
+			}
+
+			// always add to bodyContent
+			metadata.bodyContent.editionReleaseDate = edition.release_date;
 		}
 
 		// add description
@@ -158,18 +250,37 @@ export class MetadataService {
 			metadata[frontmatterFields.description.propertyName] = book.description;
 		}
 
+		// always add to bodyContent
+		if (book.description) {
+			metadata.bodyContent.description = book.description;
+		}
+
 		// add url
-		if (frontmatterFields.url.enabled && book.slug) {
-			metadata[frontmatterFields.url.propertyName] =
-				`${HARDCOVER_URL}/${HARDCOVER_BOOKS_ROUTE}/${book.slug}`;
+		const bookUrl = book.slug
+			? `${HARDCOVER_URL}/${HARDCOVER_BOOKS_ROUTE}/${book.slug}`
+			: undefined;
+
+		if (frontmatterFields.url.enabled && bookUrl) {
+			metadata[frontmatterFields.url.propertyName] = bookUrl;
+		}
+
+		// always add to bodyContent
+		if (bookUrl) {
+			metadata.bodyContent.url = bookUrl;
 		}
 
 		// add publisher
-		if (frontmatterFields.publisher.enabled && edition.publisher?.name) {
+		if (edition.publisher?.name) {
 			const publisherValue = this.fileUtils.normalizeText(
 				edition.publisher.name,
 			);
-			metadata[frontmatterFields.publisher.propertyName] = publisherValue;
+
+			if (frontmatterFields.publisher.enabled) {
+				metadata[frontmatterFields.publisher.propertyName] = [publisherValue];
+			}
+
+			// always add to bodyContent (as array)
+			metadata.bodyContent.publisher = [publisherValue];
 		}
 
 		// add isbn-10
@@ -177,41 +288,61 @@ export class MetadataService {
 			metadata[frontmatterFields.isbn10.propertyName] = edition.isbn_10;
 		}
 
+		// always add to bodyContent
+		if (edition.isbn_10) {
+			metadata.bodyContent.isbn10 = edition.isbn_10;
+		}
+
 		// add isbn-13
 		if (frontmatterFields.isbn13.enabled && edition.isbn_13) {
 			metadata[frontmatterFields.isbn13.propertyName] = edition.isbn_13;
 		}
 
+		// always add to bodyContent
+		if (edition.isbn_13) {
+			metadata.bodyContent.isbn13 = edition.isbn_13;
+		}
+
 		// add series
-		if (frontmatterFields.series.enabled && book.book_series) {
+		if (book.book_series) {
 			const seriesArray = this.extractSeriesInfo(book.book_series);
 
 			if (seriesArray.length > 0) {
-				metadata[frontmatterFields.series.propertyName] = seriesArray;
+				if (frontmatterFields.series.enabled) {
+					metadata[frontmatterFields.series.propertyName] = seriesArray;
+				}
+
+				// always add to bodyContent
+				metadata.bodyContent.series = seriesArray;
 			}
 		}
 
 		// add genres
-		if (
-			frontmatterFields.genres.enabled &&
-			book.cached_tags &&
-			book.cached_tags.Genre
-		) {
+		if (book.cached_tags && book.cached_tags.Genre) {
 			const genres = book.cached_tags.Genre.map((tag: any) => tag.tag).filter(
 				(genre: string) => !!genre,
 			);
 
 			if (genres.length > 0) {
-				metadata[frontmatterFields.genres.propertyName] = genres;
+				if (frontmatterFields.genres.enabled) {
+					metadata[frontmatterFields.genres.propertyName] = genres;
+				}
+
+				// always add to bodyContent
+				metadata.bodyContent.genres = genres;
 			}
 		}
 
 		// add lists
-		if (frontmatterFields.lists.enabled && bookToListsMap) {
+		if (bookToListsMap) {
 			const lists = bookToListsMap.get(userBook.book_id);
-
 			if (lists && lists.length > 0) {
-				metadata[frontmatterFields.lists.propertyName] = lists;
+				if (frontmatterFields.lists.enabled) {
+					metadata[frontmatterFields.lists.propertyName] = lists;
+				}
+
+				// always add to bodyContent
+				metadata.bodyContent.lists = lists;
 			}
 		}
 
@@ -243,12 +374,71 @@ export class MetadataService {
 
 			// add number of total reads
 			if (frontmatterFields.totalReads.enabled && activity.totalReads) {
-				metadata[frontmatterFields.totalReads.propertyName] = activity.totalReads;
+				metadata[frontmatterFields.totalReads.propertyName] =
+					activity.totalReads;
 			}
 
 			// add read years
-			if (frontmatterFields.readYears.enabled && activity.readYears.length > 0) {
+			if (
+				frontmatterFields.readYears.enabled &&
+				activity.readYears.length > 0
+			) {
 				metadata[frontmatterFields.readYears.propertyName] = activity.readYears;
+			}
+		}
+
+		// add reading activity to bodyContent
+		if (readingActivity && readingActivity.length > 0) {
+			const firstRead = readingActivity[0];
+			const lastRead = readingActivity[readingActivity.length - 1];
+
+			if (firstRead.started_at) {
+				metadata.bodyContent.firstReadStart = firstRead.started_at;
+			}
+			if (firstRead.finished_at) {
+				metadata.bodyContent.firstReadEnd = firstRead.finished_at;
+			}
+			if (lastRead.started_at) {
+				metadata.bodyContent.lastReadStart = lastRead.started_at;
+			}
+			if (lastRead.finished_at) {
+				metadata.bodyContent.lastReadEnd = lastRead.finished_at;
+			}
+
+			metadata.bodyContent.totalReads = readingActivity.length;
+		}
+
+		// add reading activity to bodyContent
+		if (readingActivity && readingActivity.length > 0) {
+			const activity = this.extractReadingActivity(readingActivity);
+
+			if (activity.firstRead) {
+				if (activity.firstRead.start) {
+					metadata.bodyContent.firstReadStart = activity.firstRead.start;
+				}
+				if (activity.firstRead.end) {
+					metadata.bodyContent.firstReadEnd = activity.firstRead.end;
+				}
+			}
+
+			if (activity.lastRead) {
+				if (activity.lastRead.start) {
+					metadata.bodyContent.lastReadStart = activity.lastRead.start;
+				}
+				if (activity.lastRead.end) {
+					metadata.bodyContent.lastReadEnd = activity.lastRead.end;
+				}
+			}
+
+			if (activity.totalReads) {
+				metadata.bodyContent.totalReads = activity.totalReads;
+			}
+
+			if (activity.readYears && activity.readYears.length > 0) {
+				// readYears are strings from extractReadingActivity, convert to numbers
+				metadata.bodyContent.readYears = activity.readYears.map((year) =>
+					parseInt(year, 10),
+				);
 			}
 		}
 
