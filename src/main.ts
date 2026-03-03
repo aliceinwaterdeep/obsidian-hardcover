@@ -7,7 +7,7 @@ import { MetadataService } from "./services/MetadataService";
 import { FileUtils } from "./utils/FileUtils";
 import { NoteService } from "./services/NoteService";
 import { DEFAULT_SETTINGS } from "./config/defaultSettings";
-import { SettingsMigrationService } from "./services/SettingsMigrationService";
+import { SettingsMigrationService } from "./services/migrations";
 import { EnvUtils } from "./utils/EnvUtils";
 
 export default class ObsidianHardcover extends Plugin {

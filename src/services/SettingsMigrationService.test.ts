@@ -1,4 +1,4 @@
-import { SettingsMigrationService } from "./SettingsMigrationService";
+import { SettingsMigrationService } from "./migrations";
 import { PluginSettings } from "../types";
 import { DEFAULT_SETTINGS } from "../config/defaultSettings";
 
