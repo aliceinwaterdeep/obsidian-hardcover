@@ -159,6 +159,13 @@ export default class SettingsTab extends PluginSettingTab {
 
 		containerEl.createEl("hr");
 
+		//  SECTION 5: NOTE BODY TEMPLATE
+		new Setting(containerEl).setName("Note Body Template").setHeading();
+
+		renderBodyTemplateSettings(containerEl, this.plugin);
+
+		containerEl.createEl("hr");
+
 		//  SECTION 6: SYNC
 		this.addMainSyncButton(containerEl);
 		renderSyncInfoMessages(containerEl);
