@@ -39,7 +39,7 @@ describe("FileUtils", () => {
 	describe("processFilenameTemplate", () => {
 		test("replaces all variables correctly", () => {
 			const metadata = {
-				bodyContent: {
+				availableData: {
 					editionTitle: MOCK_BOOK.title,
 					editionReleaseDate: MOCK_BOOK.releaseDate,
 					editionAuthors: [MOCK_BOOK.author],
@@ -56,7 +56,7 @@ describe("FileUtils", () => {
 
 		test("handles missing data gracefully", () => {
 			const metadata = {
-				bodyContent: {
+				availableData: {
 					editionTitle: MOCK_BOOK.title,
 				},
 			};
@@ -71,7 +71,7 @@ describe("FileUtils", () => {
 
 		test("handles invalid release date", () => {
 			const metadata = {
-				bodyContent: {
+				availableData: {
 					editionTitle: MOCK_BOOK.title,
 					editionReleaseDate: "invalid",
 				},
@@ -94,7 +94,7 @@ describe("FileUtils", () => {
 			};
 
 			const metadata = {
-				bodyContent: {
+				availableData: {
 					editionTitle: "All Systems Red",
 					editionReleaseDate: "2017-05-02",
 					editionAuthors: ["Martha Wells"],
