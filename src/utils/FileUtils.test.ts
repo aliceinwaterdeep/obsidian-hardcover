@@ -39,9 +39,11 @@ describe("FileUtils", () => {
 	describe("processFilenameTemplate", () => {
 		test("replaces all variables correctly", () => {
 			const metadata = {
-				title: MOCK_BOOK.title, // this matches editionTitle.propertyName
-				releaseDate: MOCK_BOOK.releaseDate, // this matches editionReleaseDate.propertyName
-				authors: [MOCK_BOOK.author], // this matches editionAuthors.propertyName
+				bodyContent: {
+					editionTitle: MOCK_BOOK.title,
+					editionReleaseDate: MOCK_BOOK.releaseDate,
+					editionAuthors: [MOCK_BOOK.author],
+				},
 			};
 			expect(
 				fileUtils.processFilenameTemplate(
@@ -53,7 +55,11 @@ describe("FileUtils", () => {
 		});
 
 		test("handles missing data gracefully", () => {
-			const metadata = { title: MOCK_BOOK.title };
+			const metadata = {
+				bodyContent: {
+					editionTitle: MOCK_BOOK.title,
+				},
+			};
 			expect(
 				fileUtils.processFilenameTemplate(
 					"{{editionTitle}} ({{editionYear}})",
@@ -64,7 +70,12 @@ describe("FileUtils", () => {
 		});
 
 		test("handles invalid release date", () => {
-			const metadata = { title: MOCK_BOOK.title, releaseDate: "invalid" };
+			const metadata = {
+				bodyContent: {
+					editionTitle: MOCK_BOOK.title,
+					editionReleaseDate: "invalid",
+				},
+			};
 			expect(
 				fileUtils.processFilenameTemplate(
 					"{{editionTitle}} ({{editionYear}})",
@@ -83,9 +94,11 @@ describe("FileUtils", () => {
 			};
 
 			const metadata = {
-				bookTitle: "All Systems Red",
-				publicationDate: "2017-05-02",
-				bookAuthors: ["Martha Wells"],
+				bodyContent: {
+					editionTitle: "All Systems Red",
+					editionReleaseDate: "2017-05-02",
+					editionAuthors: ["Martha Wells"],
+				},
 			};
 
 			expect(

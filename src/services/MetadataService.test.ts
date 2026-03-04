@@ -265,9 +265,6 @@ describe("MetadataService", () => {
 		});
 
 		test("includes body content for quotes when enabled", () => {
-			mockSettings.frontmatterFields.quotes.enabled = true;
-			metadataService.updateSettings(mockSettings);
-
 			const { metadata: result } =
 				metadataService.buildMetadata(MOCK_USER_BOOK);
 
@@ -275,16 +272,6 @@ describe("MetadataService", () => {
 				"Quote one from the book",
 				"Quote two from the book",
 			]);
-		});
-
-		test("excludes quotes when disabled", () => {
-			mockSettings.frontmatterFields.quotes.enabled = false;
-			metadataService.updateSettings(mockSettings);
-
-			const { metadata: result } =
-				metadataService.buildMetadata(MOCK_USER_BOOK);
-
-			expect(result.availableData.quotes).toBeUndefined();
 		});
 
 		test("handles empty quotes array", () => {
