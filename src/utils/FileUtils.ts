@@ -43,40 +43,36 @@ export class FileUtils {
 		fieldsSettings: FrontmatterFieldsSettings,
 	): string {
 		let filename = template;
-		const frontmatter = metadata.frontmatter ?? metadata;
+		const bodyContent = metadata.bodyContent ?? {};
 
 		// {{editionTitle}}
-		const editionTitleValue =
-			frontmatter[fieldsSettings.editionTitle.propertyName];
+		const editionTitleValue = bodyContent.editionTitle;
 		if (editionTitleValue) {
 			filename = filename.replace(/\{\{editionTitle\}\}/g, editionTitleValue);
 		}
 
 		// {{bookTitle}}
-		const bookTitleValue = frontmatter[fieldsSettings.bookTitle.propertyName];
+		const bookTitleValue = bodyContent.bookTitle;
 		if (bookTitleValue) {
 			filename = filename.replace(/\{\{bookTitle\}\}/g, bookTitleValue);
 		}
 
 		// {{editionAuthors}}
-		const editionAuthorsValue =
-			frontmatter[fieldsSettings.editionAuthors.propertyName];
+		const editionAuthorsValue = bodyContent.editionAuthors;
 		if (editionAuthorsValue && Array.isArray(editionAuthorsValue)) {
 			const authorsString = editionAuthorsValue.join(", ");
 			filename = filename.replace(/\{\{editionAuthors\}\}/g, authorsString);
 		}
 
 		// {{bookAuthors}}
-		const bookAuthorsValue =
-			frontmatter[fieldsSettings.bookAuthors.propertyName];
+		const bookAuthorsValue = bodyContent.bookAuthors;
 		if (bookAuthorsValue && Array.isArray(bookAuthorsValue)) {
 			const authorsString = bookAuthorsValue.join(", ");
 			filename = filename.replace(/\{\{bookAuthors\}\}/g, authorsString);
 		}
 
 		// {{editionYear}}
-		const editionReleaseDateValue =
-			frontmatter[fieldsSettings.editionReleaseDate.propertyName];
+		const editionReleaseDateValue = bodyContent.editionReleaseDate;
 		if (editionReleaseDateValue) {
 			try {
 				const year = new Date(editionReleaseDateValue).getFullYear();
@@ -97,8 +93,8 @@ export class FileUtils {
 		}
 
 		// {{bookYear}}
-		const bookReleaseDateValue =
-			frontmatter[fieldsSettings.bookReleaseDate.propertyName];
+		const bookReleaseDateValue = bodyContent.bookReleaseDate;
+
 		if (bookReleaseDateValue) {
 			try {
 				const year = new Date(bookReleaseDateValue).getFullYear();
