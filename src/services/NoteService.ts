@@ -485,12 +485,69 @@ export class NoteService {
 		const template = this.plugin.settings.bodyTemplate;
 		const variables = this.getTemplateVariables(bookMetadata);
 
-		// replace all {{variableName}} with actual values
-		let result = template;
+		// track which variables are empty
+		const emptyVariables = new Set<string>();
+		for (const [key, value] of Object.entries(variables)) {
+			if (!value || value.trim() === "") {
+				emptyVariables.add(`{{${key}}}`);
+			}
+		}
+
+		// split template into lines before substitution
+		const lines = template.split("\n");
+		const processedLines: string[] = [];
+
+		for (let i = 0; i < lines.length; i++) {
+			const currentLine = lines[i];
+			const trimmed = currentLine.trim();
+
+			// if this is a heading
+			if (trimmed.startsWith("#")) {
+				// check if the next non empty line contains only an empty variable
+				let shouldKeepHeading = true;
+
+				for (let j = i + 1; j < lines.length; j++) {
+					const nextLine = lines[j].trim();
+
+					// skip empty lines
+					if (nextLine === "") continue;
+
+					// if next line is another heading, no content after this heading
+					if (nextLine.startsWith("#")) {
+						shouldKeepHeading = false;
+						break;
+					}
+
+					// check if this line contains only an empty variable
+					const variableMatch = nextLine.match(/^\{\{(\w+)\}\}$/);
+					if (variableMatch && emptyVariables.has(nextLine)) {
+						shouldKeepHeading = false;
+						break;
+					}
+
+					// found actual content
+					shouldKeepHeading = true;
+					break;
+				}
+
+				if (shouldKeepHeading) {
+					processedLines.push(currentLine);
+				}
+			} else {
+				// not a heading, keep it
+				processedLines.push(currentLine);
+			}
+		}
+
+		// Now do the variable substitution on the filtered template
+		let result = processedLines.join("\n");
 		for (const [key, value] of Object.entries(variables)) {
 			const regex = new RegExp(`\\{\\{${key}\\}\\}`, "g");
 			result = result.replace(regex, value);
 		}
+
+		// Clean up excessive blank lines
+		result = result.replace(/\n{3,}/g, "\n\n").trim();
 
 		// add delimiter at end
 		result += `\n\n${CONTENT_DELIMITER}`;
@@ -499,6 +556,8 @@ export class NoteService {
 	}
 
 	private formatQuotesSection(quotes?: string[]): string {
+		console.log({ quotes });
+
 		if (!quotes || quotes.length === 0) return "";
 
 		const format = this.plugin.settings.quotesFormat;

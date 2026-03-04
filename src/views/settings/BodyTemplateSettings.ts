@@ -7,7 +7,7 @@ export function renderBodyTemplateSettings(
 	plugin: ObsidianHardcover,
 ): void {
 	new Setting(containerEl).setDesc(
-		"Customize the structure of your book notes using variables",
+		"Customize the structure of your notes using variables. ⚠️ Note: Template content is regenerated on each sync, use this only for book data coming from Hardcover; add your personal notes below the --- delimiter in each note file.",
 	);
 
 	const editorContainer = containerEl.createDiv({
