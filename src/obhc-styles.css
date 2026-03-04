@@ -91,11 +91,12 @@
 .obhc-debug-info-container {
 	margin-bottom: 1rem;
 	padding: 0.5rem;
-	background-color: var(--background-secondary);
 }
 .obhc-debug-info-item {
 	font-family: var(--font-monospace);
 	font-size: 0.9em;
+	user-select: text;
+	cursor: text;
 }
 .obhc-test-sync input {
 	width: 50px;
