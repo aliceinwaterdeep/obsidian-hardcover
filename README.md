@@ -6,44 +6,49 @@ Syncs your [Hardcover](https://hardcover.app) library to your Obsidian vault, cr
 
 ![obsidian-hardcover-demo](https://github.com/user-attachments/assets/c7d3f900-65b8-45c0-b89c-58a25410149d)
 
-## Features
+## ⚠️ Version 2.0.0 - Breaking Changes
 
-- **Complete Library Sync**: Import your entire Hardcover library as Obsidian notes
-- **Incremental Updates**: Only sync books that have changed since your last sync
-- **Rich Metadata**: Store book information as frontmatter properties:
-  - Basic info: Title, authors, publisher, release date
-  - Reading data: Status, rating, read dates, quotes from reading journal
-  - Content: Description, genres, series information
-  - See [Fields](#fields) for the full list of available metadata
-- **Customizable Format**:
-  - Choose which data to include in your notes
-  - Configure property names to match your personal system
-  - Select data source preferences (book vs. edition level)
-- **Directory Organization**:
-  - Group your book notes by author and/or series
-- **Sync by status**:
-  - Configure a filter to only sync books of a specific status (e.g. Want to Read)
-- **User notes**: The plugin uses a delimiter system to separate plugin-generated content and user-added content. This means you can add your own notes (thoughts, quotes...) to a book note below the delimiter and it will be preserved during syncs.
-
-> [!WARNING]
-> While the delimiter system protects your content during syncs, regular backups of your vault are still recommended. I am not responsible for any data loss.
+v2.0.0 introduces customizable body templates and splits book/edition fields. **Your settings will be automatically migrated**. [See migration docs if you're curious](docs/v2-migration.md).
 
 ## Table of Contents
 
+- [Features](#features)
 - [Requirements](#requirements)
-- [Manual Installation](#manual-installation)
+- [Installation](#installation)
   - [Updating from Versions Before 1.1.0](#updating-from-versions-before-110)
 - [Setup](#setup)
   - [Quick Access](#quick-access)
   - [Sync Process](#sync-process)
-- [Configuration Options](#configuration-options)
+- [Settings Overview](#settings-overview)
   - [Fields](#fields)
   - [Wikilinks](#wikilinks)
   - [Filename Template](#filename-template)
   - [Grouping Options](#grouping-options)
+- [Body Templates](#body-templates)
 - [Note Format](#note-format)
 - [Changelog](#changelog)
 - [Roadmap](#roadmap)
+- [Documentation](#documentation)
+
+## Features
+
+- **Complete Library Sync**: Import your entire Hardcover library as Obsidian notes
+- **Incremental Updates**: Only sync books that have changed since your last sync
+- **Rich Metadata**: 25+ variables available for book data, edition data, and your reading activity
+  - See [Fields](#fields) for the full list of available metadata
+- **Flexible Configuration**:
+  - Choose which fields appear in frontmatter
+  - Customize property names to match your vault
+  - Configure wikilinks globally
+  - Template-based body content
+- **Directory Organization**:
+  - Group your book notes by author and/or series
+- **Sync by status**:
+  - Configure a filter to only sync books of a specific status (e.g. Want to Read)
+- **User notes**: The plugin uses a delimiter system to separate plugin-generated content and user-added content. This means you can add your own personal notes to a book note below the delimiter and it will be preserved during syncs.
+
+> [!WARNING]
+> While the delimiter system protects your content during syncs, regular backups of your vault are still recommended. I am not responsible for any data loss.
 
 ## Requirements
 
@@ -52,13 +57,23 @@ Syncs your [Hardcover](https://hardcover.app) library to your Obsidian vault, cr
 
 > **Note for existing users:** Version 1.9.0 introduced this requirement. If you're on an older version of Obsidian, stay on plugin version 1.8.1 or earlier.
 
-## Manual Installation
+## Installation
+
+### From Obsidian Community Plugins (Recommended)
+
+1. Open Obsidian Settings
+2. Go to **Community Plugins** -> Browse
+3. Search for "Hardcover"
+4. Click **Install**
+5. Enable the plugin
+
+### Manual Installation
 
 1. Download the ZIP file from the [latest release](https://github.com/aliceinwaterdeep/obsidian-hardcover/releases/latest)
 2. Extract the ZIP file to your vault's plugins folder: `YourVaultName/.obsidian/plugins/`
 3. You should now have a folder: `YourVaultName/.obsidian/plugins/hardcover-X.X.X/` containing 3 files
-4. Restart Obsidian or go to Settings → Community plugins → Reload plugins
-5. Enable "Hardcover" in Settings → Community plugins
+4. Restart Obsidian or go to Settings -> Community plugins -> Reload plugins
+5. Enable "Hardcover" in Settings -> Community plugins
 
 ### Updating from versions before 1.1.0
 
@@ -117,57 +132,45 @@ For large libraries, the plugin uses pagination and respects API rate limits. Ha
 - If some books fail to process, others will still be synced
 - The timestamp is only updated if all books process successfully
 
-## Configuration Options
+## Settings Overview
 
-### Fields
+### Frontmatter Fields
 
-Configure which fields to include in your book notes:
+Control which metadata appears in your notes' YAML frontmatter. Each field can be:
 
-- **Title**: Book or edition title
-- **Description**: Book synopsis/summary
-- **Cover**: Book or edition cover image
-- **Release Date**: Book or edition publication date
-- **Series**: Series name and position (e.g. "The Murderbot Diaries #1")
-- **Authors**: The main writer/s of the book
-- **Contributors**: Other contributors (translators, narrators, etc.)
-- **Publisher**: Publishing house name
-- **ISBN-13**
-- **ISBN-10**
-- **URL**: Link to the book on Hardcover
-- **Genres**: Book genre tags
-- **Lists**: User lists (e.g., "Owned")
-- **Status**: Reading status (Want to Read, Currently Reading, etc.) - you can customize the text
-- **Rating**: Your 1-5 star rating
-- **Review**: Your written review
-- **Quotes**: Quotes saved in your Hardcover reading journal
-- **First Read**: Start and end dates of your first read
-- **Last Read**: Start and end dates of your most recent read
-- **Total Reads**: Number of times you've read the book
-- **Read Years**: List of years when you read the book
+- **Enabled/Disabled** - Include in frontmatter or not
+- **Custom Property Name** - Rename to match your vault's conventions
 
-> [!WARNING]
-> The `review` field on the API currently has some inconsistencies, so reviews might not show up in an optimal format until the issue is solved on Hardcover.
+**Available frontmatter fields:**
+
+- Book/Edition: Title, Cover, Release Date, Authors, Contributors
+- Book only data: Description, URL, Series, Genres
+- Edition only data: Publisher, ISBN-10, ISBN-13
+- Your data: Rating, Status, Lists
+- Reading activity: First Read, Last Read, Total Reads, Read Years
+
+> **Note:** All data is available as template variables regardless of frontmatter toggles.
+
+### Body Template
+
+Define your note structure using `{{variable}}` syntax. See [Body Templates](#body-templates) section.
 
 ### Wikilinks
 
-You can decide to format some fields as wikilinks to create linked notes.
+Format certain fields as `[[wikilinks]]` everywhere (frontmatter, body, and filename):
 
-- **Authors**: `[[Author Name]]`
-- **Contributors**: `[[Jay Rubin|Jay Rubin (Translator)]]`
-- **Series**: `[[Series Name|Series Name #3]]
-- **Publisher**: `[[Publisher Name]]`
-- **Genres**: `[[Genre Name]]`
-- **Lists**: `[[List Name]]`
+- Authors
+- Contributors
+- Series
+- Publisher
+- Genres
+- Lists
 
 ### Filename Template
 
-Customize how filenames are generated using variables:
+Customize how note filenames are generated using variables like `{{editionTitle}}`, `{{bookAuthors}}`, `{{bookYear}}`, etc.
 
-- `${title}` - Book title
-- `${authors}` - Main author names
-- `${year}` - Publication year
-
-Default format: `${title} (${year})`
+Default: `{{editionTitle}} ({{editionYear}})`
 
 Notes are identified using the Hardcover Book ID (`hardcoverBookId` in the frontmatter) so you're free to choose whatever filename suits your vault.
 
@@ -176,7 +179,7 @@ Notes are identified using the Hardcover Book ID (`hardcoverBookId` in the front
 - **Disabled** (default): All notes go in your target folder
 - **Group by Author**: `Books/Brandon Sanderson/book1.md`, `Books/Martha Wells/book2.md`
 - **Group by Series**: `Books/The Murderbot Diaries/book1.md`, `Books/Secret Projects/book2.md`
-- **Group by Author → Series**: `Books/Brandon Sanderson/Secret Projects/book1.md`
+- **Group by Author -> Series**: `Books/Brandon Sanderson/Secret Projects/book1.md`
 
 #### Author Name Format
 
@@ -193,7 +196,7 @@ When grouping by author, you can configure how to handle edge cases:
 
 Some books may not have anyone marked as "Author" (graphic novels with Writers, books with only Editors, etc.). Choose how to handle these:
 
-- **Use fallback priority** (default): Writer → Editor → first available contributor
+- **Use fallback priority** (default): Writer -> Editor -> first available contributor
 - **Use fallback folder**: Places the book in a dedicated folder (customizable, default: "Various")
 
 **Multiple Authors Handling**
@@ -219,15 +222,72 @@ By default, the plugin automatically moves and renames notes to match your group
 
 - **Multiple series**: Books in multiple series use the first series Hardcover provides for grouping, to avoid duplicate notes.
 
+## Body Templates
+
+v2.0.0 introduces fully customizable note templates using variable substitution.
+
+Edit your template in Settings -> Note Body Template:
+
+```
+# {{editionTitle}}
+
+![cover|300]({{editionCover}})
+
+{{description}}
+
+## Review
+{{review}}
+
+## Quotes
+{{quotes}}
+```
+
+### Available Variables
+
+**Book vs Edition Data:**
+
+- Title: `{{bookTitle}}` / `{{editionTitle}}`
+- Cover: `{{bookCover}}` / `{{editionCover}}`
+- Release Date: `{{bookReleaseDate}}` / `{{editionReleaseDate}}`
+- Authors: `{{bookAuthors}}` / `{{editionAuthors}}`
+- Contributors: `{{bookContributors}}` / `{{editionContributors}}`
+
+**Book Information:**
+
+- `{{description}}` - Book description
+- `{{url}}` - Hardcover URL
+- `{{series}}` - Series information
+- `{{genres}}` - Genre tags
+
+**Edition Information:**
+
+- `{{publisher}}` - Publisher name
+- `{{isbn10}}` / `{{isbn13}}` - ISBN numbers
+
+**Your Data:**
+
+- `{{rating}}` - Your rating
+- `{{status}}` - Reading status
+- `{{review}}` - Your written review
+- `{{quotes}}` - Highlights from reading journal
+- `{{lists}}` - Your Hardcover lists
+
+**Reading Activity:**
+
+- `{{firstReadStart}}` / `{{firstReadEnd}}` - First read dates
+- `{{lastReadStart}}` / `{{lastReadEnd}}` - Most recent read dates
+- `{{totalReads}}` - Number of times read
+- `{{readYears}}` - Years when read
+
+You can also find the list of all available variables in the settings.
+
 ## Note Format
 
 Each synced book creates a note with:
 
 1. Frontmatter metadata containing all selected fields
-2. Title heading
-3. Cover image (if enabled)
-4. Your review (if enabled and available)
-5. Hardcover delimiter line (`<!-- obsidian-hardcover-plugin-end -->`)
+2. Custom body template containing all used variables
+3. Hardcover delimiter line (`<!-- obsidian-hardcover-plugin-end -->`)
 
 Content below the delimiter line is preserved during syncs, so you can add your own notes without fear of losing them during updates.
 
@@ -270,6 +330,10 @@ These notes won't be overwritten during sync...
 ## Changelog
 
 See [CHANGELOG.md](CHANGELOG.md) for the full version history.
+
+## Documentation
+
+See [Documentation](docs/README.md).
 
 ## Roadmap
 
