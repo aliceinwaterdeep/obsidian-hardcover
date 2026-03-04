@@ -4,7 +4,7 @@ import ObsidianHardcover from "src/main";
 import { Accordion } from "./ui/Accordion";
 import { renderDebugInfo, renderDevOptions } from "./settings/DebugSettings";
 import { renderApiTokenSetting } from "./settings/ApiSettings";
-import { renderFieldSettings } from "./settings/FieldsSettings";
+import { renderFrontmatterFieldsSettings } from "./settings/FieldsSettings";
 import {
 	renderFolderSetting,
 	renderFilenameTemplateSetting,
@@ -16,6 +16,8 @@ import {
 	renderSyncInfoMessages,
 } from "./settings/SyncSettings";
 import { renderGroupingSettings } from "./settings/GroupingSettings";
+import { renderWikilinkSettings } from "./settings/WikilinkSettings";
+import { renderBodyTemplateSettings } from "./settings/BodyTemplateSettings";
 
 export default class SettingsTab extends PluginSettingTab {
 	plugin: ObsidianHardcover;
@@ -39,36 +41,80 @@ export default class SettingsTab extends PluginSettingTab {
 
 		this.syncButtons = [];
 
-		// config section
+		//  SECTION 1: GENERAL
+		new Setting(containerEl).setName("General").setHeading();
+
 		renderApiTokenSetting(containerEl, this.plugin, () =>
-			this.updateSyncButtonsState()
+			this.updateSyncButtonsState(),
 		);
 		renderFolderSetting(containerEl, this.plugin, () =>
-			this.updateSyncButtonsState()
+			this.updateSyncButtonsState(),
 		);
-		renderGroupingSettings(containerEl, this.plugin, () => this.display());
-		renderFilenameTemplateSetting(containerEl, this.plugin);
 		renderStatusFilterSetting(containerEl, this.plugin);
 		renderLastSyncTimestampSetting(containerEl, this.plugin, () =>
-			this.display()
+			this.display(),
 		);
-
-		// fields section
-		renderFieldSettings(containerEl, this.plugin, this.accordion);
 
 		containerEl.createEl("hr");
 
-		// sync button
-		this.addMainSyncButton(containerEl);
+		//  SECTION 2: FRONTMATTER FIELDS
+		new Setting(containerEl).setName("Frontmatter Fields").setHeading();
 
+		new Setting(containerEl)
+			.setName("Preserve custom frontmatter")
+			.setDesc(
+				"Keep any user-added frontmatter properties when syncing. Turn off to let Hardcover overwrite the entire frontmatter.",
+			)
+			.addToggle((toggle) =>
+				toggle
+					.setValue(this.plugin.settings.preserveCustomFrontmatter)
+					.onChange(async (value) => {
+						this.plugin.settings.preserveCustomFrontmatter = value;
+						await this.plugin.saveSettings();
+					}),
+			);
+
+		renderFrontmatterFieldsSettings(containerEl, this.plugin, this.accordion);
+
+		containerEl.createEl("hr");
+
+		//  SECTION 3: WIKILINKS
+		new Setting(containerEl).setName("Wikilinks").setHeading();
+		new Setting(containerEl)
+			.setDesc(
+				"Format these fields as [[wikilinks]] both in frontmatter and note body,",
+			)
+			.setClass("obhc-section-description");
+
+		renderWikilinkSettings(containerEl, this.plugin);
+
+		containerEl.createEl("hr");
+
+		//  SECTION 4: NOTE BODY TEMPLATE
+		new Setting(containerEl).setName("Note Body Template").setHeading();
+
+		renderBodyTemplateSettings(containerEl, this.plugin);
+
+		containerEl.createEl("hr");
+
+		//  SECTION 5: FILE ORGANIZATION
+		new Setting(containerEl).setName("File Organization").setHeading();
+
+		renderGroupingSettings(containerEl, this.plugin, () => this.display());
+		renderFilenameTemplateSetting(containerEl, this.plugin);
+
+		containerEl.createEl("hr");
+
+		//  SECTION 6: SYNC
+		this.addMainSyncButton(containerEl);
 		renderSyncInfoMessages(containerEl);
 
 		containerEl.createEl("hr");
 
-		// debug section
+		//  SECTION 7: DEBUG
 		this.addDebugSection(containerEl);
 
-		// show developer options in dev mode
+		//  SECTION 8: DEV OPTIONS
 		if (IS_DEV) {
 			new Setting(containerEl).setName("Developer options").setHeading();
 			renderDevOptions(containerEl, this.plugin);
@@ -76,6 +122,7 @@ export default class SettingsTab extends PluginSettingTab {
 
 		containerEl.createEl("hr");
 
+		//  SECTION 9: SOURCE
 		this.addSourceSection(containerEl);
 	}
 
@@ -103,7 +150,7 @@ export default class SettingsTab extends PluginSettingTab {
 			this.debugBookLimit,
 			() => this.updateSyncButtonsState(),
 			(limit) => (this.debugBookLimit = limit),
-			() => this.display()
+			() => this.display(),
 		);
 
 		this.syncButtons.push(button);

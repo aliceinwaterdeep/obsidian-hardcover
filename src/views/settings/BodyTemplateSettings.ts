@@ -2,78 +2,54 @@ import { Setting } from "obsidian";
 import ObsidianHardcover from "src/main";
 import { DEFAULT_BODY_TEMPLATE } from "src/config/defaultSettings";
 
-const TEMPLATE_VARIABLES = [
-	{
-		category: "Book/Edition fields",
-		variables: [
-			"{{bookTitle}}, {{editionTitle}}",
-			"{{bookCover}}, {{editionCover}}",
-			"{{bookReleaseDate}}, {{editionReleaseDate}}",
-			"{{bookAuthors}}, {{editionAuthors}}",
-			"{{bookContributors}}, {{editionContributors}}",
-		],
-	},
-	{
-		category: "Book only fields",
-		variables: ["{{description}}, {{url}}, {{series}}, {{genres}}"],
-	},
-	{
-		category: "Edition only fields",
-		variables: ["{{publisher}}, {{isbn10}}, {{isbn13}}"],
-	},
-	{
-		category: "User data fields",
-		variables: ["{{rating}}, {{status}}, {{review}}, {{quotes}}, {{lists}}"],
-	},
-	{
-		category: "Reading activity fields",
-		variables: [
-			"{{firstReadStart}}, {{firstReadEnd}}",
-			"{{lastReadStart}}, {{lastReadEnd}}",
-			"{{totalReads}}, {{readYears}}",
-		],
-	},
-];
-
 export function renderBodyTemplateSettings(
 	containerEl: HTMLElement,
 	plugin: ObsidianHardcover,
 ): void {
-	new Setting(containerEl)
-		.setName("Body content template")
-		.setDesc("Customize the structure of your book notes using variables")
-		.addTextArea((text) => {
-			text
-				.setPlaceholder(DEFAULT_BODY_TEMPLATE)
-				.setValue(plugin.settings.bodyTemplate)
-				.onChange(async (value) => {
-					plugin.settings.bodyTemplate = value;
-					await plugin.saveSettings();
-				});
+	new Setting(containerEl).setDesc(
+		"Customize the structure of your book notes using variables",
+	);
 
-			text.inputEl.rows = 10;
-			text.inputEl.cols = 50;
-		});
-
-	const helpContainer = containerEl.createDiv({
-		cls: "obhc-template-help",
+	const editorContainer = containerEl.createDiv({
+		cls: "obhc-template-editor",
 	});
 
-	helpContainer.createEl("strong", {
+	const helpContainer = editorContainer.createDiv({
+		cls: "obhc-template-variables-help",
+	});
+
+	helpContainer.createEl("p", {
 		text: "Available variables:",
 	});
 
-	TEMPLATE_VARIABLES.forEach(({ category, variables }) => {
-		helpContainer.createEl("div", {
-			text: category,
-			cls: "obhc-template-category",
-		});
-		variables.forEach((varList) => {
-			helpContainer.createEl("div", {
-				text: varList,
-				cls: "obhc-template-variables",
-			});
-		});
+	helpContainer.createEl("div", {
+		text: "Book/Edition: {{bookTitle}}, {{editionTitle}}, {{bookCover}}, {{editionCover}}, {{bookReleaseDate}}, {{editionReleaseDate}}, {{bookAuthors}}, {{editionAuthors}}, {{bookContributors}}, {{editionContributors}}",
+	});
+	helpContainer.createEl("div", {
+		text: "Book data: {{description}}, {{url}}, {{series}}, {{genres}}",
+	});
+	helpContainer.createEl("div", {
+		text: "Edition data: {{publisher}}, {{isbn10}}, {{isbn13}}",
+	});
+	helpContainer.createEl("div", {
+		text: "Your data: {{rating}}, {{status}}, {{review}}, {{quotes}}, {{lists}}",
+	});
+	helpContainer.createEl("div", {
+		text: "Reading activity: {{firstReadStart}}, {{firstReadEnd}}, {{lastReadStart}}, {{lastReadEnd}}, {{totalReads}}, {{readYears}}",
+	});
+
+	const textareaContainer = editorContainer.createDiv({
+		cls: "obhc-template-textarea",
+	});
+	const textarea = textareaContainer.createEl("textarea", {
+		placeholder: DEFAULT_BODY_TEMPLATE,
+		value: plugin.settings.bodyTemplate,
+	});
+	textarea.value = plugin.settings.bodyTemplate || DEFAULT_BODY_TEMPLATE;
+	textarea.rows = 15;
+	textarea.addEventListener("input", async () => {
+		plugin.settings.bodyTemplate = textarea.value;
+		await plugin.saveSettings();
 	});
 
 	new Setting(containerEl)
