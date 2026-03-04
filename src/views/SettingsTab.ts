@@ -57,7 +57,15 @@ export default class SettingsTab extends PluginSettingTab {
 
 		containerEl.createEl("hr");
 
-		//  SECTION 2: FRONTMATTER FIELDS
+		//  SECTION 2: FILE ORGANIZATION
+		new Setting(containerEl).setName("File Organization").setHeading();
+
+		renderGroupingSettings(containerEl, this.plugin, () => this.display());
+		renderFilenameTemplateSetting(containerEl, this.plugin);
+
+		containerEl.createEl("hr");
+
+		//  SECTION 3: FRONTMATTER FIELDS
 		new Setting(containerEl).setName("Frontmatter Fields").setHeading();
 
 		new Setting(containerEl)
@@ -78,7 +86,7 @@ export default class SettingsTab extends PluginSettingTab {
 
 		containerEl.createEl("hr");
 
-		//  SECTION 3: WIKILINKS
+		//  SECTION 4: WIKILINKS
 		new Setting(containerEl).setName("Wikilinks").setHeading();
 		new Setting(containerEl)
 			.setDesc(
@@ -90,18 +98,10 @@ export default class SettingsTab extends PluginSettingTab {
 
 		containerEl.createEl("hr");
 
-		//  SECTION 4: NOTE BODY TEMPLATE
+		//  SECTION 5: NOTE BODY TEMPLATE
 		new Setting(containerEl).setName("Note Body Template").setHeading();
 
 		renderBodyTemplateSettings(containerEl, this.plugin);
-
-		containerEl.createEl("hr");
-
-		//  SECTION 5: FILE ORGANIZATION
-		new Setting(containerEl).setName("File Organization").setHeading();
-
-		renderGroupingSettings(containerEl, this.plugin, () => this.display());
-		renderFilenameTemplateSetting(containerEl, this.plugin);
 
 		containerEl.createEl("hr");
 
