@@ -38,7 +38,15 @@ export class QueryBuilder {
 			for (const match of filenameVarMatches) {
 				// extract variable name: {{editionTitle}} -> editionTitle
 				const varName = match.replace(/\{\{|\}\}/g, "");
-				required.add(varName);
+
+				// handle  year variables
+				if (varName === "bookYear") {
+					required.add("bookReleaseDate");
+				} else if (varName === "editionYear") {
+					required.add("editionReleaseDate");
+				} else {
+					required.add(varName);
+				}
 			}
 		}
 

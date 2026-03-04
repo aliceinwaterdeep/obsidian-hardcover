@@ -556,8 +556,6 @@ export class NoteService {
 	}
 
 	private formatQuotesSection(quotes?: string[]): string {
-		console.log({ quotes });
-
 		if (!quotes || quotes.length === 0) return "";
 
 		const format = this.plugin.settings.quotesFormat;
