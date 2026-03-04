@@ -1,6 +1,6 @@
 import { normalizePath, TFile, TFolder, Vault } from "obsidian";
 import { CONTENT_DELIMITER } from "src/config/constants";
-import { FIELD_DEFINITIONS } from "src/config/fieldDefinitions";
+import { FRONTMATTER_FIELDS_DEFINITIONS } from "src/config/fieldDefinitions";
 
 import ObsidianHardcover from "src/main";
 import {
@@ -535,9 +535,7 @@ export class NoteService {
 		}
 	}
 
-	private prepareFrontmatter(
-		metadata: BookMetadata,
-	): Record<string, any> {
+	private prepareFrontmatter(metadata: BookMetadata): Record<string, any> {
 		const frontmatterData: Record<string, any> = {
 			hardcoverBookId: metadata.hardcoverBookId,
 			...metadata.frontmatter,
@@ -549,22 +547,24 @@ export class NoteService {
 			prepared.hardcoverBookId = frontmatterData.hardcoverBookId;
 		}
 
-		// add all other properties in the order defined in FIELD_DEFINITIONS
-		const allFieldPropertyNames = FIELD_DEFINITIONS.flatMap((field) => {
-			const fieldSettings = this.plugin.settings.frontmatterFields[field.key];
-			const propertyNames = [fieldSettings.propertyName];
+		// add all other properties in the order defined in FRONTMATTER_FIELDS_DEFINITIONS
+		const allFieldPropertyNames = FRONTMATTER_FIELDS_DEFINITIONS.flatMap(
+			(field) => {
+				const fieldSettings = this.plugin.settings.frontmatterFields[field.key];
+				const propertyNames = [fieldSettings.propertyName];
 
-			// add start/end property names for activity date fields
-			if (field.isActivityDateField) {
-				const activityField = fieldSettings as ActivityDateFieldConfig;
-				propertyNames.push(
-					activityField.startPropertyName,
-					activityField.endPropertyName,
-				);
-			}
+				// add start/end property names for activity date fields
+				if (field.isActivityDateField) {
+					const activityField = fieldSettings as ActivityDateFieldConfig;
+					propertyNames.push(
+						activityField.startPropertyName,
+						activityField.endPropertyName,
+					);
+				}
 
-			return propertyNames;
-		});
+				return propertyNames;
+			},
+		);
 
 		// add properties in the defined order
 		for (const propName of allFieldPropertyNames) {
@@ -628,7 +628,7 @@ export class NoteService {
 			delete frontmatter[key];
 		}
 
-		// add all managed keys in their defined order (from FIELD_DEFINITIONS)
+		// add all managed keys in their defined order (from FRONTMATTER_FIELDS_DEFINITIONS)
 		for (const key of managedOrderToUse) {
 			if (key in newData) {
 				frontmatter[key] = newData[key];
@@ -659,8 +659,8 @@ export class NoteService {
 		// hardcoverBookId is always managed by the plugin
 		keys.add("hardcoverBookId");
 
-		// add the property names defined in FIELD_DEFINITIONS (including activity date start/end)
-		for (const field of FIELD_DEFINITIONS) {
+		// add the property names defined in FRONTMATTER_FIELDS_DEFINITIONS (including activity date start/end)
+		for (const field of FRONTMATTER_FIELDS_DEFINITIONS) {
 			const fieldSettings = this.plugin.settings.frontmatterFields[field.key];
 			keys.add(fieldSettings.propertyName);
 
@@ -682,9 +682,9 @@ export class NoteService {
 			order.push("hardcoverBookId");
 		}
 
-		// follow the order defined in FIELD_DEFINITIONS to ensure consistent ordering
+		// follow the order defined in FRONTMATTER_FIELDS_DEFINITIONS to ensure consistent ordering
 		// even when fields are enabled/disabled/renamed in settings
-		for (const field of FIELD_DEFINITIONS) {
+		for (const field of FRONTMATTER_FIELDS_DEFINITIONS) {
 			const fieldSettings = this.plugin.settings.frontmatterFields[field.key];
 			const propName = fieldSettings.propertyName;
 
@@ -825,11 +825,10 @@ export class NoteService {
 		if (wikilinkSettings.authors) {
 			const bookAuthorsProp = frontmatterFields.bookAuthors.propertyName;
 			if (formattedMetadata.frontmatter[bookAuthorsProp]) {
-				formattedMetadata.frontmatter[bookAuthorsProp] =
-					this.formatAsWikilinks(
-						formattedMetadata.frontmatter[bookAuthorsProp],
-						"authors",
-					);
+				formattedMetadata.frontmatter[bookAuthorsProp] = this.formatAsWikilinks(
+					formattedMetadata.frontmatter[bookAuthorsProp],
+					"authors",
+				);
 			}
 
 			const editionAuthorsProp = frontmatterFields.editionAuthors.propertyName;
@@ -846,11 +845,10 @@ export class NoteService {
 		if (wikilinkSettings.contributors) {
 			const bookContribProp = frontmatterFields.bookContributors.propertyName;
 			if (formattedMetadata.frontmatter[bookContribProp]) {
-				formattedMetadata.frontmatter[bookContribProp] =
-					this.formatAsWikilinks(
-						formattedMetadata.frontmatter[bookContribProp],
-						"contributors",
-					);
+				formattedMetadata.frontmatter[bookContribProp] = this.formatAsWikilinks(
+					formattedMetadata.frontmatter[bookContribProp],
+					"contributors",
+				);
 			}
 
 			const editionContribProp =

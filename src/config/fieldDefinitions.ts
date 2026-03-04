@@ -1,7 +1,7 @@
 import { FieldDefinition } from "src/types";
 
 // settings order can be rearranged by changing this
-export const FIELD_DEFINITIONS: FieldDefinition[] = [
+export const FRONTMATTER_FIELDS_DEFINITIONS: FieldDefinition[] = [
 	{
 		key: "bookTitle",
 		name: "Book Title",
@@ -105,12 +105,6 @@ export const FIELD_DEFINITIONS: FieldDefinition[] = [
 	},
 	{ key: "status", name: "Status", description: "Reading status" },
 	{ key: "rating", name: "Rating", description: "Your rating" },
-	{ key: "review", name: "Review", description: "Your review of the book" },
-	{
-		key: "quotes",
-		name: "Quotes",
-		description: "Quotes from reading journal",
-	},
 	{
 		key: "firstRead",
 		name: "First read",

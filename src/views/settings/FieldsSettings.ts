@@ -1,5 +1,5 @@
 import { Setting } from "obsidian";
-import { FIELD_DEFINITIONS } from "src/config/fieldDefinitions";
+import { FRONTMATTER_FIELDS_DEFINITIONS } from "src/config/fieldDefinitions";
 import ObsidianHardcover from "src/main";
 import {
 	ActivityDateFieldConfig,
@@ -37,7 +37,7 @@ export function renderFieldSettings(
 		cls: "field-groups-container",
 	});
 
-	FIELD_DEFINITIONS.forEach((field) => {
+	FRONTMATTER_FIELDS_DEFINITIONS.forEach((field) => {
 		const contentEl = accordion.renderAccordionField(
 			fieldGroupsContainer,
 			field,
@@ -71,45 +71,11 @@ function addFieldSettings(
 			);
 	}
 
-	if (field.supportsWikilinks) {
-		new Setting(containerEl)
-			.setName("Format as wikilinks")
-			.setDesc(
-				`Format ${field.name.toLowerCase()} as [[wikilinks]] for linked notes`,
-			)
-			.addToggle((toggle) =>
-				toggle
-					.setValue((fieldSettings as any).wikilinks || false)
-					.onChange(async (value) => {
-						(plugin.settings.frontmatterFields[field.key] as any).wikilinks =
-							value;
-						await plugin.saveSettings();
-					}),
-			);
-	}
-
 	if (isBodyField) {
 		containerEl.createEl("p", {
 			text: `${field.name} content appears in the note body, not as a frontmatter property.`,
 			cls: "setting-item-description",
 		});
-
-		const defaultHeading = field.key === "review" ? "My Review" : "Quotes";
-		new Setting(containerEl)
-			.setName("Section heading")
-			.setDesc(
-				`Heading text for the ${field.name.toLowerCase()} section in your notes`,
-			)
-			.addText((text) =>
-				text
-					.setPlaceholder(defaultHeading)
-					.setValue((fieldSettings as any).bodyHeading || defaultHeading)
-					.onChange(async (value) => {
-						(plugin.settings.frontmatterFields[field.key] as any).bodyHeading =
-							value || defaultHeading;
-						await plugin.saveSettings();
-					}),
-			);
 	}
 
 	// quotes specific format dropdown
@@ -194,9 +160,11 @@ function addActivityDatePropertyField(
 				.setPlaceholder(defaultValue)
 				.setValue(fieldSettings[propName])
 				.onChange(async (value) => {
-					(plugin.settings.frontmatterFields[fieldKey] as ActivityDateFieldConfig)[
-						propName
-					] = value || defaultValue;
+					(
+						plugin.settings.frontmatterFields[
+							fieldKey
+						] as ActivityDateFieldConfig
+					)[propName] = value || defaultValue;
 					await plugin.saveSettings();
 				});
 		});
