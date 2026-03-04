@@ -77,28 +77,6 @@ function addFieldSettings(
 			);
 	}
 
-	if (field.hasDataSource) {
-		const sourceKey =
-			`${field.key}Source` as keyof typeof plugin.settings.dataSourcePreferences;
-		const currentSource = plugin.settings.dataSourcePreferences[sourceKey];
-
-		new Setting(containerEl)
-			.setName("Data source")
-			.setDesc(
-				`Choose whether to use book-level or edition-level data for the ${field.name.toLowerCase()}.`,
-			)
-			.addDropdown((dropdown) => {
-				dropdown
-					.addOption("book", "Book")
-					.addOption("edition", "Edition")
-					.setValue(currentSource)
-					.onChange(async (value: "book" | "edition") => {
-						plugin.settings.dataSourcePreferences[sourceKey] = value;
-						await plugin.saveSettings();
-					});
-			});
-	}
-
 	if (field.key === "firstRead" || field.key === "lastRead") {
 		addActivityDatePropertyField(
 			containerEl,

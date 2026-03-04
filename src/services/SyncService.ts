@@ -29,21 +29,21 @@ export class SyncService {
 		// prevent sync if no statuses selected
 		if (statusFilter.length === 0) {
 			new Notice(
-				"No reading statuses selected. Please select at least one status in settings, or select all to sync your entire library."
+				"No reading statuses selected. Please select at least one status in settings, or select all to sync your entire library.",
 			);
 			return;
 		}
 
 		if (this.plugin.fileUtils.isRootOrEmpty(targetFolder)) {
 			new Notice(
-				"Please specify a subfolder for your Hardcover books. Using the vault root is not supported."
+				"Please specify a subfolder for your Hardcover books. Using the vault root is not supported.",
 			);
 			return;
 		}
 
 		if (lastSyncTimestamp && !this.validateTimestamp(lastSyncTimestamp)) {
 			new Notice(
-				"Invalid timestamp format. Please use ISO 8601 format (YYYY-MM-DD'T'HH:mm:ss.SSSZ) or leave empty."
+				"Invalid timestamp format. Please use ISO 8601 format (YYYY-MM-DD'T'HH:mm:ss.SSSZ) or leave empty.",
 			);
 			return;
 		}
@@ -56,13 +56,13 @@ export class SyncService {
 
 			// only send filter if not all statuses are selected (optimization)
 			const allStatuses = Object.keys(HARDCOVER_STATUS_MAP).map((id) =>
-				parseInt(id)
+				parseInt(id),
 			);
 			const isFilteringStatuses = statusFilter.length < allStatuses.length;
 
 			const userLibraryInfo = await this.hardcoverAPI.fetchUserLibraryInfo(
 				includeLists,
-				isFilteringStatuses ? statusFilter : undefined
+				isFilteringStatuses ? statusFilter : undefined,
 			);
 
 			// Update cached user ID and book count
@@ -89,7 +89,7 @@ export class SyncService {
 					booksToProcess,
 					isDebugMode,
 					userLibraryInfo.userLists,
-					isFilteringStatuses
+					isFilteringStatuses,
 				);
 			} else {
 				new Notice("No books found in your Hardcover library.");
@@ -167,7 +167,7 @@ export class SyncService {
 		totalBooks: number,
 		debugMode: boolean = false,
 		userLists?: UserList[],
-		isFilteringStatuses: boolean = false
+		isFilteringStatuses: boolean = false,
 	) {
 		const { lastSyncTimestamp, statusFilter } = this.plugin.settings;
 		const { metadataService, noteService } = this.plugin;
@@ -222,7 +222,7 @@ export class SyncService {
 				try {
 					const { metadata, rawContributors } = metadataService.buildMetadata(
 						book,
-						bookToListsMap
+						bookToListsMap,
 					);
 
 					// check if note already exists by checking hardcover book Id, using the pre-built index
@@ -233,7 +233,7 @@ export class SyncService {
 						await noteService.updateNote(
 							metadata,
 							existingNote,
-							rawContributors
+							rawContributors,
 						);
 						updatedNotesCount++;
 					} else {
@@ -247,12 +247,7 @@ export class SyncService {
 					// attmempt to extract title for better error reporting
 					let bookTitle = "Unknown";
 					try {
-						const titleSource =
-							this.plugin.settings.dataSourcePreferences.titleSource;
-						bookTitle =
-							titleSource === "book"
-								? book.book.title
-								: book.edition.title || "Unknown";
+						bookTitle = book.edition?.title || book.book?.title || "Unknown";
 					} catch (e) {
 						// console.debug("Could not get book title:", e);
 					}
@@ -287,7 +282,7 @@ export class SyncService {
 
 				console.warn(
 					`${failedBooksCount} books failed to process:`,
-					failedBooks
+					failedBooks,
 				);
 
 				// console.debug("Last sync timestamp not updated due to book failures");

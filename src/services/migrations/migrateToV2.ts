@@ -14,7 +14,7 @@ export function migrateToV2(settings: PluginSettings): PluginSettings {
 	}
 
 	for (const fieldKey of wikilinkFields) {
-		const fieldConfig = settings.frontmatterFields[fieldKey];
+		const fieldConfig = (settings.frontmatterFields as any)[fieldKey];
 		if (fieldConfig && !("wikilinks" in fieldConfig)) {
 			(fieldConfig as any).wikilinks = false;
 		}

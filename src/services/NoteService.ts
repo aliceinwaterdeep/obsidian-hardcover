@@ -516,13 +516,6 @@ export class NoteService {
 		return this.renderBodyTemplate(bookMetadata);
 	}
 
-	private getBookTitle(bookMetadata: any) {
-		const titleProperty =
-			this.plugin.settings.frontmatterFields.title.propertyName;
-
-		return bookMetadata[titleProperty] || "Untitled";
-	}
-
 	private async ensureFolderExists(folderPath: string): Promise<void> {
 		if (!folderPath) return;
 
