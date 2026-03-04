@@ -108,27 +108,32 @@ export class QueryBuilder {
 	private buildUserBooksFields(settings: FrontmatterFieldsSettings): string {
 		const fields: string[] = [];
 
-		if (settings.rating.enabled) {
+		// helper to check if we need a field
+		const needsField = (fieldKey: string): boolean => {
+			return this.requiredFields.has(fieldKey);
+		};
+
+		if (needsField("rating")) {
 			fields.push("rating");
 		}
 
-		if (settings.status.enabled) {
+		if (needsField("status")) {
 			fields.push("status_id");
 		}
 
-		if (settings.review?.enabled) {
+		if (needsField("review")) {
 			// temporarily querying both fields since the review field can return null for some users (known HC issue)
 			fields.push("review");
 			fields.push("review_raw");
 		}
 
-		if (settings.quotes.enabled) {
+		if (needsField("quotes")) {
 			fields.push(`reading_journals(
-					where: {event: {_eq: "quote"}}
-					order_by: {created_at: asc}
-				) {
-					entry
-				}`);
+                where: {event: {_eq: "quote"}}
+                order_by: {created_at: asc}
+            ) {
+                entry
+            }`);
 		}
 
 		return fields.join("\n                    ");
@@ -220,11 +225,21 @@ export class QueryBuilder {
 	}
 
 	private buildReadsFields(settings: FrontmatterFieldsSettings): string {
-		// only include reads if any read-related fields are enabled
+		// helper to check if we need a field
+		const needsField = (fieldKey: string): boolean => {
+			return this.requiredFields.has(fieldKey);
+		};
+
+		// only include reads if any read-related fields are needed
 		if (
-			settings.firstRead.enabled ||
-			settings.lastRead.enabled ||
-			settings.totalReads.enabled
+			needsField("firstRead") ||
+			needsField("lastRead") ||
+			needsField("totalReads") ||
+			needsField("readYears") ||
+			needsField("firstReadStart") ||
+			needsField("firstReadEnd") ||
+			needsField("lastReadStart") ||
+			needsField("lastReadEnd")
 		) {
 			return `user_book_reads(order_by: {started_at: asc}) {
                         started_at

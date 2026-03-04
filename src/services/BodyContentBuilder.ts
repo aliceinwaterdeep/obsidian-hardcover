@@ -55,19 +55,17 @@ export class BodyContentBuilder {
 		}
 
 		// Review
-		if (frontmatterFields.review.enabled) {
-			let userReview;
-			if (userBook.review && userBook.review.trim()) {
-				userReview = userBook.review;
-			} else if (userBook.review_raw && userBook.review_raw.trim()) {
-				userReview = userBook.review_raw;
-			}
-
-			bodyContent.review = userReview;
+		let userReview;
+		if (userBook.review && userBook.review.trim()) {
+			userReview = userBook.review;
+		} else if (userBook.review_raw && userBook.review_raw.trim()) {
+			userReview = userBook.review_raw;
 		}
 
+		bodyContent.review = userReview;
+
 		// Quotes
-		if (frontmatterFields.quotes.enabled && userBook.reading_journals) {
+		if (userBook.reading_journals) {
 			const quotes = userBook.reading_journals.map((q) => q.entry);
 			if (quotes.length > 0) {
 				bodyContent.quotes = quotes;
