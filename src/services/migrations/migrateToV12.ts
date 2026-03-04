@@ -235,6 +235,7 @@ export function migrateToV12(settings: PluginSettings): PluginSettings {
 	delete (settings.frontmatterFields as any).releaseDate;
 	delete (settings.frontmatterFields as any).authors;
 	delete (settings.frontmatterFields as any).contributors;
+	delete (settings as any).fieldsSettings;
 
 	// remove wikilinks from all remaining field configs
 	const allFieldKeys = Object.keys(settings.frontmatterFields);
