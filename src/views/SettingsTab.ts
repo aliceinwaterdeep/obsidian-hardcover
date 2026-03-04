@@ -1,4 +1,10 @@
-import { App, ButtonComponent, PluginSettingTab, Setting } from "obsidian";
+import {
+	App,
+	ButtonComponent,
+	PluginSettingTab,
+	setIcon,
+	Setting,
+} from "obsidian";
 import { REPO_ISSUES_URL, REPO_URL } from "src/config/constants";
 import ObsidianHardcover from "src/main";
 import { Accordion } from "./ui/Accordion";
@@ -68,7 +74,33 @@ export default class SettingsTab extends PluginSettingTab {
 		//  SECTION 3: FRONTMATTER FIELDS
 		new Setting(containerEl).setName("Frontmatter Fields").setHeading();
 
-		new Setting(containerEl)
+		const frontmatterAccordion = containerEl.createDiv({
+			cls: "obhc-accordion",
+		});
+
+		const frontmatterHeader = frontmatterAccordion.createDiv({
+			cls: "obhc-accordion-header",
+		});
+
+		const frontmatterIcon = frontmatterHeader.createSpan({
+			cls: "obhc-accordion-icon",
+		});
+		setIcon(frontmatterIcon, "chevron-right");
+
+		frontmatterHeader.createSpan({ text: "Configure fields" });
+
+		const frontmatterContentWrapper = frontmatterAccordion.createDiv({
+			cls: "obhc-accordion-content",
+		});
+
+		const frontmatterContent = frontmatterContentWrapper.createDiv();
+
+		frontmatterHeader.addEventListener("click", () => {
+			frontmatterIcon.classList.toggle("expanded");
+			frontmatterContentWrapper.classList.toggle("expanded");
+		});
+
+		new Setting(frontmatterContent)
 			.setName("Preserve custom frontmatter")
 			.setDesc(
 				"Keep any user-added frontmatter properties when syncing. Turn off to let Hardcover overwrite the entire frontmatter.",
@@ -82,26 +114,48 @@ export default class SettingsTab extends PluginSettingTab {
 					}),
 			);
 
-		renderFrontmatterFieldsSettings(containerEl, this.plugin, this.accordion);
+		renderFrontmatterFieldsSettings(
+			frontmatterContent,
+			this.plugin,
+			this.accordion,
+		);
 
 		containerEl.createEl("hr");
 
 		//  SECTION 4: WIKILINKS
 		new Setting(containerEl).setName("Wikilinks").setHeading();
-		new Setting(containerEl)
+
+		const wikilinkAccordion = containerEl.createDiv({ cls: "obhc-accordion" });
+
+		const wikilinkHeader = wikilinkAccordion.createDiv({
+			cls: "obhc-accordion-header",
+		});
+
+		const wikilinkIcon = wikilinkHeader.createSpan({
+			cls: "obhc-accordion-icon",
+		});
+		setIcon(wikilinkIcon, "chevron-right");
+
+		wikilinkHeader.createSpan({ text: "Configure wikilinks" });
+
+		const wikilinkContentWrapper = wikilinkAccordion.createDiv({
+			cls: "obhc-accordion-content",
+		});
+
+		const wikilinkContent = wikilinkContentWrapper.createDiv();
+
+		wikilinkHeader.addEventListener("click", () => {
+			wikilinkIcon.classList.toggle("expanded");
+			wikilinkContentWrapper.classList.toggle("expanded");
+		});
+
+		new Setting(wikilinkContent)
 			.setDesc(
 				"Format these fields as [[wikilinks]] both in frontmatter and note body,",
 			)
 			.setClass("obhc-section-description");
 
-		renderWikilinkSettings(containerEl, this.plugin);
-
-		containerEl.createEl("hr");
-
-		//  SECTION 5: NOTE BODY TEMPLATE
-		new Setting(containerEl).setName("Note Body Template").setHeading();
-
-		renderBodyTemplateSettings(containerEl, this.plugin);
+		renderWikilinkSettings(wikilinkContent, this.plugin);
 
 		containerEl.createEl("hr");
 
