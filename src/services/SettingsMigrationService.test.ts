@@ -152,7 +152,9 @@ describe("SettingsMigrationService", () => {
 				1: "Want to Read",
 				3: "Finished",
 			});
-			expect(result.filenameTemplate).toBe("${title} by ${authors}");
+			expect(result.filenameTemplate).toBe(
+				"{{editionTitle}} by {{editionAuthors}}",
+			);
 			expect(result.preserveCustomFrontmatter).toBe(true);
 		});
 

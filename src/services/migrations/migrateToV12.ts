@@ -176,7 +176,7 @@ export function migrateToV12(settings: PluginSettings): PluginSettings {
 	settings.bodyTemplate = template.trim();
 
 	// step 6: migrate filename template syntax from ${} to {{}}
-	let newFilenameTemplate = settings.filenameTemplate;
+	let newFilenameTemplate = settings.filenameTemplate || "{{editionTitle}}";
 
 	if (oldPrefs.titleSource === "book") {
 		newFilenameTemplate = newFilenameTemplate.replace(

@@ -25,13 +25,13 @@ describe("FileUtils", () => {
 	describe("sanitizeFilename", () => {
 		test("removes illegal characters", () => {
 			expect(fileUtils.sanitizeFilename("Book\\Title:With*Bad?Chars")).toBe(
-				"BookTitleWithBadChars"
+				"BookTitleWithBadChars",
 			);
 		});
 
 		test("handles multiple spaces and trimming", () => {
 			expect(fileUtils.sanitizeFilename("  Book   With    Spaces  ")).toBe(
-				"Book With Spaces"
+				"Book With Spaces",
 			);
 		});
 	});
@@ -39,16 +39,16 @@ describe("FileUtils", () => {
 	describe("processFilenameTemplate", () => {
 		test("replaces all variables correctly", () => {
 			const metadata = {
-				title: MOCK_BOOK.title,
-				releaseDate: MOCK_BOOK.releaseDate,
-				authors: [MOCK_BOOK.author],
+				title: MOCK_BOOK.title, // this matches editionTitle.propertyName
+				releaseDate: MOCK_BOOK.releaseDate, // this matches editionReleaseDate.propertyName
+				authors: [MOCK_BOOK.author], // this matches editionAuthors.propertyName
 			};
 			expect(
 				fileUtils.processFilenameTemplate(
-					"${title} by ${authors} (${year})",
+					"{{editionTitle}} by {{editionAuthors}} ({{editionYear}})",
 					metadata,
-					DEFAULT_FRONTMATTER_FIELDS
-				)
+					DEFAULT_FRONTMATTER_FIELDS,
+				),
 			).toBe("All Systems Red by Martha Wells (2017).md");
 		});
 
@@ -56,10 +56,10 @@ describe("FileUtils", () => {
 			const metadata = { title: MOCK_BOOK.title };
 			expect(
 				fileUtils.processFilenameTemplate(
-					"${title} (${year})",
+					"{{editionTitle}} ({{editionYear}})",
 					metadata,
-					DEFAULT_FRONTMATTER_FIELDS
-				)
+					DEFAULT_FRONTMATTER_FIELDS,
+				),
 			).toBe("All Systems Red.md");
 		});
 
@@ -67,10 +67,10 @@ describe("FileUtils", () => {
 			const metadata = { title: MOCK_BOOK.title, releaseDate: "invalid" };
 			expect(
 				fileUtils.processFilenameTemplate(
-					"${title} (${year})",
+					"{{editionTitle}} ({{editionYear}})",
 					metadata,
-					DEFAULT_FRONTMATTER_FIELDS
-				)
+					DEFAULT_FRONTMATTER_FIELDS,
+				),
 			).toBe("All Systems Red.md");
 		});
 
@@ -90,10 +90,10 @@ describe("FileUtils", () => {
 
 			expect(
 				fileUtils.processFilenameTemplate(
-					"${title} by ${authors} (${year})",
+					"{{editionTitle}} by {{editionAuthors}} ({{editionYear}})",
 					metadata,
-					customSettings
-				)
+					customSettings,
+				),
 			).toBe("All Systems Red by Martha Wells (2017).md");
 		});
 	});
