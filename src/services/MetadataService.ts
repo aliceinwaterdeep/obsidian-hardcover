@@ -1,20 +1,24 @@
-import { BookMetadataWithContributors, HardcoverUserBook, PluginSettings } from "src/types";
+import {
+	BookMetadataWithContributors,
+	HardcoverUserBook,
+	PluginSettings,
+} from "src/types";
 import { FileUtils } from "src/utils/FileUtils";
-import { BodyContentBuilder } from "./BodyContentBuilder";
+import { AvailableDataBuilder } from "./AvailableDataBuilder";
 import { FrontmatterBuilder } from "./FrontmatterBuilder";
 
 export class MetadataService {
 	private frontmatterBuilder: FrontmatterBuilder;
-	private bodyContentBuilder: BodyContentBuilder;
+	private availableDataBuilder: AvailableDataBuilder;
 
 	constructor(settings: PluginSettings, fileUtils: FileUtils) {
 		this.frontmatterBuilder = new FrontmatterBuilder(settings, fileUtils);
-		this.bodyContentBuilder = new BodyContentBuilder(settings, fileUtils);
+		this.availableDataBuilder = new AvailableDataBuilder(settings, fileUtils);
 	}
 
 	updateSettings(settings: PluginSettings): void {
 		this.frontmatterBuilder.updateSettings(settings);
-		this.bodyContentBuilder.updateSettings(settings);
+		this.availableDataBuilder.updateSettings(settings);
 	}
 
 	buildMetadata(
@@ -26,12 +30,15 @@ export class MetadataService {
 			bookToListsMap,
 		);
 
-		const bodyContent = this.bodyContentBuilder.build(userBook, bookToListsMap);
+		const availableData = this.availableDataBuilder.build(
+			userBook,
+			bookToListsMap,
+		);
 
 		const metadata = {
 			hardcoverBookId: userBook.book_id,
 			frontmatter,
-			bodyContent,
+			availableData,
 		};
 
 		return { metadata, rawContributors };

@@ -43,36 +43,36 @@ export class FileUtils {
 		fieldsSettings: FrontmatterFieldsSettings,
 	): string {
 		let filename = template;
-		const bodyContent = metadata.bodyContent ?? {};
+		const availableData = metadata.availableData ?? {};
 
 		// {{editionTitle}}
-		const editionTitleValue = bodyContent.editionTitle;
+		const editionTitleValue = availableData.editionTitle;
 		if (editionTitleValue) {
 			filename = filename.replace(/\{\{editionTitle\}\}/g, editionTitleValue);
 		}
 
 		// {{bookTitle}}
-		const bookTitleValue = bodyContent.bookTitle;
+		const bookTitleValue = availableData.bookTitle;
 		if (bookTitleValue) {
 			filename = filename.replace(/\{\{bookTitle\}\}/g, bookTitleValue);
 		}
 
 		// {{editionAuthors}}
-		const editionAuthorsValue = bodyContent.editionAuthors;
+		const editionAuthorsValue = availableData.editionAuthors;
 		if (editionAuthorsValue && Array.isArray(editionAuthorsValue)) {
 			const authorsString = editionAuthorsValue.join(", ");
 			filename = filename.replace(/\{\{editionAuthors\}\}/g, authorsString);
 		}
 
 		// {{bookAuthors}}
-		const bookAuthorsValue = bodyContent.bookAuthors;
+		const bookAuthorsValue = availableData.bookAuthors;
 		if (bookAuthorsValue && Array.isArray(bookAuthorsValue)) {
 			const authorsString = bookAuthorsValue.join(", ");
 			filename = filename.replace(/\{\{bookAuthors\}\}/g, authorsString);
 		}
 
 		// {{editionYear}}
-		const editionReleaseDateValue = bodyContent.editionReleaseDate;
+		const editionReleaseDateValue = availableData.editionReleaseDate;
 		if (editionReleaseDateValue) {
 			try {
 				const year = new Date(editionReleaseDateValue).getFullYear();
@@ -93,7 +93,7 @@ export class FileUtils {
 		}
 
 		// {{bookYear}}
-		const bookReleaseDateValue = bodyContent.bookReleaseDate;
+		const bookReleaseDateValue = availableData.bookReleaseDate;
 
 		if (bookReleaseDateValue) {
 			try {

@@ -82,7 +82,7 @@ describe("NoteService", () => {
 				authors: ["Author One"],
 				status: "reading",
 			},
-			bodyContent: {},
+			availableData: {},
 		};
 
 		const existingContent = `---
@@ -99,7 +99,7 @@ User section
 
 		function buildNoteService(
 			preserveCustomFrontmatter: boolean,
-			existingFile: any
+			existingFile: any,
 		) {
 			const mockVault = {
 				cachedRead: jest.fn().mockResolvedValue(existingContent),

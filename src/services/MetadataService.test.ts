@@ -254,12 +254,12 @@ describe("MetadataService", () => {
 			const { metadata: result } =
 				metadataService.buildMetadata(MOCK_USER_BOOK);
 
-			expect(result.bodyContent.review).toBe("Murderbot is the best");
-			// bodyContent uses fixed names
-			expect(result.bodyContent.editionTitle).toBe(
+			expect(result.availableData.review).toBe("Murderbot is the best");
+			// availableData uses fixed names
+			expect(result.availableData.editionTitle).toBe(
 				"All Systems Red: Special Edition",
 			);
-			expect(result.bodyContent.editionCover).toBe(
+			expect(result.availableData.editionCover).toBe(
 				"https://example.com/edition-cover.jpg",
 			);
 		});
@@ -271,7 +271,7 @@ describe("MetadataService", () => {
 			const { metadata: result } =
 				metadataService.buildMetadata(MOCK_USER_BOOK);
 
-			expect(result.bodyContent.quotes).toEqual([
+			expect(result.availableData.quotes).toEqual([
 				"Quote one from the book",
 				"Quote two from the book",
 			]);
@@ -284,7 +284,7 @@ describe("MetadataService", () => {
 			const { metadata: result } =
 				metadataService.buildMetadata(MOCK_USER_BOOK);
 
-			expect(result.bodyContent.quotes).toBeUndefined();
+			expect(result.availableData.quotes).toBeUndefined();
 		});
 
 		test("handles empty quotes array", () => {
@@ -300,7 +300,7 @@ describe("MetadataService", () => {
 				userBookWithoutQuotes,
 			);
 
-			expect(result.bodyContent.quotes).toBeUndefined();
+			expect(result.availableData.quotes).toBeUndefined();
 		});
 
 		test("handles missing reading_journals field", () => {
@@ -313,7 +313,7 @@ describe("MetadataService", () => {
 				userBookWithoutJournals as any,
 			);
 
-			expect(result.bodyContent.quotes).toBeUndefined();
+			expect(result.availableData.quotes).toBeUndefined();
 		});
 
 		test("extracts ISBN fields when enabled", () => {
@@ -340,7 +340,7 @@ describe("MetadataService", () => {
 			expect(result.frontmatter.isbn13).toBeUndefined();
 		});
 
-		test("bodyContent always includes all data regardless of enabled state", () => {
+		test("availableData always includes all data regardless of enabled state", () => {
 			mockSettings.frontmatterFields.bookTitle.enabled = false;
 			mockSettings.frontmatterFields.editionTitle.enabled = false;
 			mockSettings.frontmatterFields.editionAuthors.enabled = false;
@@ -354,12 +354,12 @@ describe("MetadataService", () => {
 			expect(result.frontmatter.bookTitle).toBeUndefined();
 			expect(result.frontmatter.authors).toBeUndefined();
 
-			// bodyContent always has data
-			expect(result.bodyContent.editionTitle).toBe(
+			// availableData always has data
+			expect(result.availableData.editionTitle).toBe(
 				"All Systems Red: Special Edition",
 			);
-			expect(result.bodyContent.bookTitle).toBe("All Systems Red");
-			expect(result.bodyContent.editionAuthors).toEqual([
+			expect(result.availableData.bookTitle).toBe("All Systems Red");
+			expect(result.availableData.editionAuthors).toEqual([
 				"Martha Wells",
 				"Co-Author Name",
 				"Another Co-Author Name",

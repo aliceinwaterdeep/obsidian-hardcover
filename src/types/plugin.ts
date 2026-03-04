@@ -109,7 +109,7 @@ export interface FieldDefinition {
 export interface BookMetadata {
 	hardcoverBookId: number;
 	frontmatter: Record<string, any>; // all frontmatter properties (using custom property names)
-	bodyContent: {
+	availableData: {
 		bookTitle?: string;
 		editionTitle?: string;
 		bookCover?: string;

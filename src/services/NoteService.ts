@@ -41,21 +41,21 @@ export class NoteService {
 			const frontmatterData = this.prepareFrontmatter(formattedMetadata);
 
 			// create body content only
-			const bodyContent = this.createBodyContent(formattedMetadata);
+			const availableData = this.createAvailableData(formattedMetadata);
 
 			// check if file exists
 			const existingFile = this.vault.getFileByPath(fullPath);
 			let file: TFile;
 
 			if (existingFile) {
-				await this.vault.modify(existingFile, bodyContent);
+				await this.vault.modify(existingFile, availableData);
 				file = existingFile;
 
 				if (IS_DEV) {
 					console.debug(`Updated note: ${fullPath}`);
 				}
 			} else {
-				file = await this.vault.create(fullPath, bodyContent);
+				file = await this.vault.create(fullPath, availableData);
 				if (IS_DEV) {
 					console.debug(`Created note: ${fullPath}`);
 				}
@@ -103,7 +103,7 @@ export class NoteService {
 				this.plugin.settings.preserveCustomFrontmatter !== false;
 
 			// create new body content
-			const newBodyContent = this.createBodyContent(formattedMetadata);
+			const newAvailableData = this.createAvailableData(formattedMetadata);
 
 			// check if delimiter exists in the current content
 			const delimiterIndex = existingBodyText.indexOf(CONTENT_DELIMITER);
@@ -113,12 +113,12 @@ export class NoteService {
 				const userContent = existingBodyText.substring(
 					delimiterIndex + CONTENT_DELIMITER.length,
 				);
-				updatedContent = newBodyContent.replace(
+				updatedContent = newAvailableData.replace(
 					`${CONTENT_DELIMITER}\n\n`,
 					`${CONTENT_DELIMITER}${userContent}`,
 				);
 			} else {
-				updatedContent = newBodyContent;
+				updatedContent = newAvailableData;
 			}
 
 			const newPath = this.generateNotePath(
@@ -401,80 +401,80 @@ export class NoteService {
 		};
 
 		// book/edition split fields (strings)
-		vars.bookTitle = bookMetadata.bodyContent?.bookTitle || "";
-		vars.editionTitle = bookMetadata.bodyContent?.editionTitle || "";
-		vars.bookCover = bookMetadata.bodyContent?.bookCover || "";
-		vars.editionCover = bookMetadata.bodyContent?.editionCover || "";
-		vars.bookReleaseDate = bookMetadata.bodyContent?.bookReleaseDate || "";
+		vars.bookTitle = bookMetadata.availableData?.bookTitle || "";
+		vars.editionTitle = bookMetadata.availableData?.editionTitle || "";
+		vars.bookCover = bookMetadata.availableData?.bookCover || "";
+		vars.editionCover = bookMetadata.availableData?.editionCover || "";
+		vars.bookReleaseDate = bookMetadata.availableData?.bookReleaseDate || "";
 		vars.editionReleaseDate =
-			bookMetadata.bodyContent?.editionReleaseDate || "";
+			bookMetadata.availableData?.editionReleaseDate || "";
 
 		// authors (arrays with wikilinks)
 		vars.bookAuthors = formatArray(
-			bookMetadata.bodyContent?.bookAuthors,
+			bookMetadata.availableData?.bookAuthors,
 			wikilinkSettings.authors,
 		);
 		vars.editionAuthors = formatArray(
-			bookMetadata.bodyContent?.editionAuthors,
+			bookMetadata.availableData?.editionAuthors,
 			wikilinkSettings.authors,
 		);
 
 		// contributors (arrays with wikilinks)
 		vars.bookContributors = formatArray(
-			bookMetadata.bodyContent?.bookContributors,
+			bookMetadata.availableData?.bookContributors,
 			wikilinkSettings.contributors,
 		);
 		vars.editionContributors = formatArray(
-			bookMetadata.bodyContent?.editionContributors,
+			bookMetadata.availableData?.editionContributors,
 			wikilinkSettings.contributors,
 		);
 
 		// b ook only fields
-		vars.description = bookMetadata.bodyContent?.description || "";
-		vars.url = bookMetadata.bodyContent?.url || "";
+		vars.description = bookMetadata.availableData?.description || "";
+		vars.url = bookMetadata.availableData?.url || "";
 
 		// series (array with wikilinks)
 		vars.series = formatArray(
-			bookMetadata.bodyContent?.series,
+			bookMetadata.availableData?.series,
 			wikilinkSettings.series,
 		);
 
 		// genres (array with wikilinks)
 		vars.genres = formatArray(
-			bookMetadata.bodyContent?.genres,
+			bookMetadata.availableData?.genres,
 			wikilinkSettings.genres,
 		);
 
 		// edition only fields
 		vars.publisher = formatArray(
-			bookMetadata.bodyContent?.publisher,
+			bookMetadata.availableData?.publisher,
 			wikilinkSettings.publisher,
 		);
-		vars.isbn10 = bookMetadata.bodyContent?.isbn10 || "";
-		vars.isbn13 = bookMetadata.bodyContent?.isbn13 || "";
+		vars.isbn10 = bookMetadata.availableData?.isbn10 || "";
+		vars.isbn13 = bookMetadata.availableData?.isbn13 || "";
 
 		// user data fields
-		vars.rating = formatNumber(bookMetadata.bodyContent?.rating);
-		vars.status = formatArray(bookMetadata.bodyContent?.status, false);
-		vars.review = bookMetadata.bodyContent?.review || "";
+		vars.rating = formatNumber(bookMetadata.availableData?.rating);
+		vars.status = formatArray(bookMetadata.availableData?.status, false);
+		vars.review = bookMetadata.availableData?.review || "";
 
 		// quotes
-		vars.quotes = this.formatQuotesSection(bookMetadata.bodyContent?.quotes);
+		vars.quotes = this.formatQuotesSection(bookMetadata.availableData?.quotes);
 
 		// lists (array with wikilinks)
 		vars.lists = formatArray(
-			bookMetadata.bodyContent?.lists,
+			bookMetadata.availableData?.lists,
 			wikilinkSettings.lists,
 		);
 
 		// activity date fields
-		vars.firstReadStart = bookMetadata.bodyContent?.firstReadStart || "";
-		vars.firstReadEnd = bookMetadata.bodyContent?.firstReadEnd || "";
-		vars.lastReadStart = bookMetadata.bodyContent?.lastReadStart || "";
-		vars.lastReadEnd = bookMetadata.bodyContent?.lastReadEnd || "";
-		vars.totalReads = formatNumber(bookMetadata.bodyContent?.totalReads);
+		vars.firstReadStart = bookMetadata.availableData?.firstReadStart || "";
+		vars.firstReadEnd = bookMetadata.availableData?.firstReadEnd || "";
+		vars.lastReadStart = bookMetadata.availableData?.lastReadStart || "";
+		vars.lastReadEnd = bookMetadata.availableData?.lastReadEnd || "";
+		vars.totalReads = formatNumber(bookMetadata.availableData?.totalReads);
 		vars.readYears = formatArray(
-			bookMetadata.bodyContent?.readYears?.map(String),
+			bookMetadata.availableData?.readYears?.map(String),
 			false,
 		);
 
@@ -569,7 +569,7 @@ export class NoteService {
 		}
 	}
 
-	private createBodyContent(bookMetadata: any): string {
+	private createAvailableData(bookMetadata: any): string {
 		return this.renderBodyTemplate(bookMetadata);
 	}
 
