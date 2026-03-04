@@ -6,7 +6,11 @@ export function migrateToV12(settings: PluginSettings): PluginSettings {
 	}
 
 	// etep 1: extract wikilink settings from old field configs
-	const oldFields = settings.frontmatterFields as any;
+	// in v11, the property was called fieldsSettings
+	// we need to cast to any to access the old property name
+	const oldFields =
+		(settings as any).fieldsSettings || settings.frontmatterFields;
+
 	settings.wikilinkSettings = {
 		authors: oldFields.authors?.wikilinks || false,
 		contributors: oldFields.contributors?.wikilinks || false,
@@ -143,13 +147,13 @@ export function migrateToV12(settings: PluginSettings): PluginSettings {
 	// title, use the selected source
 	const titleVar =
 		oldPrefs.titleSource === "book" ? "{{bookTitle}}" : "{{editionTitle}}";
-	template += `# ${titleVar}\n`;
+	template += `# ${titleVar}\n\n`;
 
 	// cover
 	if (oldFields.cover?.enabled) {
 		const coverVar =
 			oldPrefs.coverSource === "book" ? "{{bookCover}}" : "{{editionCover}}";
-		template += `![${titleVar} Cover|300](${coverVar}})\n\n`;
+		template += `![${titleVar} Cover|300](${coverVar})\n\n`;
 	}
 
 	// description
@@ -163,13 +167,21 @@ export function migrateToV12(settings: PluginSettings): PluginSettings {
 
 	// review
 	if (oldFields.review?.enabled) {
-		const heading = oldFields.review?.bodyHeading || "## Review";
+		let heading = oldFields.review?.bodyHeading || "## Review";
+		// ensure heading has ## prefix
+		if (heading && !heading.trim().startsWith("#")) {
+			heading = "## " + heading;
+		}
 		template += `${heading}\n{{review}}\n\n`;
 	}
 
 	// quotes
 	if (oldFields.quotes?.enabled) {
-		const heading = oldFields.quotes?.bodyHeading || "## Quotes";
+		let heading = oldFields.quotes?.bodyHeading || "## Quotes";
+		// ensure heading has ## prefix
+		if (heading && !heading.trim().startsWith("#")) {
+			heading = "## " + heading;
+		}
 		template += `${heading}\n{{quotes}}\n\n`;
 	}
 

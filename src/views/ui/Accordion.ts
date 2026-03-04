@@ -26,6 +26,21 @@ export class Accordion {
 
 		header.createSpan({ text: field.name });
 
+		const toggleContainer = header.createDiv({ cls: "obhc-field-toggle" });
+		const toggle = new ToggleComponent(toggleContainer);
+		toggle.setValue(isEnabled).onChange(async (value) => {
+			this.plugin.settings.frontmatterFields[field.key].enabled = value;
+			await this.plugin.saveSettings();
+
+			if (content) {
+				if (value) {
+					content.removeClass("obhc-disabled-settings");
+				} else {
+					content.addClass("obhc-disabled-settings");
+				}
+			}
+		});
+
 		const contentWrapper = accordionContainer.createDiv({
 			cls: "obhc-accordion-content",
 		});
