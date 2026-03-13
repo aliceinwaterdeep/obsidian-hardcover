@@ -10,7 +10,6 @@ import ObsidianHardcover from "src/main";
 import { Accordion } from "./ui/Accordion";
 import { renderDebugInfo, renderDevOptions } from "./settings/DebugSettings";
 import { renderApiTokenSetting } from "./settings/ApiSettings";
-import { renderFrontmatterFieldsSettings } from "./settings/FieldsSettings";
 import {
 	renderFolderSetting,
 	renderFilenameTemplateSetting,
@@ -23,7 +22,7 @@ import {
 } from "./settings/SyncSettings";
 import { renderGroupingSettings } from "./settings/GroupingSettings";
 import { renderWikilinkSettings } from "./settings/WikilinkSettings";
-import { renderBodyTemplateSettings } from "./settings/BodyTemplateSettings";
+import { renderNoteTemplateSettings } from "./settings/NoteTemplateSettings";
 
 export default class SettingsTab extends PluginSettingTab {
 	plugin: ObsidianHardcover;
@@ -71,34 +70,13 @@ export default class SettingsTab extends PluginSettingTab {
 
 		containerEl.createEl("hr");
 
-		//  SECTION 3: FRONTMATTER FIELDS
-		new Setting(containerEl).setName("Frontmatter Fields").setHeading();
+		//  SECTION 3: FRONTMATTER PRESERVATION
 
-		const frontmatterAccordion = containerEl.createDiv({
-			cls: "obhc-accordion",
-		});
-
-		const frontmatterHeader = frontmatterAccordion.createDiv({
-			cls: "obhc-accordion-header",
-		});
-
-		const frontmatterIcon = frontmatterHeader.createSpan({
-			cls: "obhc-accordion-icon",
-		});
-		setIcon(frontmatterIcon, "chevron-right");
-
-		frontmatterHeader.createSpan({ text: "Configure fields" });
-
-		const frontmatterContentWrapper = frontmatterAccordion.createDiv({
+		const frontmatterContentWrapper = containerEl.createDiv({
 			cls: "obhc-accordion-content",
 		});
 
 		const frontmatterContent = frontmatterContentWrapper.createDiv();
-
-		frontmatterHeader.addEventListener("click", () => {
-			frontmatterIcon.classList.toggle("expanded");
-			frontmatterContentWrapper.classList.toggle("expanded");
-		});
 
 		new Setting(frontmatterContent)
 			.setName("Preserve custom frontmatter")
@@ -113,12 +91,6 @@ export default class SettingsTab extends PluginSettingTab {
 						await this.plugin.saveSettings();
 					}),
 			);
-
-		renderFrontmatterFieldsSettings(
-			frontmatterContent,
-			this.plugin,
-			this.accordion,
-		);
 
 		containerEl.createEl("hr");
 
@@ -162,7 +134,7 @@ export default class SettingsTab extends PluginSettingTab {
 		//  SECTION 5: NOTE BODY TEMPLATE
 		new Setting(containerEl).setName("Note Body Template").setHeading();
 
-		renderBodyTemplateSettings(containerEl, this.plugin);
+		renderNoteTemplateSettings(containerEl, this.plugin);
 
 		containerEl.createEl("hr");
 

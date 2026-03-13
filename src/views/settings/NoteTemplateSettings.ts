@@ -1,13 +1,13 @@
 import { Setting } from "obsidian";
 import ObsidianHardcover from "src/main";
-import { DEFAULT_BODY_TEMPLATE } from "src/config/defaultSettings";
+import { DEFAULT_NOTE_TEMPLATE } from "src/config/defaultSettings";
 
-export function renderBodyTemplateSettings(
+export function renderNoteTemplateSettings(
 	containerEl: HTMLElement,
 	plugin: ObsidianHardcover,
 ): void {
 	new Setting(containerEl).setDesc(
-		"Customize the structure of your notes using variables. ⚠️ Note: Template content is regenerated on each sync, use this only for book data coming from Hardcover; add your personal notes below the --- delimiter in each note file.",
+		"Customize the structure of your notes including YAML frontmatter and body content. Do not remove the enclosing `---` from the frontmatter or the template will be invalid. ⚠️ Note: Template content is regenerated on each sync, use this only for book data coming from Hardcover; add your personal notes below the <!-- obsidian-hardcover-plugin-end --> delimiter in each note file.",
 	);
 
 	const editorContainer = containerEl.createDiv({
@@ -41,16 +41,31 @@ export function renderBodyTemplateSettings(
 	const textareaContainer = editorContainer.createDiv({
 		cls: "obhc-template-textarea",
 	});
+
 	const textarea = textareaContainer.createEl("textarea", {
-		placeholder: DEFAULT_BODY_TEMPLATE,
-		value: plugin.settings.bodyTemplate,
+		placeholder: DEFAULT_NOTE_TEMPLATE,
+		value: plugin.settings.noteTemplate,
 	});
-	textarea.value = plugin.settings.bodyTemplate || DEFAULT_BODY_TEMPLATE;
-	textarea.rows = 15;
+	textarea.value = plugin.settings.noteTemplate || DEFAULT_NOTE_TEMPLATE;
+	textarea.rows = 20;
 	textarea.addEventListener("input", async () => {
-		plugin.settings.bodyTemplate = textarea.value;
+		plugin.settings.noteTemplate = textarea.value;
 		await plugin.saveSettings();
 	});
+
+	new Setting(containerEl)
+		.setName("Keep empty headings")
+		.setDesc(
+			"Keep headings in the note even when the content below them is empty",
+		)
+		.addToggle((toggle) =>
+			toggle
+				.setValue(plugin.settings.keepEmptyHeadings)
+				.onChange(async (value) => {
+					plugin.settings.keepEmptyHeadings = value;
+					await plugin.saveSettings();
+				}),
+		);
 
 	new Setting(containerEl)
 		.setName("Quotes format")
