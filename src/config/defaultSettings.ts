@@ -1,7 +1,28 @@
 import { FrontmatterFieldsSettings, PluginSettings } from "src/types";
 import { HARDCOVER_STATUS_MAP } from "./statusMapping";
 
-export const DEFAULT_BODY_TEMPLATE = `# {{editionTitle}}
+export const DEFAULT_NOTE_TEMPLATE = `---
+title: {{editionTitle}}
+cover: {{editionCover}}
+releaseDate: {{editionReleaseDate}}
+authors: {{editionAuthors}}
+contributors: {{editionContributors}}
+description: {{description}}
+series: {{series}}
+publisher: {{publisher}}
+genres: {{genres}}
+url: {{url}}
+rating: {{rating}}
+status: {{status}}
+firstReadStart: {{firstReadStart}}
+firstReadEnd: {{firstReadEnd}}
+lastReadStart: {{lastReadStart}}
+lastReadEnd: {{lastReadEnd}}
+totalReads: {{totalReads}}
+readYears: {{readYears}}
+---
+
+# {{editionTitle}}
 ![{{editionTitle}} Cover|300]({{editionCover}})
 
 {{description}}
@@ -66,7 +87,7 @@ export const DEFAULT_FRONTMATTER_FIELDS: FrontmatterFieldsSettings = {
 export const DEFAULT_FILENAME_FORMAT = "{{editionTitle}} ({{editionYear}})";
 
 export const DEFAULT_SETTINGS: PluginSettings = {
-	settingsVersion: 12,
+	settingsVersion: 13,
 	apiKey: "",
 	lastSyncTimestamp: "",
 	userId: null,
@@ -75,6 +96,8 @@ export const DEFAULT_SETTINGS: PluginSettings = {
 	statusFilter: [1, 2, 3, 5],
 	frontmatterFields: DEFAULT_FRONTMATTER_FIELDS,
 	statusMapping: HARDCOVER_STATUS_MAP,
+	noteTemplate: DEFAULT_NOTE_TEMPLATE,
+	keepEmptyHeadings: false,
 	bodyTemplate: DEFAULT_BODY_TEMPLATE,
 	quotesFormat: "blockquote",
 	wikilinkSettings: {

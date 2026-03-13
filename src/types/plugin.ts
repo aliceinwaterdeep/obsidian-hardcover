@@ -26,6 +26,8 @@ export interface PluginSettings {
 	// status filter - empty array means sync all statuses
 	statusFilter: number[];
 
+	noteTemplate: string;
+	keepEmptyHeadings: boolean;
 	bodyTemplate: string;
 	quotesFormat: "blockquote" | "callout";
 	wikilinkSettings: {
