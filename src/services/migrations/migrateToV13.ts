@@ -42,7 +42,9 @@ export function migrateToV13(settings: PluginSettings): PluginSettings {
 	// step 3: add new keepEmptyHeadings setting
 	settings.keepEmptyHeadings = false;
 
-	// TODO step 4: cleanup
+	// step 4: cleanup obsolete settings
+	delete (settings as any).frontmatterFields;
+	delete (settings as any).bodyTemplate;
 
 	return settings;
 }

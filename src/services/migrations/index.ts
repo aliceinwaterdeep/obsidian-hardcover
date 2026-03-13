@@ -13,6 +13,7 @@ import { migrateToV9 } from "./migrateToV9";
 import { migrateToV10 } from "./migrateToV10";
 import { migrateToV11 } from "./migrateToV11";
 import { migrateToV12 } from "./migrateToV12";
+import { migrateToV13 } from "./migrateToV13";
 
 export class SettingsMigrationService {
 	static migrateSettings(settings: PluginSettings, app?: App): PluginSettings {
@@ -71,6 +72,10 @@ export class SettingsMigrationService {
 
 		if (currentVersion < 12) {
 			settings = migrateToV12(settings);
+		}
+
+		if (currentVersion < 13) {
+			settings = migrateToV13(settings);
 		}
 
 		// update version number

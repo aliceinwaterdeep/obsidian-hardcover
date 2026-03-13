@@ -19,8 +19,6 @@ export interface PluginSettings {
 	userId: number | null;
 	booksCount: number | null;
 
-	// field configuration
-	frontmatterFields: FrontmatterFieldsSettings;
 	preserveCustomFrontmatter: boolean;
 
 	// status filter - empty array means sync all statuses
@@ -28,7 +26,6 @@ export interface PluginSettings {
 
 	noteTemplate: string;
 	keepEmptyHeadings: boolean;
-	bodyTemplate: string;
 	quotesFormat: "blockquote" | "callout";
 	wikilinkSettings: {
 		authors: boolean;
