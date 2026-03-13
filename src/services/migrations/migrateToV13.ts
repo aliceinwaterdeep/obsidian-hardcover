@@ -1,6 +1,14 @@
-import { PluginSettings } from "src/types";
+import { FrontmatterFieldsSettings, PluginSettings } from "src/types";
 
-export function migrateToV13(settings: PluginSettings): PluginSettings {
+interface V12Settings extends Omit<
+	PluginSettings,
+	"noteTemplate" | "keepEmptyHeadings" // noteTemplate and keepEmptyHeadings don't exist in v12
+> {
+	frontmatterFields: FrontmatterFieldsSettings;
+	bodyTemplate: string;
+}
+
+export function migrateToV13(settings: V12Settings): PluginSettings {
 	if (IS_DEV) {
 		console.debug("Migrating to v13: full note template");
 	}
@@ -37,14 +45,18 @@ export function migrateToV13(settings: PluginSettings): PluginSettings {
 
 	const bodyContent = settings.bodyTemplate || "";
 
-	settings.noteTemplate = yamlBlock + bodyContent;
+	const noteTemplate = yamlBlock + bodyContent;
 
-	// step 3: add new keepEmptyHeadings setting
-	settings.keepEmptyHeadings = false;
+	// step 3: build new v13 settings object
+	const v13Settings: PluginSettings = {
+		...settings,
+		noteTemplate: noteTemplate,
+		keepEmptyHeadings: false,
+	};
 
 	// step 4: cleanup obsolete settings
-	delete (settings as any).frontmatterFields;
-	delete (settings as any).bodyTemplate;
+	delete (v13Settings as any).frontmatterFields;
+	delete (v13Settings as any).bodyTemplate;
 
-	return settings;
+	return v13Settings;
 }
