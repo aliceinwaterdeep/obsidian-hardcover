@@ -709,15 +709,26 @@ export class NoteService {
 		// hardcoverBookId is always managed by the plugin
 		keys.add("hardcoverBookId");
 
-		// add the property names defined in FRONTMATTER_FIELDS_DEFINITIONS (including activity date start/end)
-		for (const field of FRONTMATTER_FIELDS_DEFINITIONS) {
-			const fieldSettings = this.plugin.settings.frontmatterFields[field.key];
-			keys.add(fieldSettings.propertyName);
+		// parse the noteTemplate to extract YAML property names
+		const template = this.plugin.settings.noteTemplate;
 
-			if (field.isActivityDateField) {
-				const activityField = fieldSettings as ActivityDateFieldConfig;
-				keys.add(activityField.startPropertyName);
-				keys.add(activityField.endPropertyName);
+		// extract YAML block (between --- delimiters)
+		const yamlMatch = template.match(/^---\n([\s\S]*?)\n---/);
+
+		if (yamlMatch && yamlMatch[1]) {
+			const yamlContent = yamlMatch[1];
+
+			// extract property names (everything before the first : on each line)
+			const lines = yamlContent.split("\n");
+			for (const line of lines) {
+				const trimmed = line.trim();
+				if (trimmed && !trimmed.startsWith("#")) {
+					const colonIndex = trimmed.indexOf(":");
+					if (colonIndex > 0) {
+						const propName = trimmed.substring(0, colonIndex).trim();
+						keys.add(propName);
+					}
+				}
 			}
 		}
 
@@ -727,29 +738,33 @@ export class NoteService {
 	private getManagedOrder(frontmatterData: Record<string, any>): string[] {
 		const order: string[] = [];
 
-		// always start with hardcoverBookId
+		// hardcoverBookId always comes first
 		if ("hardcoverBookId" in frontmatterData) {
 			order.push("hardcoverBookId");
 		}
 
-		// follow the order defined in FRONTMATTER_FIELDS_DEFINITIONS to ensure consistent ordering
-		// even when fields are enabled/disabled/renamed in settings
-		for (const field of FRONTMATTER_FIELDS_DEFINITIONS) {
-			const fieldSettings = this.plugin.settings.frontmatterFields[field.key];
-			const propName = fieldSettings.propertyName;
+		// parse the noteTemplate to get the order from YAML block
+		const template = this.plugin.settings.noteTemplate;
 
-			if (propName in frontmatterData) {
-				order.push(propName);
-			}
+		// extract YAML block
+		const yamlMatch = template.match(/^---\n([\s\S]*?)\n---/);
 
-			// activity date fields have separate start/end properties
-			if (field.isActivityDateField) {
-				const activityField = fieldSettings as ActivityDateFieldConfig;
-				if (activityField.startPropertyName in frontmatterData) {
-					order.push(activityField.startPropertyName);
-				}
-				if (activityField.endPropertyName in frontmatterData) {
-					order.push(activityField.endPropertyName);
+		if (yamlMatch && yamlMatch[1]) {
+			const yamlContent = yamlMatch[1];
+
+			// extract property names in order
+			const lines = yamlContent.split("\n");
+			for (const line of lines) {
+				const trimmed = line.trim();
+				if (trimmed && !trimmed.startsWith("#")) {
+					const colonIndex = trimmed.indexOf(":");
+					if (colonIndex > 0) {
+						const propName = trimmed.substring(0, colonIndex).trim();
+						// add to order if it exists in the data and isn't already added
+						if (propName in frontmatterData && !order.includes(propName)) {
+							order.push(propName);
+						}
+					}
 				}
 			}
 		}
@@ -773,30 +788,6 @@ export class NoteService {
 		}
 
 		return { bodyText: content };
-	}
-
-	private formatReviewSection(reviewText: string): string {
-		let formattedReview = reviewText;
-
-		// check if the review already contains HTML
-		if (reviewText.includes("<p>") || reviewText.includes("<br>")) {
-			// convert HTML to markdown-friendly format
-			formattedReview = reviewText
-				.replace(/<p>/g, "")
-				.replace(/<\/p>/g, "\n\n")
-				.replace(/<br\s*\/?>/g, "\n")
-				.replace(/&quot;/g, '"')
-				.replace(/&amp;/g, "&")
-				.replace(/&lt;/g, "<")
-				.replace(/&gt;/g, ">");
-		} else {
-			// for raw text apply basic formatting
-			formattedReview = reviewText.replace(/\\"/g, '"');
-		}
-
-		const heading =
-			this.plugin.settings.frontmatterFields.review.bodyHeading || "Review";
-		return `## ${heading}\n\n${formattedReview.trim()}\n\n`;
 	}
 
 	/**
