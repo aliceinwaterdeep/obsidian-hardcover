@@ -72,13 +72,7 @@ export default class SettingsTab extends PluginSettingTab {
 
 		//  SECTION 3: FRONTMATTER PRESERVATION
 
-		const frontmatterContentWrapper = containerEl.createDiv({
-			cls: "obhc-accordion-content",
-		});
-
-		const frontmatterContent = frontmatterContentWrapper.createDiv();
-
-		new Setting(frontmatterContent)
+		new Setting(containerEl)
 			.setName("Preserve custom frontmatter")
 			.setDesc(
 				"Keep any user-added frontmatter properties when syncing. Turn off to let Hardcover overwrite the entire frontmatter.",
