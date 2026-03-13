@@ -1,4 +1,4 @@
-import { FrontmatterFieldsSettings, PluginSettings } from "src/types";
+import { PluginSettings } from "src/types";
 
 export class QueryBuilder {
 	private settings: PluginSettings;
@@ -11,28 +11,21 @@ export class QueryBuilder {
 
 	private determineRequiredFields(): Set<string> {
 		const required = new Set<string>();
-		const { frontmatterFields, bodyTemplate, filenameTemplate } = this.settings;
+		const { noteTemplate, filenameTemplate } = this.settings;
 
 		required.add("hardcoverBookId");
 
-		// step 1: check frontmatter enabled fields
-		for (const [fieldKey, fieldConfig] of Object.entries(frontmatterFields)) {
-			if (fieldConfig.enabled) {
-				required.add(fieldKey);
-			}
-		}
-
-		// step 2: parse body template for {{variables}}
-		const bodyVarMatches = bodyTemplate.match(/\{\{(\w+)\}\}/g);
-		if (bodyVarMatches) {
-			for (const match of bodyVarMatches) {
+		// step 1: parse noteTemplate for {{variables}} (both YAML and body)
+		const noteVarMatches = noteTemplate.match(/\{\{(\w+)\}\}/g);
+		if (noteVarMatches) {
+			for (const match of noteVarMatches) {
 				// extract variable name: {{bookTitle}} -> bookTitle
 				const varName = match.replace(/\{\{|\}\}/g, "");
 				required.add(varName);
 			}
 		}
 
-		// step 3: parse filename template for {{variables}}
+		// step 2: parse filename template for {{variables}}
 		const filenameVarMatches = filenameTemplate.match(/\{\{(\w+)\}\}/g);
 		if (filenameVarMatches) {
 			for (const match of filenameVarMatches) {
@@ -59,8 +52,6 @@ export class QueryBuilder {
 		updatedAfter?: string,
 		status?: number[],
 	): string {
-		const frontmatterFields = this.settings.frontmatterFields;
-
 		const userBooksFields = this.buildUserBooksFields(frontmatterFields);
 		const bookFields = this.buildBookFields(frontmatterFields);
 		const editionFields = this.buildEditionFields(frontmatterFields);
@@ -113,7 +104,7 @@ export class QueryBuilder {
         `;
 	}
 
-	private buildUserBooksFields(settings: FrontmatterFieldsSettings): string {
+	private buildUserBooksFields(): string {
 		const fields: string[] = [];
 
 		// helper to check if we need a field
@@ -147,7 +138,7 @@ export class QueryBuilder {
 		return fields.join("\n                    ");
 	}
 
-	private buildBookFields(settings: FrontmatterFieldsSettings): string {
+	private buildBookFields(): string {
 		const fields: string[] = ["title"]; // always include at least title
 
 		// helper to check if we need a field
@@ -195,7 +186,7 @@ export class QueryBuilder {
 		return fields.join("\n                        ");
 	}
 
-	private buildEditionFields(settings: FrontmatterFieldsSettings): string {
+	private buildEditionFields(): string {
 		const fields: string[] = ["title"]; // always include at least title
 
 		// helper to check if we need a field
@@ -232,7 +223,7 @@ export class QueryBuilder {
 		return fields.join("\n                        ");
 	}
 
-	private buildReadsFields(settings: FrontmatterFieldsSettings): string {
+	private buildReadsFields(): string {
 		// helper to check if we need a field
 		const needsField = (fieldKey: string): boolean => {
 			return this.requiredFields.has(fieldKey);
