@@ -34,13 +34,11 @@ export class NoteService {
 				await this.ensureFolderExists(directoryPath);
 			}
 
-			const formattedMetadata = this.applyWikilinkFormatting(bookMetadata);
-
 			// prepare frontmatter with proper ordering and filtering
-			const frontmatterData = this.prepareFrontmatter(formattedMetadata);
+			const frontmatterData = this.prepareFrontmatter(bookMetadata);
 
 			// create body content only
-			const bodyContent = this.renderBodyTemplate(formattedMetadata);
+			const bodyContent = this.renderBodyTemplate(bookMetadata);
 
 			// check if file exists
 			const existingFile = this.vault.getFileByPath(fullPath);
@@ -96,13 +94,12 @@ export class NoteService {
 				Object.assign(existingFrontmatter, fileCache.frontmatter);
 			}
 
-			const formattedMetadata = this.applyWikilinkFormatting(bookMetadata);
 			const managedFrontmatterKeys = this.getManagedFrontmatterKeys();
 			const preserveCustomFrontmatter =
 				this.plugin.settings.preserveCustomFrontmatter !== false;
 
 			// create new body content
-			const newBodyContent = this.renderBodyTemplate(formattedMetadata);
+			const newBodyContent = this.renderBodyTemplate(bookMetadata);
 
 			// check if delimiter exists in the current content
 			const delimiterIndex = existingBodyText.indexOf(CONTENT_DELIMITER);
@@ -161,7 +158,7 @@ export class NoteService {
 			}
 
 			// prepare frontmatter data once
-			const frontmatterDataToWrite = this.prepareFrontmatter(formattedMetadata);
+			const frontmatterDataToWrite = this.prepareFrontmatter(bookMetadata);
 
 			// check if the file needs to be renamed/moved
 			if (originalPath !== targetPath) {
@@ -369,22 +366,15 @@ export class NoteService {
 
 		return null;
 	}
+
 	private getTemplateVariables(
 		bookMetadata: BookMetadata,
 	): Record<string, string> {
-		const { wikilinkSettings } = this.plugin.settings;
-
 		const vars: Record<string, string> = {};
 
-		// helper to format array fields with optional wikilinks
-		const formatArray = (
-			arr: string[] | undefined,
-			enableWikilinks: boolean,
-		): string => {
+		// helper to format array fields (wikilinks already applied in TemplateDataBuilder)
+		const formatArray = (arr: string[] | undefined): string => {
 			if (!arr || arr.length === 0) return "";
-			if (enableWikilinks) {
-				return arr.map((item) => `[[${item}]]`).join(", ");
-			}
 			return arr.join(", ");
 		};
 
@@ -401,63 +391,43 @@ export class NoteService {
 		vars.bookReleaseDate = bookMetadata.variables?.bookReleaseDate || "";
 		vars.editionReleaseDate = bookMetadata.variables?.editionReleaseDate || "";
 
-		// authors (arrays with wikilinks)
-		vars.bookAuthors = formatArray(
-			bookMetadata.variables?.bookAuthors,
-			wikilinkSettings.authors,
-		);
-		vars.editionAuthors = formatArray(
-			bookMetadata.variables?.editionAuthors,
-			wikilinkSettings.authors,
-		);
+		// authors (wikilinks already applied)
+		vars.bookAuthors = formatArray(bookMetadata.variables?.bookAuthors);
+		vars.editionAuthors = formatArray(bookMetadata.variables?.editionAuthors);
 
-		// contributors (arrays with wikilinks)
+		// contributors (wikilinks already applied)
 		vars.bookContributors = formatArray(
 			bookMetadata.variables?.bookContributors,
-			wikilinkSettings.contributors,
 		);
 		vars.editionContributors = formatArray(
 			bookMetadata.variables?.editionContributors,
-			wikilinkSettings.contributors,
 		);
 
 		// b ook only fields
 		vars.description = bookMetadata.variables?.description || "";
 		vars.url = bookMetadata.variables?.url || "";
 
-		// series (array with wikilinks)
-		vars.series = formatArray(
-			bookMetadata.variables?.series,
-			wikilinkSettings.series,
-		);
+		// series (wikilinks already applied)
+		vars.series = formatArray(bookMetadata.variables?.series);
 
-		// genres (array with wikilinks)
-		vars.genres = formatArray(
-			bookMetadata.variables?.genres,
-			wikilinkSettings.genres,
-		);
+		// genres (wikilinks already applied)
+		vars.genres = formatArray(bookMetadata.variables?.genres);
 
 		// edition only fields
-		vars.publisher = formatArray(
-			bookMetadata.variables?.publisher,
-			wikilinkSettings.publisher,
-		);
+		vars.publisher = formatArray(bookMetadata.variables?.publisher);
 		vars.isbn10 = bookMetadata.variables?.isbn10 || "";
 		vars.isbn13 = bookMetadata.variables?.isbn13 || "";
 
 		// user data fields
 		vars.rating = formatNumber(bookMetadata.variables?.rating);
-		vars.status = formatArray(bookMetadata.variables?.status, false);
+		vars.status = formatArray(bookMetadata.variables?.status);
 		vars.review = bookMetadata.variables?.review || "";
 
 		// quotes
 		vars.quotes = this.formatQuotesSection(bookMetadata.variables?.quotes);
 
-		// lists (array with wikilinks)
-		vars.lists = formatArray(
-			bookMetadata.variables?.lists,
-			wikilinkSettings.lists,
-		);
+		// lists (wikilinks already applied)
+		vars.lists = formatArray(bookMetadata.variables?.lists);
 
 		// activity date fields
 		vars.firstReadStart = bookMetadata.variables?.firstReadStart || "";
@@ -467,7 +437,6 @@ export class NoteService {
 		vars.totalReads = formatNumber(bookMetadata.variables?.totalReads);
 		vars.readYears = formatArray(
 			bookMetadata.variables?.readYears?.map(String),
-			false,
 		);
 
 		return vars;
@@ -823,120 +792,6 @@ export class NoteService {
 			);
 			return null;
 		}
-	}
-
-	private formatAsWikilinks(values: string[], fieldKey: string): string[] {
-		return values.map((value) => {
-			// extract base name for contributors and series
-			if (fieldKey === "contributors") {
-				const match = value.match(/^(.+?)\s*\((.+)\)$/);
-				if (match) {
-					return `[[${match[1].trim()}|${value}]]`;
-				}
-			} else if (fieldKey === "series") {
-				const match = value.match(/^(.+?)\s*#(\d+)$/);
-				if (match) {
-					return `[[${match[1].trim()}|${value}]]`;
-				}
-			}
-
-			return `[[${value}]]`;
-		});
-	}
-
-	private applyWikilinkFormatting(metadata: BookMetadata): BookMetadata {
-		const formattedMetadata = {
-			...metadata,
-			frontmatter: { ...metadata.frontmatter },
-		};
-		const { wikilinkSettings } = this.plugin.settings;
-
-		// apply wikilinks to authors in frontmatter
-		if (wikilinkSettings.authors) {
-			// check both book and edition authors
-			for (const key of Object.keys(formattedMetadata.frontmatter)) {
-				const value = formattedMetadata.frontmatter[key];
-				// if this property contains the authors data (compare to variables)
-				if (
-					Array.isArray(value) &&
-					(value === metadata.variables.bookAuthors ||
-						value === metadata.variables.editionAuthors)
-				) {
-					formattedMetadata.frontmatter[key] = this.formatAsWikilinks(
-						value,
-						"authors",
-					);
-				}
-			}
-		}
-
-		// apply wikilinks to contributors in frontmatter
-		if (wikilinkSettings.contributors) {
-			for (const key of Object.keys(formattedMetadata.frontmatter)) {
-				const value = formattedMetadata.frontmatter[key];
-				if (
-					Array.isArray(value) &&
-					(value === metadata.variables.bookContributors ||
-						value === metadata.variables.editionContributors)
-				) {
-					formattedMetadata.frontmatter[key] = this.formatAsWikilinks(
-						value,
-						"contributors",
-					);
-				}
-			}
-		}
-
-		// apply wikilinks to series in frontmatter
-		if (wikilinkSettings.series) {
-			for (const key of Object.keys(formattedMetadata.frontmatter)) {
-				const value = formattedMetadata.frontmatter[key];
-				if (Array.isArray(value) && value === metadata.variables.series) {
-					formattedMetadata.frontmatter[key] = this.formatAsWikilinks(
-						value,
-						"series",
-					);
-				}
-			}
-		}
-
-		// apply wikilinks to publisher in frontmatter
-		if (wikilinkSettings.publisher) {
-			for (const key of Object.keys(formattedMetadata.frontmatter)) {
-				const value = formattedMetadata.frontmatter[key];
-				if (Array.isArray(value) && value === metadata.variables.publisher) {
-					formattedMetadata.frontmatter[key] = value.map((p) => `[[${p}]]`);
-				}
-			}
-		}
-
-		// apply wikilinks to genres in frontmatter
-		if (wikilinkSettings.genres) {
-			for (const key of Object.keys(formattedMetadata.frontmatter)) {
-				const value = formattedMetadata.frontmatter[key];
-				if (Array.isArray(value) && value === metadata.variables.genres) {
-					formattedMetadata.frontmatter[key] = this.formatAsWikilinks(
-						value,
-						"genres",
-					);
-				}
-			}
-		}
-
-		// apply wikilinks to lists in frontmatter
-		if (wikilinkSettings.lists) {
-			for (const key of Object.keys(formattedMetadata.frontmatter)) {
-				const value = formattedMetadata.frontmatter[key];
-				if (Array.isArray(value) && value === metadata.variables.lists) {
-					formattedMetadata.frontmatter[key] = this.formatAsWikilinks(
-						value,
-						"lists",
-					);
-				}
-			}
-		}
-
-		return formattedMetadata;
 	}
 
 	private formatNameAsLastFirst(name: string): string {
