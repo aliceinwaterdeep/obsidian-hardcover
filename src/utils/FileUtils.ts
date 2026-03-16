@@ -1,5 +1,4 @@
 import { normalizePath } from "obsidian";
-import { FrontmatterFieldsSettings } from "src/types";
 
 export class FileUtils {
 	sanitizeFilename(name: string): string {
@@ -37,13 +36,8 @@ export class FileUtils {
 		return !normalizedPath || normalizedPath === "/";
 	}
 
-	processFilenameTemplate(
-		template: string,
-		metadata: any,
-		fieldsSettings: FrontmatterFieldsSettings,
-	): string {
+	processFilenameTemplate(template: string, availableData: any): string {
 		let filename = template;
-		const availableData = metadata.availableData ?? {};
 
 		// {{editionTitle}}
 		const editionTitleValue = availableData.editionTitle;

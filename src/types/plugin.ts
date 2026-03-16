@@ -97,14 +97,6 @@ export interface FrontmatterFieldsSettings {
 	readYears: FieldConfig;
 }
 
-export interface FieldDefinition {
-	key: keyof FrontmatterFieldsSettings;
-	name: string;
-	description: string;
-	isActivityDateField?: boolean;
-	supportsWikilinks?: boolean;
-}
-
 export interface BookMetadata {
 	hardcoverBookId: number;
 	frontmatter: Record<string, any>; // all frontmatter properties (using custom property names)

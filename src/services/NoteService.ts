@@ -1,6 +1,5 @@
 import { normalizePath, TFile, TFolder, Vault } from "obsidian";
 import { CONTENT_DELIMITER } from "src/config/constants";
-import { FRONTMATTER_FIELDS_DEFINITIONS } from "src/config/fieldDefinitions";
 
 import ObsidianHardcover from "src/main";
 import {
