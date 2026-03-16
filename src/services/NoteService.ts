@@ -40,21 +40,21 @@ export class NoteService {
 			const frontmatterData = this.prepareFrontmatter(formattedMetadata);
 
 			// create body content only
-			const availableData = this.createAvailableData(formattedMetadata);
+			const bodyContent = this.renderBodyTemplate(formattedMetadata);
 
 			// check if file exists
 			const existingFile = this.vault.getFileByPath(fullPath);
 			let file: TFile;
 
 			if (existingFile) {
-				await this.vault.modify(existingFile, availableData);
+				await this.vault.modify(existingFile, bodyContent);
 				file = existingFile;
 
 				if (IS_DEV) {
 					console.debug(`Updated note: ${fullPath}`);
 				}
 			} else {
-				file = await this.vault.create(fullPath, availableData);
+				file = await this.vault.create(fullPath, bodyContent);
 				if (IS_DEV) {
 					console.debug(`Created note: ${fullPath}`);
 				}
@@ -102,7 +102,7 @@ export class NoteService {
 				this.plugin.settings.preserveCustomFrontmatter !== false;
 
 			// create new body content
-			const newAvailableData = this.createAvailableData(formattedMetadata);
+			const newBodyContent = this.renderBodyTemplate(formattedMetadata);
 
 			// check if delimiter exists in the current content
 			const delimiterIndex = existingBodyText.indexOf(CONTENT_DELIMITER);
@@ -112,12 +112,12 @@ export class NoteService {
 				const userContent = existingBodyText.substring(
 					delimiterIndex + CONTENT_DELIMITER.length,
 				);
-				updatedContent = newAvailableData.replace(
+				updatedContent = newBodyContent.replace(
 					`${CONTENT_DELIMITER}\n\n`,
 					`${CONTENT_DELIMITER}${userContent}`,
 				);
 			} else {
-				updatedContent = newAvailableData;
+				updatedContent = newBodyContent;
 			}
 
 			const newPath = this.generateNotePath(
@@ -233,7 +233,6 @@ export class NoteService {
 		const filename = this.fileUtils.processFilenameTemplate(
 			this.plugin.settings.filenameTemplate,
 			bookMetadata,
-			this.plugin.settings.frontmatterFields,
 		);
 
 		let basePath = normalizePath(this.plugin.settings.targetFolder);
@@ -378,7 +377,7 @@ export class NoteService {
 	private getTemplateVariables(
 		bookMetadata: BookMetadata,
 	): Record<string, string> {
-		const { frontmatterFields, wikilinkSettings } = this.plugin.settings;
+		const { wikilinkSettings } = this.plugin.settings;
 
 		const vars: Record<string, string> = {};
 
@@ -400,80 +399,79 @@ export class NoteService {
 		};
 
 		// book/edition split fields (strings)
-		vars.bookTitle = bookMetadata.availableData?.bookTitle || "";
-		vars.editionTitle = bookMetadata.availableData?.editionTitle || "";
-		vars.bookCover = bookMetadata.availableData?.bookCover || "";
-		vars.editionCover = bookMetadata.availableData?.editionCover || "";
-		vars.bookReleaseDate = bookMetadata.availableData?.bookReleaseDate || "";
-		vars.editionReleaseDate =
-			bookMetadata.availableData?.editionReleaseDate || "";
+		vars.bookTitle = bookMetadata.variables?.bookTitle || "";
+		vars.editionTitle = bookMetadata.variables?.editionTitle || "";
+		vars.bookCover = bookMetadata.variables?.bookCover || "";
+		vars.editionCover = bookMetadata.variables?.editionCover || "";
+		vars.bookReleaseDate = bookMetadata.variables?.bookReleaseDate || "";
+		vars.editionReleaseDate = bookMetadata.variables?.editionReleaseDate || "";
 
 		// authors (arrays with wikilinks)
 		vars.bookAuthors = formatArray(
-			bookMetadata.availableData?.bookAuthors,
+			bookMetadata.variables?.bookAuthors,
 			wikilinkSettings.authors,
 		);
 		vars.editionAuthors = formatArray(
-			bookMetadata.availableData?.editionAuthors,
+			bookMetadata.variables?.editionAuthors,
 			wikilinkSettings.authors,
 		);
 
 		// contributors (arrays with wikilinks)
 		vars.bookContributors = formatArray(
-			bookMetadata.availableData?.bookContributors,
+			bookMetadata.variables?.bookContributors,
 			wikilinkSettings.contributors,
 		);
 		vars.editionContributors = formatArray(
-			bookMetadata.availableData?.editionContributors,
+			bookMetadata.variables?.editionContributors,
 			wikilinkSettings.contributors,
 		);
 
 		// b ook only fields
-		vars.description = bookMetadata.availableData?.description || "";
-		vars.url = bookMetadata.availableData?.url || "";
+		vars.description = bookMetadata.variables?.description || "";
+		vars.url = bookMetadata.variables?.url || "";
 
 		// series (array with wikilinks)
 		vars.series = formatArray(
-			bookMetadata.availableData?.series,
+			bookMetadata.variables?.series,
 			wikilinkSettings.series,
 		);
 
 		// genres (array with wikilinks)
 		vars.genres = formatArray(
-			bookMetadata.availableData?.genres,
+			bookMetadata.variables?.genres,
 			wikilinkSettings.genres,
 		);
 
 		// edition only fields
 		vars.publisher = formatArray(
-			bookMetadata.availableData?.publisher,
+			bookMetadata.variables?.publisher,
 			wikilinkSettings.publisher,
 		);
-		vars.isbn10 = bookMetadata.availableData?.isbn10 || "";
-		vars.isbn13 = bookMetadata.availableData?.isbn13 || "";
+		vars.isbn10 = bookMetadata.variables?.isbn10 || "";
+		vars.isbn13 = bookMetadata.variables?.isbn13 || "";
 
 		// user data fields
-		vars.rating = formatNumber(bookMetadata.availableData?.rating);
-		vars.status = formatArray(bookMetadata.availableData?.status, false);
-		vars.review = bookMetadata.availableData?.review || "";
+		vars.rating = formatNumber(bookMetadata.variables?.rating);
+		vars.status = formatArray(bookMetadata.variables?.status, false);
+		vars.review = bookMetadata.variables?.review || "";
 
 		// quotes
-		vars.quotes = this.formatQuotesSection(bookMetadata.availableData?.quotes);
+		vars.quotes = this.formatQuotesSection(bookMetadata.variables?.quotes);
 
 		// lists (array with wikilinks)
 		vars.lists = formatArray(
-			bookMetadata.availableData?.lists,
+			bookMetadata.variables?.lists,
 			wikilinkSettings.lists,
 		);
 
 		// activity date fields
-		vars.firstReadStart = bookMetadata.availableData?.firstReadStart || "";
-		vars.firstReadEnd = bookMetadata.availableData?.firstReadEnd || "";
-		vars.lastReadStart = bookMetadata.availableData?.lastReadStart || "";
-		vars.lastReadEnd = bookMetadata.availableData?.lastReadEnd || "";
-		vars.totalReads = formatNumber(bookMetadata.availableData?.totalReads);
+		vars.firstReadStart = bookMetadata.variables?.firstReadStart || "";
+		vars.firstReadEnd = bookMetadata.variables?.firstReadEnd || "";
+		vars.lastReadStart = bookMetadata.variables?.lastReadStart || "";
+		vars.lastReadEnd = bookMetadata.variables?.lastReadEnd || "";
+		vars.totalReads = formatNumber(bookMetadata.variables?.totalReads);
 		vars.readYears = formatArray(
-			bookMetadata.availableData?.readYears?.map(String),
+			bookMetadata.variables?.readYears?.map(String),
 			false,
 		);
 
@@ -481,7 +479,8 @@ export class NoteService {
 	}
 
 	private renderBodyTemplate(bookMetadata: BookMetadata): string {
-		const template = this.plugin.settings.bodyTemplate;
+		const fullTemplate = this.plugin.settings.noteTemplate;
+		const bodyTemplate = this.extractBodyFromTemplate(fullTemplate);
 		const variables = this.getTemplateVariables(bookMetadata);
 
 		// track which variables are empty
@@ -493,7 +492,7 @@ export class NoteService {
 		}
 
 		// split template into lines before substitution
-		const lines = template.split("\n");
+		const lines = bodyTemplate.split("\n");
 		const processedLines: string[] = [];
 
 		for (let i = 0; i < lines.length; i++) {
@@ -566,10 +565,6 @@ export class NoteService {
 			// blockquote format (default)
 			return quotes.map((quote) => `> ${quote}`).join("\n\n");
 		}
-	}
-
-	private createAvailableData(bookMetadata: any): string {
-		return this.renderBodyTemplate(bookMetadata);
 	}
 
 	private async ensureFolderExists(folderPath: string): Promise<void> {
@@ -859,7 +854,7 @@ export class NoteService {
 			...metadata,
 			frontmatter: { ...metadata.frontmatter },
 		};
-		const { frontmatterFields, wikilinkSettings } = this.plugin.settings;
+		const { wikilinkSettings } = this.plugin.settings;
 
 		// Authors (book and edition)
 		if (wikilinkSettings.authors) {
@@ -1069,5 +1064,11 @@ export class NoteService {
 
 		traverse(folder);
 		return files;
+	}
+
+	private extractBodyFromTemplate(template: string): string {
+		// remove YAML frontmatter block
+		const withoutYaml = template.replace(/^---\n[\s\S]*?\n---\n\n?/, "");
+		return withoutYaml;
 	}
 }
