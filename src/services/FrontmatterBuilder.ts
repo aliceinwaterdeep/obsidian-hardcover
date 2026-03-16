@@ -1,3 +1,4 @@
+import { parseYaml } from "obsidian";
 import { HARDCOVER_BOOKS_ROUTE, HARDCOVER_URL } from "src/config/constants";
 import { HardcoverUserBook, PluginSettings } from "src/types";
 import { FileUtils } from "src/utils/FileUtils";
@@ -24,225 +25,215 @@ export class FrontmatterBuilder {
 	build(
 		userBook: HardcoverUserBook,
 		bookToListsMap?: Map<number, string[]> | null,
-	): { frontmatter: Record<string, any>; rawContributors?: Record<any, any>[] } {
-		const { frontmatterFields } = this.settings;
+	): {
+		frontmatter: Record<string, any>;
+		rawContributors?: Record<any, any>[];
+	} {
+		const template = this.settings.noteTemplate;
+		const parsedTemplate = this.parseTemplateYAML(template);
+
 		const frontmatter: Record<string, any> = {};
 		let rawContributors: Record<any, any>[] | undefined;
 
 		const { book, edition, user_book_reads: readingActivity } = userBook;
 
-		// Book title
-		if (book?.title && frontmatterFields.bookTitle.enabled) {
-			frontmatter[frontmatterFields.bookTitle.propertyName] =
-				this.fileUtils.normalizeText(book.title);
+		// build a map of all available variables
+		const variables: Record<string, any> = {};
+
+		// always add hardcoverBookId (even if not in template)
+		frontmatter.hardcoverBookId = userBook.book_id;
+
+		// book/edition titles
+		if (book?.title) {
+			variables.bookTitle = this.fileUtils.normalizeText(book.title);
+		}
+		if (edition?.title) {
+			variables.editionTitle = this.fileUtils.normalizeText(edition.title);
 		}
 
-		// Edition title
-		if (edition?.title && frontmatterFields.editionTitle.enabled) {
-			frontmatter[frontmatterFields.editionTitle.propertyName] =
-				this.fileUtils.normalizeText(edition.title);
+		// covers
+		if (book?.cached_image?.url) {
+			variables.bookCover = book.cached_image.url;
+		}
+		if (edition?.cached_image?.url) {
+			variables.editionCover = edition.cached_image.url;
 		}
 
-		// Rating
-		if (userBook.rating !== null && frontmatterFields.rating.enabled) {
-			frontmatter[frontmatterFields.rating.propertyName] = userBook.rating;
+		// release dates
+		if (book?.release_date) {
+			variables.bookReleaseDate = book.release_date;
+		}
+		if (edition?.release_date) {
+			variables.editionReleaseDate = edition.release_date;
 		}
 
-		// Status
-		if (userBook.status_id !== null && frontmatterFields.status.enabled) {
-			frontmatter[frontmatterFields.status.propertyName] = this.mapStatus(
-				userBook.status_id,
-			);
-		}
-
-		// Book cover
-		if (book?.cached_image?.url && frontmatterFields.bookCover.enabled) {
-			frontmatter[frontmatterFields.bookCover.propertyName] =
-				book.cached_image.url;
-		}
-
-		// Edition cover
-		if (edition?.cached_image?.url && frontmatterFields.editionCover.enabled) {
-			frontmatter[frontmatterFields.editionCover.propertyName] =
-				edition.cached_image.url;
-		}
-
-		// Book authors
+		// authors
 		if (book?.cached_contributors) {
 			const authors = extractAuthors(book.cached_contributors);
 			rawContributors = book.cached_contributors;
-
-			if (frontmatterFields.bookAuthors.enabled && authors.length) {
-				frontmatter[frontmatterFields.bookAuthors.propertyName] = authors;
+			if (authors.length) {
+				variables.bookAuthors = authors;
 			}
 		}
-
-		// Edition authors
 		if (edition?.cached_contributors) {
 			const authors = extractAuthors(edition.cached_contributors);
-			// set fallback if book authors weren't available
 			if (!rawContributors) {
 				rawContributors = edition.cached_contributors;
 			}
-
-			if (frontmatterFields.editionAuthors.enabled && authors.length) {
-				frontmatter[frontmatterFields.editionAuthors.propertyName] = authors;
+			if (authors.length) {
+				variables.editionAuthors = authors;
 			}
 		}
 
-		// Book contributors
+		// contributors
 		if (book?.cached_contributors) {
 			const otherContributors = extractContributors(
 				book.cached_contributors,
 				this.fileUtils,
 			);
-
-			if (
-				frontmatterFields.bookContributors.enabled &&
-				otherContributors.length
-			) {
-				frontmatter[frontmatterFields.bookContributors.propertyName] =
-					otherContributors.map((c) => `${c.name} (${c.role})`);
+			if (otherContributors.length) {
+				variables.bookContributors = otherContributors.map(
+					(c) => `${c.name} (${c.role})`,
+				);
 			}
 		}
-
-		// Edition contributors
 		if (edition?.cached_contributors) {
 			const otherContributors = extractContributors(
 				edition.cached_contributors,
 				this.fileUtils,
 			);
-
-			if (
-				frontmatterFields.editionContributors.enabled &&
-				otherContributors.length
-			) {
-				frontmatter[frontmatterFields.editionContributors.propertyName] =
-					otherContributors.map((c) => `${c.name} (${c.role})`);
+			if (otherContributors.length) {
+				variables.editionContributors = otherContributors.map(
+					(c) => `${c.name} (${c.role})`,
+				);
 			}
 		}
 
-		// Book release date
-		if (book?.release_date && frontmatterFields.bookReleaseDate.enabled) {
-			frontmatter[frontmatterFields.bookReleaseDate.propertyName] =
-				book.release_date;
-		}
-
-		// Edition release date
-		if (edition?.release_date && frontmatterFields.editionReleaseDate.enabled) {
-			frontmatter[frontmatterFields.editionReleaseDate.propertyName] =
-				edition.release_date;
-		}
-
-		// Description
-		if (frontmatterFields.description.enabled && book.description) {
-			frontmatter[frontmatterFields.description.propertyName] =
-				book.description;
+		// description
+		if (book?.description) {
+			variables.description = book.description;
 		}
 
 		// URL
-		const bookUrl = book.slug
-			? `${HARDCOVER_URL}/${HARDCOVER_BOOKS_ROUTE}/${book.slug}`
-			: undefined;
-
-		if (frontmatterFields.url.enabled && bookUrl) {
-			frontmatter[frontmatterFields.url.propertyName] = bookUrl;
+		if (book?.slug) {
+			variables.url = `${HARDCOVER_URL}${HARDCOVER_BOOKS_ROUTE}${book.slug}`;
 		}
 
-		// Publisher
-		if (edition.publisher?.name) {
-			const publisherValue = this.fileUtils.normalizeText(
-				edition.publisher.name,
-			);
-
-			if (frontmatterFields.publisher.enabled) {
-				frontmatter[frontmatterFields.publisher.propertyName] = [
-					publisherValue,
-				];
+		// series
+		if (book?.book_series?.length) {
+			const seriesInfo = extractSeriesInfo(book.book_series);
+			if (seriesInfo.length) {
+				variables.series = seriesInfo;
 			}
 		}
 
-		// ISBN-10
-		if (frontmatterFields.isbn10.enabled && edition.isbn_10) {
-			frontmatter[frontmatterFields.isbn10.propertyName] = edition.isbn_10;
+		// publisher
+		if (edition?.publisher?.name) {
+			variables.publisher = [edition.publisher.name];
 		}
 
-		// ISBN-13
-		if (frontmatterFields.isbn13.enabled && edition.isbn_13) {
-			frontmatter[frontmatterFields.isbn13.propertyName] = edition.isbn_13;
+		// ISBNs
+		if (edition?.isbn_10) {
+			variables.isbn10 = edition.isbn_10;
+		}
+		if (edition?.isbn_13) {
+			variables.isbn13 = edition.isbn_13;
 		}
 
-		// Series
-		if (book.book_series) {
-			const seriesArray = extractSeriesInfo(book.book_series, this.fileUtils);
-
-			if (seriesArray.length > 0 && frontmatterFields.series.enabled) {
-				frontmatter[frontmatterFields.series.propertyName] = seriesArray;
-			}
-		}
-
-		// Genres
-		if (book.cached_tags && book.cached_tags.Genre) {
-			const genres = book.cached_tags.Genre.map((tag: any) => tag.tag).filter(
+		// genres
+		if (book?.cached_tags?.Genre) {
+			const genres = book.cached_tags.Genre.map((t: any) => t.tag).filter(
 				(genre: string) => !!genre,
 			);
-
-			if (genres.length > 0 && frontmatterFields.genres.enabled) {
-				frontmatter[frontmatterFields.genres.propertyName] = genres;
+			if (genres.length > 0) {
+				variables.genres = genres;
 			}
 		}
 
-		// Lists
+		// lists
 		if (bookToListsMap) {
 			const lists = bookToListsMap.get(userBook.book_id);
-			if (lists && lists.length > 0 && frontmatterFields.lists.enabled) {
-				frontmatter[frontmatterFields.lists.propertyName] = lists;
+			if (lists && lists.length > 0) {
+				variables.lists = lists;
 			}
 		}
 
-		// Reading activity
-		if (
-			frontmatterFields.firstRead.enabled ||
-			frontmatterFields.lastRead.enabled ||
-			frontmatterFields.totalReads.enabled
-		) {
+		// rating
+		if (userBook.rating !== null) {
+			variables.rating = userBook.rating;
+		}
+
+		// status
+		if (userBook.status_id !== null) {
+			variables.status = this.mapStatus(userBook.status_id);
+		}
+
+		// reading activity
+		if (readingActivity && readingActivity.length > 0) {
 			const activity = extractReadingActivity(readingActivity);
 
-			// add first read
-			if (frontmatterFields.firstRead.enabled && activity.firstRead) {
-				frontmatter[frontmatterFields.firstRead.startPropertyName] =
-					activity.firstRead.start;
-
-				frontmatter[frontmatterFields.firstRead.endPropertyName] =
-					activity.firstRead.end;
+			if (activity.firstRead) {
+				variables.firstReadStart = activity.firstRead.start;
+				variables.firstReadEnd = activity.firstRead.end;
 			}
 
-			// add last read
-			if (frontmatterFields.lastRead.enabled && activity.lastRead) {
-				frontmatter[frontmatterFields.lastRead.startPropertyName] =
-					activity.lastRead.start;
-
-				frontmatter[frontmatterFields.lastRead.endPropertyName] =
-					activity.lastRead.end;
+			if (activity.lastRead) {
+				variables.lastReadStart = activity.lastRead.start;
+				variables.lastReadEnd = activity.lastRead.end;
 			}
 
-			// add number of total reads
-			if (frontmatterFields.totalReads.enabled && activity.totalReads) {
-				frontmatter[frontmatterFields.totalReads.propertyName] =
-					activity.totalReads;
+			if (activity.totalReads) {
+				variables.totalReads = activity.totalReads;
 			}
 
-			// add read years
-			if (
-				frontmatterFields.readYears.enabled &&
-				activity.readYears.length > 0
-			) {
-				frontmatter[frontmatterFields.readYears.propertyName] =
-					activity.readYears;
+			if (activity.readYears.length > 0) {
+				variables.readYears = activity.readYears;
 			}
+		}
+
+		//  substitute variables in the parsed template
+		for (const [key, value] of Object.entries(parsedTemplate)) {
+			frontmatter[key] = this.substituteValue(value, variables);
 		}
 
 		return { frontmatter, rawContributors };
+	}
+
+	private substituteValue(value: any, variables: Record<string, any>): any {
+		if (typeof value === "string") {
+			// check if it's a variable like {{editionTitle}}
+			const variableMatch = value.match(/^\{\{(\w+)\}\}$/);
+			if (variableMatch) {
+				const varName = variableMatch[1];
+				return variables[varName] !== undefined ? variables[varName] : "";
+			}
+			// if it contains variables but isn't only a variable, do replacement
+			if (value.includes("{{")) {
+				let result = value;
+				for (const [varName, varValue] of Object.entries(variables)) {
+					const regex = new RegExp(`\\{\\{${varName}\\}\\}`, "g");
+					const replacement = Array.isArray(varValue)
+						? varValue.join(", ")
+						: String(varValue || "");
+					result = result.replace(regex, replacement);
+				}
+				return result;
+			}
+			// no variables, return as-is
+			return value;
+		} else if (Array.isArray(value)) {
+			// recursively substitute in arrays
+			return value.map((item) => this.substituteValue(item, variables));
+		} else if (typeof value === "object" && value !== null) {
+			// recursivly substitute in objects
+			const result: Record<string, any> = {};
+			for (const [k, v] of Object.entries(value)) {
+				result[k] = this.substituteValue(v, variables);
+			}
+			return result;
+		}
+		// numbers, booleans, null get returned as is
+		return value;
 	}
 
 	private mapStatus(statusId: number): string[] {
@@ -250,5 +241,25 @@ export class FrontmatterBuilder {
 			this.settings.statusMapping[statusId] || `Unknown (${statusId})`;
 		// return as array so obsidian property is a list
 		return [statusText];
+	}
+
+	private parseTemplateYAML(template: string): Record<string, any> {
+		// extract YAML block from template (between --- delimiters)
+		const yamlMatch = template.match(/^---\n([\s\S]*?)\n---/);
+
+		if (!yamlMatch || !yamlMatch[1]) {
+			// no YAML block found, return empty object
+			return {};
+		}
+
+		const yamlContent = yamlMatch[1];
+
+		try {
+			const parsed = parseYaml(yamlContent);
+			return parsed || {};
+		} catch (error) {
+			console.error("Failed to parse template YAML:", error);
+			return {};
+		}
 	}
 }
