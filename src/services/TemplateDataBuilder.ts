@@ -9,7 +9,7 @@ import {
 	extractSeriesInfo,
 } from "./metadata/MetadataHelpers";
 
-export class FrontmatterBuilder {
+export class TemplateDataBuilder {
 	private settings: PluginSettings;
 	private fileUtils: FileUtils;
 
@@ -26,7 +26,8 @@ export class FrontmatterBuilder {
 		userBook: HardcoverUserBook,
 		bookToListsMap?: Map<number, string[]> | null,
 	): {
-		frontmatter: Record<string, any>;
+		frontmatter: Record<string, any>; // parsed YAML template with variables substituted (for processFrontMatter)
+		variables: Record<string, any>; // all extracted variables (for body template rendering)
 		rawContributors?: Record<any, any>[];
 	} {
 		const template = this.settings.noteTemplate;
@@ -196,7 +197,9 @@ export class FrontmatterBuilder {
 			frontmatter[key] = this.substituteValue(value, variables);
 		}
 
-		return { frontmatter, rawContributors };
+		// frontmatter: parsed template YAML with variables already substituted
+		// variables: raw extracted data for body template
+		return { frontmatter, variables, rawContributors };
 	}
 
 	private substituteValue(value: any, variables: Record<string, any>): any {

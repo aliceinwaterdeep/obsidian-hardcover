@@ -100,40 +100,7 @@ export interface FrontmatterFieldsSettings {
 export interface BookMetadata {
 	hardcoverBookId: number;
 	frontmatter: Record<string, any>; // all frontmatter properties (using custom property names)
-	availableData: {
-		bookTitle?: string;
-		editionTitle?: string;
-		bookCover?: string;
-		editionCover?: string;
-		bookReleaseDate?: string;
-		editionReleaseDate?: string;
-		bookAuthors?: string[];
-		editionAuthors?: string[];
-		bookContributors?: string[];
-		editionContributors?: string[];
-
-		description?: string;
-		url?: string;
-		series?: string[];
-		genres?: string[];
-
-		publisher?: string[];
-		isbn10?: string;
-		isbn13?: string;
-
-		rating?: number;
-		status?: string[];
-		review?: string;
-		quotes?: string[];
-		lists?: string[];
-
-		firstReadStart?: string;
-		firstReadEnd?: string;
-		lastReadStart?: string;
-		lastReadEnd?: string;
-		totalReads?: number;
-		readYears?: number[];
-	};
+	variables: Record<string, any>;
 }
 
 export interface BookMetadataWithContributors {
