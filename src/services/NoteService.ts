@@ -113,10 +113,7 @@ export class NoteService {
 				const userContent = existingBodyText.substring(
 					delimiterIndex + CONTENT_DELIMITER.length,
 				);
-				updatedContent = newAvailableData.replace(
-					`${CONTENT_DELIMITER}\n\n`,
-					`${CONTENT_DELIMITER}${userContent}`,
-				);
+				updatedContent = newAvailableData + userContent;
 			} else {
 				updatedContent = newAvailableData;
 			}
