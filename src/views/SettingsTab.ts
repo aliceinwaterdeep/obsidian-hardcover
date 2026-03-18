@@ -67,41 +67,23 @@ export default class SettingsTab extends PluginSettingTab {
 
 		containerEl.createEl("hr");
 
-		//  SECTION 3: FRONTMATTER PRESERVATION
-
-		new Setting(containerEl)
-			.setName("Preserve custom frontmatter")
-			.setDesc(
-				"Keep any user-added frontmatter properties when syncing. Turn off to let Hardcover overwrite the entire frontmatter.",
-			)
-			.addToggle((toggle) =>
-				toggle
-					.setValue(this.plugin.settings.preserveCustomFrontmatter)
-					.onChange(async (value) => {
-						this.plugin.settings.preserveCustomFrontmatter = value;
-						await this.plugin.saveSettings();
-					}),
-			);
-
-		containerEl.createEl("hr");
-
-		//  SECTION 4: NOTE BODY TEMPLATE
-		new Setting(containerEl).setName("Note Body Template").setHeading();
+		//  SECTION 3: NOTE TEMPLATE
+		new Setting(containerEl).setName("Note Template").setHeading();
 
 		renderNoteTemplateSettings(containerEl, this.plugin);
 
 		containerEl.createEl("hr");
 
-		//  SECTION 5: SYNC
+		//  SECTION 4: SYNC
 		this.addMainSyncButton(containerEl);
 		renderSyncInfoMessages(containerEl);
 
 		containerEl.createEl("hr");
 
-		//  SECTION 6: DEBUG
+		//  SECTION 5: DEBUG
 		this.addDebugSection(containerEl);
 
-		//  SECTION 7: DEV OPTIONS
+		//  SECTION 6: DEV OPTIONS
 		if (IS_DEV) {
 			new Setting(containerEl).setName("Developer options").setHeading();
 			renderDevOptions(containerEl, this.plugin);
@@ -109,7 +91,7 @@ export default class SettingsTab extends PluginSettingTab {
 
 		containerEl.createEl("hr");
 
-		//  SECTION 8: SOURCE
+		//  SECTION 7: SOURCE
 		this.addSourceSection(containerEl);
 	}
 

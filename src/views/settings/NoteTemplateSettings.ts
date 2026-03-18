@@ -93,4 +93,16 @@ export function renderNoteTemplateSettings(
 		);
 
 	renderWikilinkSettings(containerEl, plugin);
+
+	new Setting(containerEl)
+		.setName("Preserve additional custom properties")
+		.setDesc("Keep any additional properties you manually add to your notes.")
+		.addToggle((toggle) =>
+			toggle
+				.setValue(this.plugin.settings.preserveCustomFrontmatter)
+				.onChange(async (value) => {
+					this.plugin.settings.preserveCustomFrontmatter = value;
+					await this.plugin.saveSettings();
+				}),
+		);
 }
