@@ -85,60 +85,23 @@ export default class SettingsTab extends PluginSettingTab {
 
 		containerEl.createEl("hr");
 
-		//  SECTION 4: WIKILINKS
-		new Setting(containerEl).setName("Wikilinks").setHeading();
-
-		const wikilinkAccordion = containerEl.createDiv({ cls: "obhc-accordion" });
-
-		const wikilinkHeader = wikilinkAccordion.createDiv({
-			cls: "obhc-accordion-header",
-		});
-
-		const wikilinkIcon = wikilinkHeader.createSpan({
-			cls: "obhc-accordion-icon",
-		});
-		setIcon(wikilinkIcon, "chevron-right");
-
-		wikilinkHeader.createSpan({ text: "Configure wikilinks" });
-
-		const wikilinkContentWrapper = wikilinkAccordion.createDiv({
-			cls: "obhc-accordion-content",
-		});
-
-		const wikilinkContent = wikilinkContentWrapper.createDiv();
-
-		wikilinkHeader.addEventListener("click", () => {
-			wikilinkIcon.classList.toggle("expanded");
-			wikilinkContentWrapper.classList.toggle("expanded");
-		});
-
-		new Setting(wikilinkContent)
-			.setDesc(
-				"Format these fields as [[wikilinks]] both in frontmatter and note body,",
-			)
-			.setClass("obhc-section-description");
-
-		renderWikilinkSettings(wikilinkContent, this.plugin);
-
-		containerEl.createEl("hr");
-
-		//  SECTION 5: NOTE BODY TEMPLATE
+		//  SECTION 4: NOTE BODY TEMPLATE
 		new Setting(containerEl).setName("Note Body Template").setHeading();
 
 		renderNoteTemplateSettings(containerEl, this.plugin);
 
 		containerEl.createEl("hr");
 
-		//  SECTION 6: SYNC
+		//  SECTION 5: SYNC
 		this.addMainSyncButton(containerEl);
 		renderSyncInfoMessages(containerEl);
 
 		containerEl.createEl("hr");
 
-		//  SECTION 7: DEBUG
+		//  SECTION 6: DEBUG
 		this.addDebugSection(containerEl);
 
-		//  SECTION 8: DEV OPTIONS
+		//  SECTION 7: DEV OPTIONS
 		if (IS_DEV) {
 			new Setting(containerEl).setName("Developer options").setHeading();
 			renderDevOptions(containerEl, this.plugin);
@@ -146,7 +109,7 @@ export default class SettingsTab extends PluginSettingTab {
 
 		containerEl.createEl("hr");
 
-		//  SECTION 9: SOURCE
+		//  SECTION 8: SOURCE
 		this.addSourceSection(containerEl);
 	}
 

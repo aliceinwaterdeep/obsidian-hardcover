@@ -1,17 +1,37 @@
-import { Setting } from "obsidian";
+import { setIcon, Setting } from "obsidian";
 import ObsidianHardcover from "src/main";
 import { DEFAULT_NOTE_TEMPLATE } from "src/config/defaultSettings";
+import { renderWikilinkSettings } from "./WikilinkSettings";
 
 export function renderNoteTemplateSettings(
 	containerEl: HTMLElement,
 	plugin: ObsidianHardcover,
 ): void {
 	new Setting(containerEl).setDesc(
-		"Customize the structure of your notes including YAML frontmatter and body content. Do not remove the enclosing `---` from the frontmatter or the template will be invalid. ⚠️ Note: Template content is regenerated on each sync, use this only for book data coming from Hardcover; add your personal notes below the <!-- obsidian-hardcover-plugin-end --> delimiter in each note file.",
+		"Customize the structure of your notes including YAML frontmatter and body content. Do not remove the enclosing `---` from the frontmatter or the template will be invalid.",
+	);
+
+	new Setting(containerEl).setDesc(
+		"⚠️ Note: Template content is regenerated on each sync, use this only for book data coming from Hardcover; add your personal notes below the <!-- obsidian-hardcover-plugin-end --> delimiter in each note file.",
 	);
 
 	const editorContainer = containerEl.createDiv({
 		cls: "obhc-template-editor",
+	});
+
+	const textareaContainer = editorContainer.createDiv({
+		cls: "obhc-template-textarea",
+	});
+
+	const textarea = textareaContainer.createEl("textarea", {
+		placeholder: DEFAULT_NOTE_TEMPLATE,
+		value: plugin.settings.noteTemplate,
+	});
+	textarea.value = plugin.settings.noteTemplate || DEFAULT_NOTE_TEMPLATE;
+	textarea.rows = 20;
+	textarea.addEventListener("input", async () => {
+		plugin.settings.noteTemplate = textarea.value;
+		await plugin.saveSettings();
 	});
 
 	const helpContainer = editorContainer.createDiv({
@@ -38,20 +58,11 @@ export function renderNoteTemplateSettings(
 		text: "Reading activity: {{firstReadStart}}, {{firstReadEnd}}, {{lastReadStart}}, {{lastReadEnd}}, {{totalReads}}, {{readYears}}",
 	});
 
-	const textareaContainer = editorContainer.createDiv({
-		cls: "obhc-template-textarea",
-	});
-
-	const textarea = textareaContainer.createEl("textarea", {
-		placeholder: DEFAULT_NOTE_TEMPLATE,
-		value: plugin.settings.noteTemplate,
-	});
-	textarea.value = plugin.settings.noteTemplate || DEFAULT_NOTE_TEMPLATE;
-	textarea.rows = 20;
-	textarea.addEventListener("input", async () => {
-		plugin.settings.noteTemplate = textarea.value;
-		await plugin.saveSettings();
-	});
+	new Setting(containerEl).setDesc(
+		"💡 Tip: For array fields like {{authors}}, {{contributors}}, {{series}}, {{publisher}}, {{genres}} and {{lists}}, " +
+			"use the Wikilinks settings below to enable [[wikilinks]] formatting. " +
+			"Writing [[{{authors}}]] in the template won't work as expected as they may contain multiple values.",
+	);
 
 	new Setting(containerEl)
 		.setName("Keep empty headings")
@@ -80,4 +91,6 @@ export function renderNoteTemplateSettings(
 					await plugin.saveSettings();
 				}),
 		);
+
+	renderWikilinkSettings(containerEl, plugin);
 }
