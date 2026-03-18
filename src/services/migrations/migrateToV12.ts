@@ -1,6 +1,7 @@
 import { PluginSettings } from "src/types";
+import { LegacySettings } from "src/types/migrations";
 
-export function migrateToV12(settings: PluginSettings): PluginSettings {
+export function migrateToV12(settings: LegacySettings): PluginSettings {
 	if (IS_DEV) {
 		console.debug("Migrating to v12: Template system overhaul");
 	}
@@ -237,6 +238,10 @@ export function migrateToV12(settings: PluginSettings): PluginSettings {
 	delete (settings.frontmatterFields as any).contributors;
 	delete (settings as any).fieldsSettings;
 
+	if (!settings.frontmatterFields) {
+		settings.frontmatterFields = {};
+	}
+
 	// remove wikilinks from all remaining field configs
 	const allFieldKeys = Object.keys(settings.frontmatterFields);
 	for (const key of allFieldKeys) {
@@ -255,5 +260,5 @@ export function migrateToV12(settings: PluginSettings): PluginSettings {
 	// remove dataSourcePreferences
 	delete (settings as any).dataSourcePreferences;
 
-	return settings;
+	return settings as PluginSettings;
 }

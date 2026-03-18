@@ -1,6 +1,11 @@
 import { PluginSettings } from "src/types";
+import { LegacySettings } from "src/types/migrations";
 
-export function migrateToV4(settings: PluginSettings): PluginSettings {
+export function migrateToV4(settings: LegacySettings): PluginSettings {
+	if (!settings.frontmatterFields) {
+		settings.frontmatterFields = {};
+	}
+
 	if (!settings.frontmatterFields.lists) {
 		(settings.frontmatterFields as any).lists = {
 			enabled: false,
@@ -9,5 +14,5 @@ export function migrateToV4(settings: PluginSettings): PluginSettings {
 		};
 	}
 
-	return settings;
+	return settings as PluginSettings;
 }

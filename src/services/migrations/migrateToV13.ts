@@ -1,4 +1,5 @@
 import { FrontmatterFieldsSettings, PluginSettings } from "src/types";
+import { LegacySettings } from "src/types/migrations";
 
 interface V12Settings extends Omit<
 	PluginSettings,
@@ -8,9 +9,16 @@ interface V12Settings extends Omit<
 	bodyTemplate: string;
 }
 
-export function migrateToV13(settings: V12Settings): PluginSettings {
+export function migrateToV13(settings: LegacySettings): PluginSettings {
 	if (IS_DEV) {
 		console.debug("Migrating to v13: full note template");
+	}
+
+	if (!settings.frontmatterFields) {
+		settings.frontmatterFields = {};
+	}
+	if (!settings.bodyTemplate) {
+		settings.bodyTemplate = "";
 	}
 
 	// step 1: build YAML from enabled frontmatter fields
@@ -47,16 +55,14 @@ export function migrateToV13(settings: V12Settings): PluginSettings {
 
 	const noteTemplate = yamlBlock + bodyContent;
 
-	// step 3: build new v13 settings object
-	const v13Settings: PluginSettings = {
-		...settings,
-		noteTemplate: noteTemplate,
-		keepEmptyHeadings: false,
-	};
+	// step 3: update new settings
+	settings.noteTemplate = noteTemplate;
+	settings.keepEmptyHeadings = false;
 
 	// step 4: cleanup obsolete settings
-	delete (v13Settings as any).frontmatterFields;
-	delete (v13Settings as any).bodyTemplate;
 
-	return v13Settings;
+	delete settings.frontmatterFields;
+	delete settings.bodyTemplate;
+
+	return settings as PluginSettings;
 }

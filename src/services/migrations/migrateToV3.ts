@@ -1,6 +1,7 @@
 import { PluginSettings } from "src/types";
+import { LegacySettings } from "src/types/migrations";
 
-export function migrateToV3(settings: PluginSettings): PluginSettings {
+export function migrateToV3(settings: LegacySettings): PluginSettings {
 	if (!("grouping" in settings)) {
 		(settings as any).grouping = {
 			enabled: false,
@@ -8,5 +9,5 @@ export function migrateToV3(settings: PluginSettings): PluginSettings {
 		};
 	}
 
-	return settings;
+	return settings as PluginSettings;
 }

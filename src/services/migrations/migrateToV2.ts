@@ -1,6 +1,7 @@
 import { PluginSettings } from "src/types";
+import { LegacySettings } from "src/types/migrations";
 
-export function migrateToV2(settings: PluginSettings): PluginSettings {
+export function migrateToV2(settings: LegacySettings): PluginSettings {
 	const wikilinkFields = [
 		"authors",
 		"contributors",
@@ -10,7 +11,7 @@ export function migrateToV2(settings: PluginSettings): PluginSettings {
 	] as const;
 
 	if (!settings.frontmatterFields) {
-		return settings;
+		return settings as PluginSettings;
 	}
 
 	for (const fieldKey of wikilinkFields) {
@@ -20,5 +21,5 @@ export function migrateToV2(settings: PluginSettings): PluginSettings {
 		}
 	}
 
-	return settings;
+	return settings as PluginSettings;
 }

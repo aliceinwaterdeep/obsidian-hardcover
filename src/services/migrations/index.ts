@@ -14,9 +14,13 @@ import { migrateToV10 } from "./migrateToV10";
 import { migrateToV11 } from "./migrateToV11";
 import { migrateToV12 } from "./migrateToV12";
 import { migrateToV13 } from "./migrateToV13";
+import { LegacySettings } from "src/types/migrations";
 
 export class SettingsMigrationService {
-	static migrateSettings(settings: PluginSettings, app?: App): PluginSettings {
+	static migrateSettings(
+		settings: LegacySettings | PluginSettings,
+		app?: App,
+	): PluginSettings {
 		const currentVersion = settings.settingsVersion || 0;
 
 		if (IS_DEV) {
@@ -80,6 +84,6 @@ export class SettingsMigrationService {
 
 		// update version number
 		settings.settingsVersion = DEFAULT_SETTINGS.settingsVersion;
-		return settings;
+		return settings as PluginSettings;
 	}
 }

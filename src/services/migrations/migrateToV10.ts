@@ -1,6 +1,11 @@
 import { PluginSettings } from "src/types";
+import { LegacySettings } from "src/types/migrations";
 
-export function migrateToV10(settings: PluginSettings): PluginSettings {
+export function migrateToV10(settings: LegacySettings): PluginSettings {
+	if (!settings.frontmatterFields) {
+		settings.frontmatterFields = {};
+	}
+
 	if (!settings.frontmatterFields.quotes) {
 		(settings.frontmatterFields as any).quotes = {
 			enabled: false,
@@ -14,5 +19,5 @@ export function migrateToV10(settings: PluginSettings): PluginSettings {
 		(settings.frontmatterFields.review as any).bodyHeading = "Review";
 	}
 
-	return settings;
+	return settings as PluginSettings;
 }
