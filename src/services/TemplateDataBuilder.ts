@@ -122,7 +122,7 @@ export class TemplateDataBuilder {
 
 		// series
 		if (book?.book_series?.length) {
-			const seriesInfo = extractSeriesInfo(book.book_series);
+			const seriesInfo = extractSeriesInfo(book.book_series, this.fileUtils);
 			if (seriesInfo.length) {
 				variables.series = seriesInfo;
 			}

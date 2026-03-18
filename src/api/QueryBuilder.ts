@@ -52,10 +52,10 @@ export class QueryBuilder {
 		updatedAfter?: string,
 		status?: number[],
 	): string {
-		const userBooksFields = this.buildUserBooksFields(frontmatterFields);
-		const bookFields = this.buildBookFields(frontmatterFields);
-		const editionFields = this.buildEditionFields(frontmatterFields);
-		const readsFields = this.buildReadsFields(frontmatterFields);
+		const userBooksFields = this.buildUserBooksFields();
+		const bookFields = this.buildBookFields();
+		const editionFields = this.buildEditionFields();
+		const readsFields = this.buildReadsFields();
 		const hasStatusFilter = status && status.length > 0;
 
 		// build where clause with optional timestamp and status filters
