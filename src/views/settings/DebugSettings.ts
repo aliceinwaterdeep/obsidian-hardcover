@@ -6,9 +6,8 @@ export function renderDebugInfo(
 	containerEl: HTMLElement,
 	plugin: ObsidianHardcover,
 	debugBookLimit: number,
-	updateSyncButtonsState: () => void,
 	onDebugLimitChanged: (limit: number) => void,
-	onSyncComplete: () => void
+	onSyncComplete: () => void,
 ): ButtonComponent {
 	const debugDetails = containerEl.createEl("details", {
 		cls: "obhc-debug-details",
@@ -49,7 +48,6 @@ export function renderDebugInfo(
 		debugLimit: debugBookLimit,
 		showLimitInput: true,
 		settingClassName: "obhc-test-sync",
-		updateSyncButtonsState: updateSyncButtonsState,
 		onDebugLimitChanged: onDebugLimitChanged,
 		onSyncComplete: onSyncComplete,
 	});
@@ -59,7 +57,7 @@ export function renderDebugInfo(
 
 export function renderDevOptions(
 	containerEl: HTMLElement,
-	plugin: ObsidianHardcover
+	plugin: ObsidianHardcover,
 ): void {
 	new Setting(containerEl)
 		.setName("Reset plugin")
@@ -70,7 +68,7 @@ export function renderDevOptions(
 				.setWarning()
 				.onClick(async () => {
 					const confirmed = confirm(
-						"Are you sure you want to reset all plugin settings to defaults? This cannot be undone."
+						"Are you sure you want to reset all plugin settings to defaults? This cannot be undone.",
 					);
 
 					if (confirmed) {

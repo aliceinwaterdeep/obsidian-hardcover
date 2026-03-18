@@ -27,7 +27,6 @@ export default class SettingsTab extends PluginSettingTab {
 	plugin: ObsidianHardcover;
 	SYNC_CTA_LABEL: string;
 	debugBookLimit: number;
-	private syncButtons: ButtonComponent[] = [];
 
 	constructor(app: App, plugin: ObsidianHardcover) {
 		super(app, plugin);
@@ -41,17 +40,11 @@ export default class SettingsTab extends PluginSettingTab {
 		containerEl.empty();
 		containerEl.addClass("obhc-settings");
 
-		this.syncButtons = [];
-
 		//  SECTION 1: GENERAL
 		new Setting(containerEl).setName("General").setHeading();
 
-		renderApiTokenSetting(containerEl, this.plugin, () =>
-			this.updateSyncButtonsState(),
-		);
-		renderFolderSetting(containerEl, this.plugin, () =>
-			this.updateSyncButtonsState(),
-		);
+		renderApiTokenSetting(containerEl, this.plugin);
+		renderFolderSetting(containerEl, this.plugin);
 		renderStatusFilterSetting(containerEl, this.plugin);
 		renderLastSyncTimestampSetting(containerEl, this.plugin, () =>
 			this.display(),
@@ -104,26 +97,19 @@ export default class SettingsTab extends PluginSettingTab {
 				"Sync your Hardcover books to your notes. For testing, you can sync a limited number of books in the Debug section below.",
 			buttonText: this.SYNC_CTA_LABEL,
 			isMainCTA: true,
-			updateSyncButtonsState: () => this.updateSyncButtonsState(),
 			onSyncComplete: () => this.display(),
 			settingClassName: "obhc-sync-cta",
 		});
-
-		this.syncButtons.push(button);
 	}
 
 	private addDebugSection(containerEl: HTMLElement): void {
-		const button = renderDebugInfo(
+		renderDebugInfo(
 			containerEl,
 			this.plugin,
 			this.debugBookLimit,
-			() => this.updateSyncButtonsState(),
 			(limit) => (this.debugBookLimit = limit),
 			() => this.display(),
 		);
-
-		this.syncButtons.push(button);
-		this.updateSyncButtonsState();
 	}
 
 	private addSourceSection(containerEl: HTMLElement): void {
@@ -142,16 +128,5 @@ export default class SettingsTab extends PluginSettingTab {
 			href: REPO_ISSUES_URL,
 			cls: "obhc-source-link",
 		});
-	}
-
-	async updateSyncButtonsState(): Promise<void> {
-		const validation = await this.plugin.validateSyncConstraints();
-		const isDisabled = !validation.isValid;
-		const tooltipText = validation.errorMessage || "";
-
-		for (const button of this.syncButtons) {
-			button.setDisabled(isDisabled);
-			button.setTooltip(tooltipText);
-		}
 	}
 }

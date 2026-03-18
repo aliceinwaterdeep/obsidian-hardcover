@@ -26,7 +26,6 @@ export function renderFilenameTemplateSetting(
 export function renderFolderSetting(
 	containerEl: HTMLElement,
 	plugin: ObsidianHardcover,
-	onSettingsChanged: () => void,
 ): Setting {
 	const baseDesc =
 		"The folder where book notes will be stored (required, will be created if it doesn't exist)";
@@ -56,7 +55,6 @@ export function renderFolderSetting(
 
 				plugin.settings.targetFolder = value;
 				await plugin.saveSettings();
-				onSettingsChanged();
 			});
 	});
 

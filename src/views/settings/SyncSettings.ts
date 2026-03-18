@@ -14,7 +14,6 @@ export interface SyncButtonConfig {
 	onDebugLimitChanged?: (limit: number) => void;
 	settingClassName?: string;
 	isMainCTA?: boolean;
-	updateSyncButtonsState: () => void;
 	onSyncComplete?: () => void;
 }
 
@@ -30,7 +29,6 @@ export function addSyncButton(config: SyncButtonConfig): ButtonComponent {
 		onDebugLimitChanged,
 		settingClassName,
 		isMainCTA = false,
-		updateSyncButtonsState,
 		onSyncComplete,
 	} = config;
 
@@ -85,8 +83,6 @@ export function addSyncButton(config: SyncButtonConfig): ButtonComponent {
 			btn.setCta();
 		}
 	});
-
-	updateSyncButtonsState();
 
 	return button;
 }
