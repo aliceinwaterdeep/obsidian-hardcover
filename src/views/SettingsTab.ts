@@ -7,7 +7,6 @@ import {
 } from "obsidian";
 import { REPO_ISSUES_URL, REPO_URL } from "src/config/constants";
 import ObsidianHardcover from "src/main";
-import { Accordion } from "./ui/Accordion";
 import { renderDebugInfo, renderDevOptions } from "./settings/DebugSettings";
 import { renderApiTokenSetting } from "./settings/ApiSettings";
 import {
@@ -28,7 +27,6 @@ export default class SettingsTab extends PluginSettingTab {
 	plugin: ObsidianHardcover;
 	SYNC_CTA_LABEL: string;
 	debugBookLimit: number;
-	accordion: Accordion;
 	private syncButtons: ButtonComponent[] = [];
 
 	constructor(app: App, plugin: ObsidianHardcover) {
@@ -36,7 +34,6 @@ export default class SettingsTab extends PluginSettingTab {
 		this.plugin = plugin;
 		this.SYNC_CTA_LABEL = "Sync now";
 		this.debugBookLimit = 1;
-		this.accordion = new Accordion(plugin);
 	}
 
 	display(): void {
