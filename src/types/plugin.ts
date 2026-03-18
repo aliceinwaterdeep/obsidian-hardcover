@@ -107,3 +107,33 @@ export interface BookMetadataWithContributors {
 	metadata: BookMetadata;
 	rawContributors?: Record<any, any>[];
 }
+
+// legacy interface to keep because of migrations from old settings to new
+export interface FrontmatterFieldsSettings {
+	bookTitle: FieldConfig;
+	editionTitle: FieldConfig;
+	bookCover: FieldConfig;
+	editionCover: FieldConfig;
+	bookReleaseDate: FieldConfig;
+	editionReleaseDate: FieldConfig;
+	bookAuthors: FieldConfig;
+	editionAuthors: FieldConfig;
+	bookContributors: FieldConfig;
+	editionContributors: FieldConfig;
+	description: FieldConfig;
+	series: FieldConfig;
+	publisher: FieldConfig;
+	isbn10: FieldConfig;
+	isbn13: FieldConfig;
+	url: FieldConfig;
+	genres: FieldConfig;
+	lists: FieldConfig;
+	status: FieldConfig;
+	rating: FieldConfig;
+	firstRead: ActivityDateFieldConfig;
+	lastRead: ActivityDateFieldConfig;
+	totalReads: FieldConfig;
+	readYears: FieldConfig;
+	review: FieldConfig;
+	quotes: FieldConfig;
+}

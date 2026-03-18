@@ -547,52 +547,24 @@ export class NoteService {
 		};
 		const prepared: Record<string, any> = {};
 
-		// first add hardcoverBookId as the first property
-		if (frontmatterData.hardcoverBookId !== undefined) {
-			prepared.hardcoverBookId = frontmatterData.hardcoverBookId;
-		}
+		// get managed order from template
+		const managedOrder = this.getManagedOrder(frontmatterData);
 
-		// add all other properties in the order defined in FRONTMATTER_FIELDS_DEFINITIONS
-		const allFieldPropertyNames = FRONTMATTER_FIELDS_DEFINITIONS.flatMap(
-			(field) => {
-				const fieldSettings = this.plugin.settings.frontmatterFields[field.key];
-				const propertyNames = [fieldSettings.propertyName];
-
-				// add start/end property names for activity date fields
-				if (field.isActivityDateField) {
-					const activityField = fieldSettings as ActivityDateFieldConfig;
-					propertyNames.push(
-						activityField.startPropertyName,
-						activityField.endPropertyName,
-					);
-				}
-
-				return propertyNames;
-			},
-		);
-
-		// add properties in the defined order
-		for (const propName of allFieldPropertyNames) {
+		// add properties in the order they appear in the template
+		for (const propName of managedOrder) {
 			if (!frontmatterData.hasOwnProperty(propName)) continue;
-			// skip hardcoverBookId as we already added it
-			if (propName === "hardcoverBookId") continue;
 
 			const value = frontmatterData[propName];
 
 			// skip undefined/null values
 			if (value === undefined || value === null) continue;
 
-			if (
-				propName ===
-				this.plugin.settings.frontmatterFields.description.propertyName
-			) {
-				if (typeof value === "string") {
-					// remove all \n sequences and replace with spaces to avoid frontmatter issues
-					const cleanValue = value.replace(/\\n/g, " ").trim();
-					// remove any multiple spaces that might result
-					const finalValue = cleanValue.replace(/\s+/g, " ");
-					prepared[propName] = finalValue;
-				}
+			// remove all \n sequences and replace with spaces to avoid frontmatter issues
+			if (propName === "description" && typeof value === "string") {
+				const cleanValue = value.replace(/\\n/g, " ").trim();
+				// remove any multiple spaces that might result
+				const finalValue = cleanValue.replace(/\s+/g, " ");
+				prepared[propName] = finalValue;
 			} else {
 				// for everything else, just add it directly: Obsidian's processFrontMatter will handle arrays, strings, etc.
 				prepared[propName] = value;
