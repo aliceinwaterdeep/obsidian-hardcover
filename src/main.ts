@@ -9,6 +9,7 @@ import { NoteService } from "./services/NoteService";
 import { DEFAULT_SETTINGS } from "./config/defaultSettings";
 import { SettingsMigrationService } from "./services/migrations";
 import { EnvUtils } from "./utils/EnvUtils";
+import { validateNoteTemplate } from "./utils/TemplateValidation";
 
 export default class ObsidianHardcover extends Plugin {
 	settings: PluginSettings;
@@ -141,6 +142,15 @@ export default class ObsidianHardcover extends Plugin {
 				isValid: false,
 				errorMessage:
 					"Please enter your Hardcover API key in the settings or in a .env file.",
+			};
+		}
+
+		const templateValidation = validateNoteTemplate(this.settings.noteTemplate);
+
+		if (!templateValidation.valid) {
+			return {
+				isValid: false,
+				errorMessage: `Invalid note template: ${templateValidation.error}`,
 			};
 		}
 

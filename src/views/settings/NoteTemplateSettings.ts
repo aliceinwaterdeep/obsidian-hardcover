@@ -99,10 +99,10 @@ export function renderNoteTemplateSettings(
 		.setDesc("Keep any additional properties you manually add to your notes.")
 		.addToggle((toggle) =>
 			toggle
-				.setValue(this.plugin.settings.preserveCustomFrontmatter)
+				.setValue(plugin.settings.preserveCustomFrontmatter)
 				.onChange(async (value) => {
-					this.plugin.settings.preserveCustomFrontmatter = value;
-					await this.plugin.saveSettings();
+					plugin.settings.preserveCustomFrontmatter = value;
+					await plugin.saveSettings();
 				}),
 		);
 }
