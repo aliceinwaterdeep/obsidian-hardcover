@@ -141,7 +141,35 @@ export function migrateToV12(settings: PluginSettings): PluginSettings {
 		};
 	}
 
-	// step 5: build body template from current enabled fields
+	// step 5: copy all non split fields from fieldsSettings to frontmatterFields
+	const nonSplitFields = [
+		"rating",
+		"status",
+		"description",
+		"series",
+		"genres",
+		"publisher",
+		"url",
+		"isbn10",
+		"isbn13",
+		"review",
+		"quotes",
+		"firstRead",
+		"lastRead",
+		"totalReads",
+		"readYears",
+		"lists",
+	];
+
+	for (const fieldKey of nonSplitFields) {
+		if (oldFields[fieldKey]) {
+			(settings.frontmatterFields as any)[fieldKey] = {
+				...oldFields[fieldKey],
+			};
+		}
+	}
+
+	// step 6: build body template from current enabled fields
 	let template = "";
 
 	// title, use the selected source
@@ -187,7 +215,7 @@ export function migrateToV12(settings: PluginSettings): PluginSettings {
 
 	settings.bodyTemplate = template.trim();
 
-	// step 6: migrate filename template syntax from ${} to {{}}
+	// step 7: migrate filename template syntax from ${} to {{}}
 	let newFilenameTemplate = settings.filenameTemplate || "{{editionTitle}}";
 
 	if (oldPrefs.titleSource === "book") {
@@ -228,7 +256,7 @@ export function migrateToV12(settings: PluginSettings): PluginSettings {
 
 	settings.filenameTemplate = newFilenameTemplate;
 
-	// step 7: clean up obsolete properties
+	// step 8: clean up obsolete properties
 	// remove old combined field configs
 	delete (settings.frontmatterFields as any).title;
 	delete (settings.frontmatterFields as any).cover;
