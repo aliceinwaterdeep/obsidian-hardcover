@@ -91,7 +91,7 @@ export default class ObsidianHardcover extends Plugin {
 			);
 
 			// then merge with defaults to fill any missing properties
-			this.settings = Object.assign({}, DEFAULT_SETTINGS, savedData);
+			this.settings = Object.assign({}, DEFAULT_SETTINGS, this.settings);
 
 			// save the migrated settings
 			await this.saveSettings();
