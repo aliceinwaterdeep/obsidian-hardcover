@@ -22,6 +22,7 @@ import {
 import { renderGroupingSettings } from "./settings/GroupingSettings";
 import { renderWikilinkSettings } from "./settings/WikilinkSettings";
 import { renderNoteTemplateSettings } from "./settings/NoteTemplateSettings";
+import { renderStatusMappingSettings } from "./settings/StatusMappingSettings";
 
 export default class SettingsTab extends PluginSettingTab {
 	plugin: ObsidianHardcover;
@@ -64,6 +65,7 @@ export default class SettingsTab extends PluginSettingTab {
 		new Setting(containerEl).setName("Note Template").setHeading();
 
 		renderNoteTemplateSettings(containerEl, this.plugin);
+		renderStatusMappingSettings(containerEl, this.plugin);
 
 		containerEl.createEl("hr");
 
