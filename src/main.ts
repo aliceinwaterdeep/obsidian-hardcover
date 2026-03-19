@@ -78,8 +78,6 @@ export default class ObsidianHardcover extends Plugin {
 	async loadSettings() {
 		const savedData = await this.loadData();
 
-		this.settings = Object.assign({}, DEFAULT_SETTINGS, savedData);
-
 		// check if migration is needed
 		if (
 			!savedData ||
