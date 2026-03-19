@@ -152,8 +152,6 @@ export function migrateToV12(settings: PluginSettings): PluginSettings {
 		"url",
 		"isbn10",
 		"isbn13",
-		"review",
-		"quotes",
 		"firstRead",
 		"lastRead",
 		"totalReads",
