@@ -6,6 +6,11 @@ export function migrateToV12(settings: LegacySettings): PluginSettings {
 		console.debug("Migrating to v12: Template system overhaul");
 	}
 
+	// initialize frontmatterFields if it doesn't exist
+	if (!settings.frontmatterFields) {
+		settings.frontmatterFields = {} as any;
+	}
+
 	// etep 1: extract wikilink settings from old field configs
 	// in v11, the property was called fieldsSettings
 	// we need to cast to any to access the old property name
