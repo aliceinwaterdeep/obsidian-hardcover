@@ -15,7 +15,11 @@ export function migrateToV10(settings: LegacySettings): PluginSettings {
 		};
 	}
 
-	if (!("bodyHeading" in settings.frontmatterFields.review)) {
+	// check if review exists first
+	if (
+		settings.frontmatterFields.review &&
+		!("bodyHeading" in settings.frontmatterFields.review)
+	) {
 		(settings.frontmatterFields.review as any).bodyHeading = "Review";
 	}
 
