@@ -11,19 +11,19 @@ See [V2 Migration](docs/v2-migration.md) for migration details.
 
 ### Added
 
-- **Customizable body templates** with variables for complete control over note structure
-- **Template variables** for all available data coming from Hardcover
+- **Customizable template** with variables for complete control over the note frontmatter and body
+- **Custom properties**: you can add custom properties and values (e.g. tags) in your template and they will be added to all notes
 - **Split book/edition data**: use both sources in the same note
 - **Global wikilink settings**: apply to both frontmatter and body
 
 ### Changed
 
 - Settings structure updated to support template system
-- Frontmatter field toggles now control YAML only (body uses templates)
-- Quotes format moved to dedicated setting
+- Frontmatter toggles replaced by note template
+- Quotes format and status mapping moved to dedicated settings
 - Filename template syntax changed from `${}` to `{{}}` for consistency with most Obsidian plugins
 
-Huge thanks to @wolleydev who requested this feature!
+Huge thanks to @wolleydev & @cjmedia who requested this feature!
 
 ## 1.9.0
 

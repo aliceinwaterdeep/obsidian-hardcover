@@ -8,7 +8,7 @@ Syncs your [Hardcover](https://hardcover.app) library to your Obsidian vault, cr
 
 ## ⚠️ Version 2.0.0 - Breaking Changes
 
-v2.0.0 introduces customizable body templates and splits book/edition fields. **Your settings will be automatically migrated**. [See migration docs if you're curious](docs/v2-migration.md).
+v2.0.0 introduces customizable note templates and splits book/edition fields. **Your settings will be automatically migrated**. [See migration docs if you're curious](docs/v2-migration.md).
 
 ## Table of Contents
 
@@ -20,11 +20,10 @@ v2.0.0 introduces customizable body templates and splits book/edition fields. **
   - [Quick Access](#quick-access)
   - [Sync Process](#sync-process)
 - [Settings Overview](#settings-overview)
-  - [Fields](#fields)
+  - [Note Template](#note-template)
   - [Wikilinks](#wikilinks)
   - [Filename Template](#filename-template)
   - [Grouping Options](#grouping-options)
-- [Body Templates](#body-templates)
 - [Note Format](#note-format)
 - [Changelog](#changelog)
 - [Roadmap](#roadmap)
@@ -34,13 +33,10 @@ v2.0.0 introduces customizable body templates and splits book/edition fields. **
 
 - **Complete Library Sync**: Import your entire Hardcover library as Obsidian notes
 - **Incremental Updates**: Only sync books that have changed since your last sync
-- **Rich Metadata**: 25+ variables available for book data, edition data, and your reading activity
-  - See [Fields](#fields) for the full list of available metadata
 - **Flexible Configuration**:
-  - Choose which fields appear in frontmatter
-  - Customize property names to match your vault
-  - Configure wikilinks globally
-  - Template-based body content
+  - Define a template to control how your note looks (frontmatter and body)
+  - Add custom properties to frontmatter
+  - Template validation with error messages
 - **Directory Organization**:
   - Group your book notes by author and/or series
 - **Sync by status**:
@@ -134,30 +130,97 @@ For large libraries, the plugin uses pagination and respects API rate limits. Ha
 
 ## Settings Overview
 
-### Frontmatter Fields
+### Custom Note Template
 
-Control which metadata appears in your notes' YAML frontmatter. Each field can be:
+## Note Template
 
-- **Enabled/Disabled** - Include in frontmatter or not
-- **Custom Property Name** - Rename to match your vault's conventions
+v2.0.0 introduces a fully customizable note template using variable substitution.
 
-**Available frontmatter fields:**
+Edit your template in Settings -> Note Template:
 
-- Book/Edition: Title, Cover, Release Date, Authors, Contributors
-- Book only data: Description, URL, Series, Genres
-- Edition only data: Publisher, ISBN-10, ISBN-13
-- Your data: Rating, Status, Lists
-- Reading activity: First Read, Last Read, Total Reads, Read Years
+```
+---
+title: {{editionTitle}}
+cover: {{editionCover}}
+releaseDate: {{editionReleaseDate}}
+authors: {{editionAuthors}}
+---
 
-> **Note:** All data is available as template variables regardless of frontmatter toggles.
+# {{editionTitle}}
 
-### Body Template
+![cover|300]({{editionCover}})
 
-Define your note structure using `{{variable}}` syntax. See [Body Templates](#body-templates) section.
+{{description}}
+
+## Review
+{{review}}
+
+## Quotes
+{{quotes}}
+```
+
+### Available Variables
+
+**Book vs Edition Data:**
+
+- Title: `{{bookTitle}}` / `{{editionTitle}}`
+- Cover: `{{bookCover}}` / `{{editionCover}}`
+- Release Date: `{{bookReleaseDate}}` / `{{editionReleaseDate}}`
+- Authors: `{{bookAuthors}}` / `{{editionAuthors}}`
+- Contributors: `{{bookContributors}}` / `{{editionContributors}}`
+
+**Book Information:**
+
+- `{{description}}` - Book description
+- `{{url}}` - Hardcover URL
+- `{{series}}` - Series information
+- `{{genres}}` - Genre tags
+
+**Edition Information:**
+
+- `{{publisher}}` - Publisher name
+- `{{isbn10}}` / `{{isbn13}}` - ISBN numbers
+
+**Your Data:**
+
+- `{{rating}}` - Your rating
+- `{{status}}` - Reading status
+- `{{review}}` - Your written review
+- `{{quotes}}` - Highlights from reading journal
+- `{{lists}}` - Your Hardcover lists
+
+**Reading Activity:**
+
+- `{{firstReadStart}}` / `{{firstReadEnd}}` - First read dates
+- `{{lastReadStart}}` / `{{lastReadEnd}}` - Most recent read dates
+- `{{totalReads}}` - Number of times read
+- `{{readYears}}` - Years when read
+
+You can also find the list of all available variables in the settings.
+
+#### Custom properties
+
+You can add custom properties that will be added to every note. Example:
+
+```
+---
+title: {{editionTitle}}
+tags: "#books"
+---
+```
+
+**Important:** Template properties are regenerated every sync. These are meant for properties and values you want to apply to every book note and won't change manually (tags, dates using Templater, etc). For properties you need to change manually, you can manually add them to specific notes. If "Preserve custom frontmatter" (enabled by default) is enabled, they will be kept across syncs.
+
+> [!WARNING]
+> Custom properties follow the same YAML syntax as [Obsidian properties](https://help.obsidian.md/Editing+and+formatting/Properties). Common examples:
+>
+> - Tags: `myTag: "#books"` (quotes required for #)
+> - Lists: `myTags: ["#fiction", "#2026"]`
+> - Wikilinks: "[[My link]]"
 
 ### Wikilinks
 
-Format certain fields as `[[wikilinks]]` everywhere (frontmatter, body, and filename):
+Format certain fields as `[[wikilinks]]` in frontmatter and body:
 
 - Authors
 - Contributors
@@ -222,71 +285,12 @@ By default, the plugin automatically moves and renames notes to match your group
 
 - **Multiple series**: Books in multiple series use the first series Hardcover provides for grouping, to avoid duplicate notes.
 
-## Body Templates
-
-v2.0.0 introduces fully customizable note templates using variable substitution.
-
-Edit your template in Settings -> Note Body Template:
-
-```
-# {{editionTitle}}
-
-![cover|300]({{editionCover}})
-
-{{description}}
-
-## Review
-{{review}}
-
-## Quotes
-{{quotes}}
-```
-
-### Available Variables
-
-**Book vs Edition Data:**
-
-- Title: `{{bookTitle}}` / `{{editionTitle}}`
-- Cover: `{{bookCover}}` / `{{editionCover}}`
-- Release Date: `{{bookReleaseDate}}` / `{{editionReleaseDate}}`
-- Authors: `{{bookAuthors}}` / `{{editionAuthors}}`
-- Contributors: `{{bookContributors}}` / `{{editionContributors}}`
-
-**Book Information:**
-
-- `{{description}}` - Book description
-- `{{url}}` - Hardcover URL
-- `{{series}}` - Series information
-- `{{genres}}` - Genre tags
-
-**Edition Information:**
-
-- `{{publisher}}` - Publisher name
-- `{{isbn10}}` / `{{isbn13}}` - ISBN numbers
-
-**Your Data:**
-
-- `{{rating}}` - Your rating
-- `{{status}}` - Reading status
-- `{{review}}` - Your written review
-- `{{quotes}}` - Highlights from reading journal
-- `{{lists}}` - Your Hardcover lists
-
-**Reading Activity:**
-
-- `{{firstReadStart}}` / `{{firstReadEnd}}` - First read dates
-- `{{lastReadStart}}` / `{{lastReadEnd}}` - Most recent read dates
-- `{{totalReads}}` - Number of times read
-- `{{readYears}}` - Years when read
-
-You can also find the list of all available variables in the settings.
-
 ## Note Format
 
 Each synced book creates a note with:
 
-1. Frontmatter metadata containing all selected fields
-2. Custom body template containing all used variables
+1. Frontmatter containing all used variables
+2. Body containing all used variables
 3. Hardcover delimiter line (`<!-- obsidian-hardcover-plugin-end -->`)
 
 Content below the delimiter line is preserved during syncs, so you can add your own notes without fear of losing them during updates.
@@ -304,6 +308,8 @@ authors: ["Andy Weir"]
 rating: "5/5"
 status: ["Read"]
 releaseDate: "2021-05-04"
+tags: ["#books", "#media"]
+myCustomProp: hello
 ---
 
 # Project Hail Mary
