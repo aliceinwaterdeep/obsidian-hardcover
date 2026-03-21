@@ -82,24 +82,24 @@ export default class ObsidianHardcover extends Plugin {
 		this.settings = Object.assign({}, DEFAULT_SETTINGS, savedData);
 
 		// check if migration is needed
-		if (
-			!savedData ||
-			typeof savedData.settingsVersion === "undefined" ||
-			savedData.settingsVersion < DEFAULT_SETTINGS.settingsVersion
-		) {
-			// apply migrations on clean old data
-			this.settings = SettingsMigrationService.migrateSettings(
-				savedData || {},
-				this.app,
-			);
+		if (savedData) {
+			const savedVersion = savedData.settingsVersion ?? 0;
 
-			// then merge with defaults to fill any missing properties
-			this.settings = Object.assign({}, DEFAULT_SETTINGS, this.settings);
+			if (savedVersion < DEFAULT_SETTINGS.settingsVersion) {
+				// apply migrations on clean old data
+				this.settings = SettingsMigrationService.migrateSettings(
+					this.settings,
+					this.app,
+				);
 
-			// save the migrated settings
-			await this.saveSettings();
-			if (IS_DEV) {
-				console.debug("Settings migration completed and saved");
+				// then merge with defaults to fill any missing properties
+				this.settings = Object.assign({}, DEFAULT_SETTINGS, this.settings);
+
+				// save the migrated settings
+				await this.saveSettings();
+				if (IS_DEV) {
+					console.debug("Settings migration completed and saved");
+				}
 			}
 		}
 	}

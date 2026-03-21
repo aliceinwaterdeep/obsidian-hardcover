@@ -29,9 +29,6 @@ readYears: {{readYears}}
 
 ## Review
 {{review}}
-
-## Quotes
-{{quotes}}
 `;
 
 export const DEFAULT_FILENAME_FORMAT = "{{editionTitle}} ({{editionYear}})";
