@@ -1,4 +1,4 @@
-import { parseYaml } from "obsidian";
+import { Notice, parseYaml } from "obsidian";
 import { HARDCOVER_BOOKS_ROUTE, HARDCOVER_URL } from "src/config/constants";
 import { HardcoverUserBook, PluginSettings } from "src/types";
 import { FileUtils } from "src/utils/FileUtils";
@@ -255,7 +255,34 @@ export class TemplateDataBuilder {
 
 		//  substitute variables in the parsed template
 		for (const [key, value] of Object.entries(parsedTemplate)) {
-			frontmatter[key] = this.substituteValue(value, variables);
+			const substitutedValue = this.substituteValue(value, variables);
+
+			// check if this is a variable placeholder
+			const isVariable =
+				typeof value === "string" && value.match(/^\{\{(\w+)\}\}$/);
+
+			if (isVariable) {
+				// for variables, skip if empty (expected behavior)
+				if (
+					substitutedValue === "" ||
+					substitutedValue === null ||
+					substitutedValue === undefined
+				) {
+					continue;
+				}
+
+				// skip empty arrays
+				if (Array.isArray(substitutedValue) && substitutedValue.length === 0) {
+					continue;
+				}
+			} else {
+				// for static properties, skip if null/undefined (likely YAML error, should be caught by earlier validation on sync start)
+				if (substitutedValue === null || substitutedValue === undefined) {
+					continue;
+				}
+			}
+
+			frontmatter[key] = substitutedValue;
 		}
 
 		// frontmatter: parsed template YAML with variables already substituted
@@ -269,7 +296,16 @@ export class TemplateDataBuilder {
 			const variableMatch = value.match(/^\{\{(\w+)\}\}$/);
 			if (variableMatch) {
 				const varName = variableMatch[1];
-				return variables[varName] !== undefined ? variables[varName] : "";
+
+				let result = variables[varName] !== undefined ? variables[varName] : "";
+
+				// clean description to remove newlines (following v1 approach)
+				if (varName === "description" && typeof result === "string") {
+					result = result.replace(/\n/g, " ").trim();
+					result = result.replace(/\s+/g, " "); // remove multiple spaces
+				}
+
+				return result;
 			}
 			// if it contains variables but isn't only a variable, do replacement
 			if (value.includes("{{")) {
@@ -316,13 +352,22 @@ export class TemplateDataBuilder {
 			return {};
 		}
 
-		const yamlContent = yamlMatch[1];
+		let yamlContent = yamlMatch[1];
+
+		// wrap unquoted {{variables}} in quotes so YAML treats them as strings
+		// matches patterns like  key: {{variable}}
+		yamlContent = yamlContent.replace(/:\s*(\{\{(\w+)\}\})/g, ': "$1"');
 
 		try {
 			const parsed = parseYaml(yamlContent);
 			return parsed || {};
 		} catch (error) {
 			console.error("Failed to parse template YAML:", error);
+
+			new Notice(
+				"Template YAML syntax error. Check console for details or review YAML syntax in settings.",
+				8000,
+			);
 			return {};
 		}
 	}
