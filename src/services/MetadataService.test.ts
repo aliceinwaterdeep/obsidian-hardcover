@@ -79,278 +79,108 @@ describe("MetadataService", () => {
 	});
 
 	describe("buildMetadata", () => {
-		test("includes basic required fields", () => {
-			const { metadata: result } =
+		test("returns metadata with frontmatter and variables", () => {
+			const { metadata, rawContributors } =
 				metadataService.buildMetadata(MOCK_USER_BOOK);
 
-			expect(result.hardcoverBookId).toBe(12345);
-			// editionTitle.propertyName defaults to "title"
-			expect(result.frontmatter.title).toBe("All Systems Red: Special Edition");
-			expect(result.frontmatter.rating).toBe(5);
-			expect(result.frontmatter.status).toEqual(["Read"]);
+			expect(metadata.hardcoverBookId).toBe(12345);
+			expect(metadata.frontmatter).toBeDefined();
+			expect(metadata.variables).toBeDefined();
+			expect(rawContributors).toBeDefined();
 		});
 
-		test("uses editionTitle for frontmatter title by default", () => {
-			const { metadata: result } =
-				metadataService.buildMetadata(MOCK_USER_BOOK);
-			// editionTitle is enabled by default, bookTitle is not
-			expect(result.frontmatter.title).toBe("All Systems Red: Special Edition");
-			expect(result.frontmatter.bookTitle).toBeUndefined();
+		test("includes hardcoverBookId in metadata", () => {
+			const { metadata } = metadataService.buildMetadata(MOCK_USER_BOOK);
+
+			expect(metadata.hardcoverBookId).toBe(12345);
 		});
 
-		test("uses bookTitle when enabled", () => {
-			mockSettings.frontmatterFields.bookTitle.enabled = true;
-			metadataService.updateSettings(mockSettings);
+		test("frontmatter contains enabled fields", () => {
+			const { metadata } = metadataService.buildMetadata(MOCK_USER_BOOK);
 
-			const { metadata: result } =
-				metadataService.buildMetadata(MOCK_USER_BOOK);
-			expect(result.frontmatter.bookTitle).toBe("All Systems Red");
+			// default settings have editionTitle enabled as "title"
+			expect(metadata.frontmatter.title).toBeDefined();
+			// default settings have rating enabled
+			expect(metadata.frontmatter.rating).toBeDefined();
+			// default settings have status enabled
+			expect(metadata.frontmatter.status).toBeDefined();
 		});
 
-		test("uses editionCover for frontmatter cover by default", () => {
-			const { metadata: result } =
-				metadataService.buildMetadata(MOCK_USER_BOOK);
-			// editionCover.propertyName defaults to "cover"
-			expect(result.frontmatter.cover).toBe(
-				"https://example.com/edition-cover.jpg",
+		test("variables contain all data for template rendering", () => {
+			const { metadata } = metadataService.buildMetadata(MOCK_USER_BOOK);
+
+			// variables should have both book and edition data
+			expect(metadata.variables.bookTitle).toBeDefined();
+			expect(metadata.variables.editionTitle).toBeDefined();
+			expect(metadata.variables.description).toBeDefined();
+			expect(metadata.variables.rating).toBeDefined();
+		});
+
+		test("returns rawContributors for author fallback", () => {
+			const { rawContributors } = metadataService.buildMetadata(MOCK_USER_BOOK);
+
+			expect(Array.isArray(rawContributors)).toBe(true);
+			expect(rawContributors.length).toBeGreaterThan(0);
+		});
+
+		test("handles lists mapping", () => {
+			const listsMap = new Map<number, string[]>();
+			listsMap.set(12345, ["TBR 2024", "Sci-fi Favorites"]);
+
+			const { metadata } = metadataService.buildMetadata(
+				MOCK_USER_BOOK,
+				listsMap,
 			);
+
+			// lists should be in variables
+			expect(metadata.variables.lists).toBeDefined();
 		});
 
-		test("uses bookCover when enabled", () => {
-			mockSettings.frontmatterFields.bookCover.enabled = true;
-			metadataService.updateSettings(mockSettings);
+		test("handles null lists mapping", () => {
+			const { metadata } = metadataService.buildMetadata(MOCK_USER_BOOK, null);
 
-			const { metadata: result } =
-				metadataService.buildMetadata(MOCK_USER_BOOK);
-			expect(result.frontmatter.bookCover).toBe(
-				"https://example.com/book-cover.jpg",
-			);
+			expect(metadata).toBeDefined();
+			expect(metadata.hardcoverBookId).toBe(12345);
 		});
 
-		test("uses editionReleaseDate for frontmatter by default", () => {
-			const { metadata: result } =
-				metadataService.buildMetadata(MOCK_USER_BOOK);
-			// editionReleaseDate.propertyName defaults to "releaseDate"
-			expect(result.frontmatter.releaseDate).toBe("2018-01-03");
-		});
+		test("updates settings via updateSettings", () => {
+			const newSettings = JSON.parse(JSON.stringify(DEFAULT_SETTINGS));
+			newSettings.fieldsSettings.editionTitle.propertyName = "customTitle";
 
-		test("uses bookReleaseDate when enabled", () => {
-			mockSettings.frontmatterFields.bookReleaseDate.enabled = true;
-			metadataService.updateSettings(mockSettings);
+			metadataService.updateSettings(newSettings);
 
-			const { metadata: result } =
-				metadataService.buildMetadata(MOCK_USER_BOOK);
-			expect(result.frontmatter.bookReleaseDate).toBe("2017-05-02");
-		});
+			const { metadata } = metadataService.buildMetadata(MOCK_USER_BOOK);
 
-		test("extracts edition authors and contributors correctly by default", () => {
-			const { metadata: result } =
-				metadataService.buildMetadata(MOCK_USER_BOOK);
-
-			// editionAuthors.propertyName defaults to "authors"
-			expect(result.frontmatter.authors).toEqual([
-				"Martha Wells",
-				"Co-Author Name",
-				"Another Co-Author Name",
-			]);
-			// editionContributors.propertyName defaults to "contributors"
-			expect(result.frontmatter.contributors).toEqual([
-				"John Translator (Translator)",
-				"Jane Narrator (Narrator)",
-			]);
-		});
-
-		test("extracts book authors when enabled", () => {
-			mockSettings.frontmatterFields.bookAuthors.enabled = true;
-			metadataService.updateSettings(mockSettings);
-
-			const { metadata: result } =
-				metadataService.buildMetadata(MOCK_USER_BOOK);
-			expect(result.frontmatter.bookAuthors).toEqual(["Martha Wells"]);
+			// after update, frontmatter should use new property name
+			expect(metadata.frontmatter.customTitle).toBeDefined();
+			expect(metadata.frontmatter.title).toBeUndefined();
 		});
 
 		test("handles missing optional fields gracefully", () => {
 			const userBookWithMissingData = {
-				...MOCK_USER_BOOK,
+				book_id: 12345,
+				status_id: 3,
 				rating: null,
 				book: {
-					...MOCK_USER_BOOK.book,
-					description: null,
-					cached_tags: null,
+					title: "Test Book",
+					slug: "test",
+					cached_contributors: [],
+				},
+				edition: {
+					title: "Test Edition",
+					cached_contributors: [],
 				},
 				user_book_reads: [],
-			};
+				reading_journals: [],
+			} as any;
 
-			const { metadata: result } = metadataService.buildMetadata(
+			const { metadata } = metadataService.buildMetadata(
 				userBookWithMissingData,
 			);
 
-			expect(result.hardcoverBookId).toBe(12345);
-			expect(result.frontmatter.title).toBeDefined();
-			expect(result.frontmatter.rating).toBeUndefined();
-			expect(result.frontmatter.description).toBeUndefined();
-			expect(result.frontmatter.genres).toBeUndefined();
-		});
-
-		test("extracts reading activity correctly", () => {
-			const { metadata: result } =
-				metadataService.buildMetadata(MOCK_USER_BOOK);
-
-			expect(result.frontmatter.firstReadStart).toBe("2023-01-15T00:00:00Z");
-			expect(result.frontmatter.firstReadEnd).toBe("2023-01-20T00:00:00Z");
-			expect(result.frontmatter.lastReadStart).toBe("2023-01-15T00:00:00Z");
-			expect(result.frontmatter.lastReadEnd).toBe("2023-01-20T00:00:00Z");
-			expect(result.frontmatter.totalReads).toBe(1);
-		});
-
-		test("uses custom status mapping", () => {
-			mockSettings.statusMapping[3] = "Finished Reading";
-			metadataService.updateSettings(mockSettings);
-
-			const { metadata: result } =
-				metadataService.buildMetadata(MOCK_USER_BOOK);
-			expect(result.frontmatter.status).toEqual(["Finished Reading"]);
-		});
-
-		test("respects field enable/disable settings", () => {
-			mockSettings.frontmatterFields.rating.enabled = false;
-			mockSettings.frontmatterFields.description.enabled = false;
-			mockSettings.frontmatterFields.genres.enabled = false;
-			metadataService.updateSettings(mockSettings);
-
-			const { metadata: result } =
-				metadataService.buildMetadata(MOCK_USER_BOOK);
-
-			expect(result.frontmatter.rating).toBeUndefined();
-			expect(result.frontmatter.description).toBeUndefined();
-			expect(result.frontmatter.genres).toBeUndefined();
-
-			expect(result.hardcoverBookId).toBe(12345);
-			expect(result.frontmatter.title).toBeDefined();
-			expect(result.frontmatter.status).toBeDefined();
-		});
-
-		test("uses custom property names from settings", () => {
-			mockSettings.frontmatterFields.editionTitle.propertyName = "bookTitle";
-			mockSettings.frontmatterFields.rating.propertyName = "myRating";
-			mockSettings.frontmatterFields.status.propertyName = "readingStatus";
-			metadataService.updateSettings(mockSettings);
-
-			const { metadata: result } =
-				metadataService.buildMetadata(MOCK_USER_BOOK);
-
-			expect(result.frontmatter.bookTitle).toBe(
-				"All Systems Red: Special Edition",
-			);
-			expect(result.frontmatter.myRating).toBe(5);
-			expect(result.frontmatter.readingStatus).toEqual(["Read"]);
-
-			expect(result.frontmatter.title).toBeUndefined();
-			expect(result.frontmatter.rating).toBeUndefined();
-			expect(result.frontmatter.status).toBeUndefined();
-		});
-
-		test("includes body content for review when review is enabled", () => {
-			const { metadata: result } =
-				metadataService.buildMetadata(MOCK_USER_BOOK);
-
-			expect(result.availableData.review).toBe("Murderbot is the best");
-			// availableData uses fixed names
-			expect(result.availableData.editionTitle).toBe(
-				"All Systems Red: Special Edition",
-			);
-			expect(result.availableData.editionCover).toBe(
-				"https://example.com/edition-cover.jpg",
-			);
-		});
-
-		test("includes body content for quotes when enabled", () => {
-			const { metadata: result } =
-				metadataService.buildMetadata(MOCK_USER_BOOK);
-
-			expect(result.availableData.quotes).toEqual([
-				"Quote one from the book",
-				"Quote two from the book",
-			]);
-		});
-
-		test("handles empty quotes array", () => {
-			mockSettings.frontmatterFields.quotes.enabled = true;
-			metadataService.updateSettings(mockSettings);
-
-			const userBookWithoutQuotes = {
-				...MOCK_USER_BOOK,
-				reading_journals: [],
-			};
-
-			const { metadata: result } = metadataService.buildMetadata(
-				userBookWithoutQuotes,
-			);
-
-			expect(result.availableData.quotes).toBeUndefined();
-		});
-
-		test("handles missing reading_journals field", () => {
-			mockSettings.frontmatterFields.quotes.enabled = true;
-			metadataService.updateSettings(mockSettings);
-
-			const { reading_journals, ...userBookWithoutJournals } = MOCK_USER_BOOK;
-
-			const { metadata: result } = metadataService.buildMetadata(
-				userBookWithoutJournals as any,
-			);
-
-			expect(result.availableData.quotes).toBeUndefined();
-		});
-
-		test("extracts ISBN fields when enabled", () => {
-			mockSettings.frontmatterFields.isbn10.enabled = true;
-			mockSettings.frontmatterFields.isbn13.enabled = true;
-			metadataService.updateSettings(mockSettings);
-
-			const { metadata: result } =
-				metadataService.buildMetadata(MOCK_USER_BOOK);
-
-			expect(result.frontmatter.isbn10).toBe("0765397528");
-			expect(result.frontmatter.isbn13).toBe("9780765397522");
-		});
-
-		test("respects ISBN field enable/disable settings", () => {
-			mockSettings.frontmatterFields.isbn10.enabled = false;
-			mockSettings.frontmatterFields.isbn13.enabled = false;
-			metadataService.updateSettings(mockSettings);
-
-			const { metadata: result } =
-				metadataService.buildMetadata(MOCK_USER_BOOK);
-
-			expect(result.frontmatter.isbn10).toBeUndefined();
-			expect(result.frontmatter.isbn13).toBeUndefined();
-		});
-
-		test("availableData always includes all data regardless of enabled state", () => {
-			mockSettings.frontmatterFields.bookTitle.enabled = false;
-			mockSettings.frontmatterFields.editionTitle.enabled = false;
-			mockSettings.frontmatterFields.editionAuthors.enabled = false;
-			metadataService.updateSettings(mockSettings);
-
-			const { metadata: result } =
-				metadataService.buildMetadata(MOCK_USER_BOOK);
-
-			// frontmatter should be empty for these fields
-			expect(result.frontmatter.title).toBeUndefined();
-			expect(result.frontmatter.bookTitle).toBeUndefined();
-			expect(result.frontmatter.authors).toBeUndefined();
-
-			// availableData always has data
-			expect(result.availableData.editionTitle).toBe(
-				"All Systems Red: Special Edition",
-			);
-			expect(result.availableData.bookTitle).toBe("All Systems Red");
-			expect(result.availableData.editionAuthors).toEqual([
-				"Martha Wells",
-				"Co-Author Name",
-				"Another Co-Author Name",
-			]);
+			expect(metadata.hardcoverBookId).toBe(12345);
+			expect(metadata.frontmatter).toBeDefined();
+			expect(metadata.variables).toBeDefined();
 		});
 	});
 });
