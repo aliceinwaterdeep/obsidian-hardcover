@@ -6,20 +6,37 @@ export class FrontmatterManager {
 	constructor(private plugin: ObsidianHardcover) {}
 
 	prepareFrontmatter(bookMetadata: BookMetadata): Record<string, any> {
-		const { frontmatter } = bookMetadata;
-		const orderedFrontmatter: Record<string, any> = {};
+		const frontmatterData: Record<string, any> = {
+			hardcoverBookId: bookMetadata.hardcoverBookId,
+			...bookMetadata.frontmatter,
+		};
+		const prepared: Record<string, any> = {};
 
-		// get managed keys and order from template
-		const managedOrder = this.getManagedOrder(frontmatter);
+		// get managed order from template
+		const managedOrder = this.getManagedOrder(frontmatterData);
 
-		// apply order
-		for (const key of managedOrder) {
-			if (key in frontmatter) {
-				orderedFrontmatter[key] = frontmatter[key];
+		// add properties in the order they appear in the template
+		for (const propName of managedOrder) {
+			if (!frontmatterData.hasOwnProperty(propName)) continue;
+
+			const value = frontmatterData[propName];
+
+			// skip undefined/null values
+			if (value === undefined || value === null) continue;
+
+			// remove all \n sequences and replace with spaces to avoid frontmatter issues
+			if (propName === "description" && typeof value === "string") {
+				const cleanValue = value.replace(/\\n/g, " ").trim();
+				// remove any multiple spaces that might result
+				const finalValue = cleanValue.replace(/\s+/g, " ");
+				prepared[propName] = finalValue;
+			} else {
+				// for everything else, just add it directly: Obsidian's processFrontMatter will handle arrays, strings, etc.
+				prepared[propName] = value;
 			}
 		}
 
-		return orderedFrontmatter;
+		return prepared;
 	}
 
 	getManagedFrontmatterKeys(): Set<string> {
