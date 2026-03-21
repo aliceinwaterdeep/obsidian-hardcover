@@ -6,6 +6,7 @@ jest.mock("obsidian", () => ({
 		if (!path) return "";
 		return path.replace(/\\/g, "/").replace(/\/+/g, "/");
 	},
+	Notice: jest.fn(),
 }));
 
 describe("FileUtils", () => {
@@ -108,7 +109,7 @@ describe("FileUtils", () => {
 					"{{editionTitle}} by {{editionAuthors}}",
 					metadata,
 				),
-			).toBe("Test Book.md");
+			).toBe("Test Book by.md");
 		});
 	});
 

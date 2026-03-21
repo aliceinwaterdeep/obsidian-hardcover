@@ -9,6 +9,7 @@ jest.mock("obsidian", () => ({
 	Vault: jest.fn(),
 	normalizePath: (p: string) => p,
 	MetadataCache: jest.fn(),
+	Notice: jest.fn(),
 }));
 
 describe("NoteService", () => {
@@ -32,13 +33,13 @@ describe("NoteService", () => {
 				title: "New Title",
 				releaseDate: "2020-01-01",
 				authors: ["Author One"],
-				status: "reading",
+				status: ["reading"],
 			},
 			variables: {
 				editionTitle: "New Title",
 				editionReleaseDate: "2020-01-01",
 				editionAuthors: ["Author One"],
-				status: "reading",
+				status: ["reading"],
 			},
 		};
 
@@ -120,7 +121,7 @@ User section
 
 			expect(updatedFrontmatter.customKey).toBe("keep-me");
 			expect(updatedFrontmatter["2025 TBR"]).toBe(true);
-			expect(updatedFrontmatter.status).toBe("reading");
+			expect(updatedFrontmatter.status).toEqual(["reading"]);
 
 			const keyOrder = Object.keys(updatedFrontmatter);
 			const statusIndex = keyOrder.indexOf("status");
@@ -144,7 +145,7 @@ User section
 
 			expect(updatedFrontmatter.customKey).toBeUndefined();
 			expect(updatedFrontmatter["2025 TBR"]).toBeUndefined();
-			expect(updatedFrontmatter.status).toBe("reading");
+			expect(updatedFrontmatter.status).toEqual(["reading"]);
 		});
 	});
 
