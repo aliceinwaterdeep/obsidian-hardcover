@@ -36,13 +36,11 @@ describe("FileUtils", () => {
 	});
 
 	describe("processFilenameTemplate", () => {
-		test("replaces all variables correctly", () => {
+		test("replaces edition variables correctly", () => {
 			const metadata = {
-				availableData: {
-					editionTitle: MOCK_BOOK.title,
-					editionReleaseDate: MOCK_BOOK.releaseDate,
-					editionAuthors: [MOCK_BOOK.author],
-				},
+				editionTitle: MOCK_BOOK.title,
+				editionReleaseDate: MOCK_BOOK.releaseDate,
+				editionAuthors: [MOCK_BOOK.author],
 			};
 			expect(
 				fileUtils.processFilenameTemplate(
@@ -52,11 +50,23 @@ describe("FileUtils", () => {
 			).toBe("All Systems Red by Martha Wells (2017).md");
 		});
 
+		test("replaces book variables correctly", () => {
+			const metadata = {
+				bookTitle: "The Book Title",
+				bookAuthors: ["Book Author"],
+				bookReleaseDate: "2026-01-01",
+			};
+			expect(
+				fileUtils.processFilenameTemplate(
+					"{{bookTitle}} by {{bookAuthors}} ({{bookYear}})",
+					metadata,
+				),
+			).toBe("The Book Title by Book Author (2026).md");
+		});
+
 		test("handles missing data gracefully", () => {
 			const metadata = {
-				availableData: {
-					editionTitle: MOCK_BOOK.title,
-				},
+				editionTitle: MOCK_BOOK.title,
 			};
 			expect(
 				fileUtils.processFilenameTemplate(
@@ -68,10 +78,8 @@ describe("FileUtils", () => {
 
 		test("handles invalid release date", () => {
 			const metadata = {
-				availableData: {
-					editionTitle: MOCK_BOOK.title,
-					editionReleaseDate: "invalid",
-				},
+				editionTitle: MOCK_BOOK.title,
+				editionReleaseDate: "invalid",
 			};
 			expect(
 				fileUtils.processFilenameTemplate(
@@ -81,28 +89,26 @@ describe("FileUtils", () => {
 			).toBe("All Systems Red.md");
 		});
 
-		test("handles custom property names", () => {
-			const customSettings = {
-				editionTitle: { enabled: true, propertyName: "bookTitle" },
-				editionAuthors: { enabled: true, propertyName: "bookAuthors" },
-				editionReleaseDate: { enabled: true, propertyName: "publicationDate" },
-			};
-
+		test("handles multiple authors", () => {
 			const metadata = {
-				availableData: {
-					editionTitle: "All Systems Red",
-					editionReleaseDate: "2017-05-02",
-					editionAuthors: ["Martha Wells"],
-				},
+				editionAuthors: ["Author One", "Author Two", "Author Three"],
 			};
+			expect(
+				fileUtils.processFilenameTemplate("{{editionAuthors}}", metadata),
+			).toBe("Author One, Author Two, Author Three.md");
+		});
 
+		test("handles empty authors array", () => {
+			const metadata = {
+				editionTitle: "Test Book",
+				editionAuthors: [],
+			};
 			expect(
 				fileUtils.processFilenameTemplate(
-					"{{editionTitle}} by {{editionAuthors}} ({{editionYear}})",
+					"{{editionTitle}} by {{editionAuthors}}",
 					metadata,
-					customSettings,
 				),
-			).toBe("All Systems Red by Martha Wells (2017).md");
+			).toBe("Test Book.md");
 		});
 	});
 
