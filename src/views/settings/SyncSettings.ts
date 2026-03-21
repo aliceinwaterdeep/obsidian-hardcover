@@ -22,13 +22,8 @@ export function renderSyncSection(config: SyncButtonConfig) {
 
 	renderSyncButton(config);
 
-	new Setting(containerEl).setDesc(
-		`⚠️ Content below the ${CONTENT_DELIMITER} delimiter in your notes will be preserved during syncs. Regular backups of your vault are still recommended.`,
-	);
-
-	new Setting(containerEl).setDesc(
-		`For large libraries (500+ books), sync may take several minutes due to Hardcover's API rate limits (60 requests/minute). The plugin will automatically pace requests to respect these limits.`,
-	);
+	const setting = new Setting(containerEl);
+	setting.descEl.innerHTML = `⚠️ Content below the ${CONTENT_DELIMITER} delimiter in your notes will be preserved during syncs. Regular backups of your vault are still recommended.<br><br> For large libraries (500+ books), sync may take several minutes due to Hardcover's API rate limits (60 requests/minute). The plugin will automatically pace requests to respect these limits.`;
 }
 
 export const renderSyncButton = (config: SyncButtonConfig): ButtonComponent => {

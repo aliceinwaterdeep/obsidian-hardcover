@@ -1,30 +1,42 @@
-import { Setting } from "obsidian";
+import { Setting, TextComponent } from "obsidian";
 import { HARDCOVER_STATUS_MAP } from "src/config/statusMapping";
 import ObsidianHardcover from "src/main";
 
+const STATUS_FIELDS = Object.entries(HARDCOVER_STATUS_MAP).map(
+	([id, label]) => ({
+		id: Number(id),
+		label,
+	}),
+);
+
 export function renderStatusMappingSettings(
 	containerEl: HTMLElement,
-	plugin: ObsidianHardcover
+	plugin: ObsidianHardcover,
 ): void {
-	containerEl.createEl("p", {
-		text: "Customize how Hardcover statuses appear in your notes.",
+	const setting = new Setting(containerEl)
+		.setName("Status mapping")
+		.setDesc("Customize how Hardcover statuses appear in your notes")
+		.setClass("obhc-section-status-mapping");
+
+	const controlsContainer = setting.controlEl.createDiv({
+		cls: "obhc-status-mapping-inputs",
 	});
 
-	const statusIds = Object.keys(HARDCOVER_STATUS_MAP).map((id) => Number(id));
-	const statusLabels = Object.values(HARDCOVER_STATUS_MAP);
+	for (const field of STATUS_FIELDS) {
+		const inputContainer = controlsContainer.createDiv({
+			cls: "obhc-status-mapping-item",
+		});
 
-	statusIds.forEach((id, index) => {
-		new Setting(containerEl)
-			.setName(`${statusLabels[index]}`)
-			.setDesc(`Custom text for Hardcover status "${statusLabels[index]}"`)
-			.addText((text) =>
-				text
-					.setPlaceholder(statusLabels[index])
-					.setValue(plugin.settings.statusMapping[id] || "")
-					.onChange(async (value) => {
-						plugin.settings.statusMapping[id] = value || statusLabels[index];
-						await plugin.saveSettings();
-					})
-			);
-	});
+		inputContainer.createSpan({
+			text: field.label,
+		});
+
+		new TextComponent(inputContainer)
+			.setPlaceholder(field.label)
+			.setValue(plugin.settings.statusMapping[field.id] || "")
+			.onChange(async (value) => {
+				plugin.settings.statusMapping[field.id] = value || field.label;
+				await plugin.saveSettings();
+			});
+	}
 }

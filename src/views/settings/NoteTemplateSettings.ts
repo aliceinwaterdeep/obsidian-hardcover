@@ -7,13 +7,9 @@ export function renderNoteTemplateSettings(
 	containerEl: HTMLElement,
 	plugin: ObsidianHardcover,
 ): void {
-	new Setting(containerEl).setDesc(
-		"Customize the structure of your notes including YAML frontmatter and body content. Do not remove the enclosing `---` from the frontmatter or the template will be invalid.",
-	);
-
-	new Setting(containerEl).setDesc(
-		"⚠️ Note: Template content is regenerated on each sync, use this only for book data coming from Hardcover; add your personal notes below the <!-- obsidian-hardcover-plugin-end --> delimiter in each note file.",
-	);
+	const setting = new Setting(containerEl);
+	setting.descEl.innerHTML =
+		"Customize the structure of your notes including YAML frontmatter and body content. Do not remove the enclosing `---` from the frontmatter or the template will be invalid.<br><br> ⚠️ Template content is regenerated on each sync, use this only for book data coming from Hardcover; add your personal notes below the <!-- obsidian-hardcover-plugin-end --> delimiter in each note file.";
 
 	const editorContainer = containerEl.createDiv({
 		cls: "obhc-template-editor",
@@ -34,32 +30,21 @@ export function renderNoteTemplateSettings(
 		await plugin.saveSettings();
 	});
 
-	const helpContainer = editorContainer.createDiv({
-		cls: "obhc-template-variables-help",
-	});
-
-	helpContainer.createEl("p", {
-		text: "Available variables:",
-	});
-
-	helpContainer.createEl("div", {
-		text: "Book/Edition: {{bookTitle}}, {{editionTitle}}, {{bookCover}}, {{editionCover}}, {{bookReleaseDate}}, {{editionReleaseDate}}, {{bookAuthors}}, {{editionAuthors}}, {{bookContributors}}, {{editionContributors}}",
-	});
-	helpContainer.createEl("div", {
-		text: "Book data: {{description}}, {{url}}, {{series}}, {{genres}}",
-	});
-	helpContainer.createEl("div", {
-		text: "Edition data: {{publisher}}, {{isbn10}}, {{isbn13}}",
-	});
-	helpContainer.createEl("div", {
-		text: "Your data: {{rating}}, {{status}}, {{review}}, {{quotes}}, {{lists}}",
-	});
-	helpContainer.createEl("div", {
-		text: "Reading activity: {{firstReadStart}}, {{firstReadEnd}}, {{lastReadStart}}, {{lastReadEnd}}, {{totalReads}}, {{readYears}}",
-	});
+	const hsetting = new Setting(containerEl);
+	hsetting.setName("Available variables");
+	hsetting.descEl.innerHTML =
+		"Book/Edition: {{bookTitle}}, {{editionTitle}}, {{bookCover}}, {{editionCover}}, {{bookReleaseDate}}, {{editionReleaseDate}}, {{bookAuthors}}, {{editionAuthors}}, {{bookContributors}}, {{editionContributors}}" +
+		"<br><br>" +
+		"Book data: {{description}}, {{url}}, {{series}}, {{genres}}" +
+		"<br><br>" +
+		"Edition data: {{publisher}}, {{isbn10}}, {{isbn13}}" +
+		"<br><br>" +
+		"Your data: {{rating}}, {{status}}, {{review}}, {{quotes}}, {{lists}}" +
+		"<br><br>" +
+		"Reading activity: {{firstReadStart}}, {{firstReadEnd}}, {{lastReadStart}}, {{lastReadEnd}}, {{totalReads}}, {{readYears}}";
 
 	new Setting(containerEl).setDesc(
-		"💡 Tip: For array fields like {{authors}}, {{contributors}}, {{series}}, {{publisher}}, {{genres}} and {{lists}}, " +
+		"⚠️ For array fields like {{authors}}, {{contributors}}, {{series}}, {{publisher}}, {{genres}} and {{lists}}, " +
 			"use the Wikilinks settings below to enable [[wikilinks]] formatting. " +
 			"Writing [[{{authors}}]] in the template won't work as expected as they may contain multiple values.",
 	);
