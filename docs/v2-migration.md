@@ -2,7 +2,7 @@
 
 ## Overview
 
-Version 2.0.0 introduces **customizable body templates** and split **book/edition data**. This is a breaking change.
+Version 2.0.0 introduces a **customizable note template** and split **book/edition data**. This is a breaking change.
 
 > **Note:** This guide is for reference only. Migration happens automatically when you upgrade, you don't need to do anything. The migration will preserve your customizations, and your notes will look identical after upgrade.
 
@@ -15,11 +15,12 @@ Version 2.0.0 introduces **customizable body templates** and split **book/editio
 **Before v2.0.0:**
 
 - Note body structure was hardcoded
+- Frontmatter: toggle based configuration (enable/disable fields, set property names)
 - Order and formatting were fixed
 
 **After v2.0.0:**
 
-- You define the structure using a template
+- Single unified template for both frontmatter and body
 - Use `{{variables}}` to place content
 - Complete control over order, formatting, headings, and layout
 
@@ -73,13 +74,13 @@ Version 2.0.0 introduces **customizable body templates** and split **book/editio
 
 When you upgrade to v2.0.0, the plugin automatically:
 
-1. ✅ **Splits combined fields** into book/edition versions
-2. ✅ **Preserves your custom property names** on the enabled version
-3. ✅ **Builds a template** from your old enabled fields and custom headings
-4. ✅ **Extracts wikilink settings** to global configuration
-5. ✅ **Extracts quotes format** to dedicated setting
-6. ✅ **Updates filename template** syntax from `${}` to `{{}}`
-7. ✅ **Removes obsolete settings** (dataSourcePreferences, field-level wikilinks)
+1. **Splits combined fields** into book/edition versions
+2. **Preserves your custom property names** on the enabled version
+3. **Builds a template** from your old enabled fields and custom headings
+4. **Extracts wikilink settings** to global configuration
+5. **Extracts quotes format** to dedicated setting
+6. **Updates filename template** syntax from `${}` to `{{}}`
+7. **Removes obsolete settings** (dataSourcePreferences, field-level wikilinks)
 
 **Your notes will look identical after migration.**
 
@@ -87,13 +88,18 @@ When you upgrade to v2.0.0, the plugin automatically:
 
 ## After Migration
 
-### 1. Review your body template
+### 1. Review your note template
 
-Settings -> Note Body Template
+Settings -> Note Template
 
-Your old structure was converted to a template. Check if it looks correct:
+Your old structure was converted to a template. Check if it looks correct. Example:
 
 ```
+---
+title: {{editionTitle}}
+cover: {{bookCover}}
+---
+
 # {{editionTitle}}
 ![{{editionTitle}} Cover|300]({{editionCover}})
 
@@ -106,13 +112,7 @@ Your old structure was converted to a template. Check if it looks correct:
 {{quotes}}
 ```
 
-### 2. Check frontmatter field toggles
-
-Settings -> Frontmatter Fields -> Configure fields
-
-The right book/edition versions should be enabled based on your old source preferences.
-
-### 3. Verify wikilink settings
+### 2. Verify wikilink settings
 
 Settings -> Wikilinks -> Configure wikilinks
 
@@ -131,10 +131,7 @@ Your old wikilink settings should be reflected here.
 
 ### My notes look different after migration
 
-This shouldn't happen if migration worked correctly. Check:
-
-1. **Settings -> Note Body Template**: it matches your old structure
-2. **Settings -> Frontmatter Fields**: the right fields are enabled
+This shouldn't happen if migration worked correctly. Please check that the Note Template in settings matches your old structure.
 
 If something's wrong, manually adjust the template to match your old notes, then run the sync again.
 

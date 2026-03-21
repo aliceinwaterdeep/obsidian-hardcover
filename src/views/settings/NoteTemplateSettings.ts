@@ -50,6 +50,18 @@ export function renderNoteTemplateSettings(
 	);
 
 	new Setting(containerEl)
+		.setName("Preserve additional custom properties")
+		.setDesc("Keep any additional properties you manually add to your notes.")
+		.addToggle((toggle) =>
+			toggle
+				.setValue(plugin.settings.preserveCustomFrontmatter)
+				.onChange(async (value) => {
+					plugin.settings.preserveCustomFrontmatter = value;
+					await plugin.saveSettings();
+				}),
+		);
+
+	new Setting(containerEl)
 		.setName("Keep empty headings")
 		.setDesc(
 			"Keep headings in the note even when the content below them is empty",
@@ -78,16 +90,4 @@ export function renderNoteTemplateSettings(
 		);
 
 	renderWikilinkSettings(containerEl, plugin);
-
-	new Setting(containerEl)
-		.setName("Preserve additional custom properties")
-		.setDesc("Keep any additional properties you manually add to your notes.")
-		.addToggle((toggle) =>
-			toggle
-				.setValue(plugin.settings.preserveCustomFrontmatter)
-				.onChange(async (value) => {
-					plugin.settings.preserveCustomFrontmatter = value;
-					await plugin.saveSettings();
-				}),
-		);
 }
