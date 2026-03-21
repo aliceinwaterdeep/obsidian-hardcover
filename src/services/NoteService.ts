@@ -444,7 +444,40 @@ export class NoteService {
 		const bodyTemplate = this.extractBodyFromTemplate(fullTemplate);
 		const variables = this.getTemplateVariables(bookMetadata);
 
-		// track which variables are empty
+		// variable substitution
+		let result = this.substituteVariables(bodyTemplate, variables);
+
+		// conditionally remove empty headings
+		if (!this.plugin.settings.keepEmptyHeadings) {
+			result = this.removeEmptyHeadings(result, variables);
+		}
+
+		// clean up excessive blank lines
+		result = result.replace(/\n{3,}/g, "\n\n").trim();
+
+		// add delimiter at end
+		result += `\n\n${CONTENT_DELIMITER}`;
+
+		return result;
+	}
+
+	private substituteVariables(
+		template: string,
+		variables: Record<string, string>,
+	): string {
+		let result = template;
+		for (const [key, value] of Object.entries(variables)) {
+			const regex = new RegExp(`\\{\\{${key}\\}\\}`, "g");
+			result = result.replace(regex, value);
+		}
+		return result;
+	}
+
+	private removeEmptyHeadings(
+		content: string,
+		variables: Record<string, string>,
+	): string {
+		// find empty variables
 		const emptyVariables = new Set<string>();
 		for (const [key, value] of Object.entries(variables)) {
 			if (!value || value.trim() === "") {
@@ -452,66 +485,56 @@ export class NoteService {
 			}
 		}
 
-		// split template into lines before substitution
-		const lines = bodyTemplate.split("\n");
+		// split into lines and filter headings
+		const lines = content.split("\n");
 		const processedLines: string[] = [];
 
 		for (let i = 0; i < lines.length; i++) {
 			const currentLine = lines[i];
 			const trimmed = currentLine.trim();
 
-			// if this is a heading
 			if (trimmed.startsWith("#")) {
-				// check if the next non empty line contains only an empty variable
-				let shouldKeepHeading = true;
-
-				for (let j = i + 1; j < lines.length; j++) {
-					const nextLine = lines[j].trim();
-
-					// skip empty lines
-					if (nextLine === "") continue;
-
-					// if next line is another heading, no content after this heading
-					if (nextLine.startsWith("#")) {
-						shouldKeepHeading = false;
-						break;
-					}
-
-					// check if this line contains only an empty variable
-					const variableMatch = nextLine.match(/^\{\{(\w+)\}\}$/);
-					if (variableMatch && emptyVariables.has(nextLine)) {
-						shouldKeepHeading = false;
-						break;
-					}
-
-					// found actual content
-					shouldKeepHeading = true;
-					break;
-				}
-
-				if (shouldKeepHeading) {
+				// check if heading should be kept
+				if (this.shouldKeepHeading(lines, i, emptyVariables)) {
 					processedLines.push(currentLine);
 				}
 			} else {
-				// not a heading, keep it
 				processedLines.push(currentLine);
 			}
 		}
 
-		// Now do the variable substitution on the filtered template
-		let result = processedLines.join("\n");
-		for (const [key, value] of Object.entries(variables)) {
-			const regex = new RegExp(`\\{\\{${key}\\}\\}`, "g");
-			result = result.replace(regex, value);
+		return processedLines.join("\n");
+	}
+
+	private shouldKeepHeading(
+		lines: string[],
+		headingIndex: number,
+		emptyVariables: Set<string>,
+	): boolean {
+		// look for next non-empty line
+		for (let j = headingIndex + 1; j < lines.length; j++) {
+			const nextLine = lines[j].trim();
+
+			// skip empty lines
+			if (nextLine === "") continue;
+
+			// if next line is another heading, no content after this heading
+			if (nextLine.startsWith("#")) {
+				return false;
+			}
+
+			// check if this line contains only an empty variable
+			const variableMatch = nextLine.match(/^\{\{(\w+)\}\}$/);
+			if (variableMatch && emptyVariables.has(nextLine)) {
+				return false;
+			}
+
+			// found actual content
+			return true;
 		}
 
-		// Clean up excessive blank lines
-		result = result.replace(/\n{3,}/g, "\n\n").trim();
-
-		// add delimiter at end
-		result += `\n\n${CONTENT_DELIMITER}`;
-
-		return result;
+		// reached end of template with no content
+		return false;
 	}
 
 	private formatQuotesSection(quotes?: string[]): string {
