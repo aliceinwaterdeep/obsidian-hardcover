@@ -117,7 +117,7 @@ export class TemplateDataBuilder {
 
 		// URL
 		if (book?.slug) {
-			variables.url = `${HARDCOVER_URL}${HARDCOVER_BOOKS_ROUTE}${book.slug}`;
+			variables.url = `${HARDCOVER_URL}/${HARDCOVER_BOOKS_ROUTE}/${book.slug}`;
 		}
 
 		// series
@@ -130,7 +130,10 @@ export class TemplateDataBuilder {
 
 		// publisher
 		if (edition?.publisher?.name) {
-			variables.publisher = [edition.publisher.name];
+			const publisherName = this.fileUtils.normalizeText(
+				edition.publisher.name,
+			);
+			variables.publisher = [publisherName];
 		}
 
 		// ISBNs
@@ -161,7 +164,7 @@ export class TemplateDataBuilder {
 
 		// rating
 		if (userBook.rating !== null) {
-			variables.rating = userBook.rating;
+			variables.rating = `${userBook.rating}/5`;
 		}
 
 		// status
