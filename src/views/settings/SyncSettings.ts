@@ -17,7 +17,21 @@ export interface SyncButtonConfig {
 	onSyncComplete?: () => void;
 }
 
-export function addSyncButton(config: SyncButtonConfig): ButtonComponent {
+export function renderSyncSection(config: SyncButtonConfig) {
+	const { containerEl } = config;
+
+	renderSyncButton(config);
+
+	new Setting(containerEl).setDesc(
+		`⚠️ Content below the ${CONTENT_DELIMITER} delimiter in your notes will be preserved during syncs. Regular backups of your vault are still recommended.`,
+	);
+
+	new Setting(containerEl).setDesc(
+		`For large libraries (500+ books), sync may take several minutes due to Hardcover's API rate limits (60 requests/minute). The plugin will automatically pace requests to respect these limits.`,
+	);
+}
+
+export const renderSyncButton = (config: SyncButtonConfig): ButtonComponent => {
 	const {
 		containerEl,
 		plugin,
@@ -85,130 +99,4 @@ export function addSyncButton(config: SyncButtonConfig): ButtonComponent {
 	});
 
 	return button;
-}
-
-export function renderLastSyncTimestampSetting(
-	containerEl: HTMLElement,
-	plugin: ObsidianHardcover,
-	onSettingsChanged: () => void,
-): void {
-	new Setting(containerEl)
-		.setName("Last sync timestamp")
-		.setDesc(
-			"When provided, only books updated on Hardcover after this timestamp will be synced. Leave empty to sync your entire library. Example format: 2025-01-01T18:30:35.519934+00:00",
-		)
-		.addExtraButton((button) => {
-			button
-				.setIcon("refresh-cw")
-				.setTooltip("Reset timestamp (will force full sync)")
-				.onClick(async () => {
-					plugin.settings.lastSyncTimestamp = "";
-					await plugin.saveSettings();
-					onSettingsChanged();
-				});
-		})
-		.addText((text) =>
-			text
-				.setPlaceholder("YYYY-MM-DD'T'HH:mm:ss.SSSSSSXXX")
-				.setValue(plugin.settings.lastSyncTimestamp || "")
-				.onChange(async (value) => {
-					plugin.settings.lastSyncTimestamp = value;
-					await plugin.saveSettings();
-				}),
-		);
-}
-
-export function renderSyncInfoMessages(containerEl: HTMLElement): void {
-	containerEl.createEl("div", {
-		text: `Note: Content below the ${CONTENT_DELIMITER} delimiter in your notes will be preserved during syncs.`,
-		cls: "setting-item-description",
-	});
-
-	containerEl.createEl("div", {
-		text: "⚠️ Important: While the delimiter system protects your content during syncs, regular backups of your vault are still recommended.",
-		cls: "setting-item-description sync-setting-note",
-		attr: {
-			style: "color: var(--text-warning); font-weight: 500;",
-		},
-	});
-
-	containerEl.createEl("div", {
-		text: "ℹ️ For large libraries (500+ books), sync may take several minutes due to Hardcover's API rate limits (60 requests/minute). The plugin will automatically pace requests to respect these limits.",
-		cls: "setting-item-description sync-setting-note",
-	});
-}
-
-export function renderStatusFilterSetting(
-	containerEl: HTMLElement,
-	plugin: ObsidianHardcover,
-): void {
-	const filterSetting = new Setting(containerEl)
-		.setName("Filter by reading status")
-		.setDesc(
-			"Select which reading statuses to sync. Uncheck to exclude. All statuses synced by default.",
-		);
-
-	const allStatuses = Object.keys(HARDCOVER_STATUS_MAP).map((id) =>
-		parseInt(id),
-	);
-
-	const filterNote = filterSetting.infoEl.createDiv({
-		cls: "setting-item-description status-filter-note",
-	});
-
-	const updateFilterNote = () => {
-		const filter = plugin.settings.statusFilter;
-
-		if (filter.length === 0) {
-			filterNote.textContent = "⚠️ No statuses selected: sync will do nothing";
-		} else if (filter.length === allStatuses.length) {
-			filterNote.textContent = "✓ Syncing all statuses";
-		} else {
-			const statusNames = filter
-				.map(
-					(id) => HARDCOVER_STATUS_MAP[id as keyof typeof HARDCOVER_STATUS_MAP],
-				)
-				.filter(Boolean)
-				.join(", ");
-			filterNote.textContent = `Syncing: ${statusNames}`;
-		}
-	};
-
-	updateFilterNote();
-
-	const checkboxContainer = filterSetting.settingEl.createDiv({
-		cls: "status-filter-checkboxes",
-	});
-
-	for (const [statusIdStr, statusName] of Object.entries(
-		HARDCOVER_STATUS_MAP,
-	)) {
-		const statusId = parseInt(statusIdStr, 10);
-
-		const label = checkboxContainer.createEl("label", {
-			cls: "status-filter-checkbox-label",
-		});
-
-		const checkbox = label.createEl("input", {
-			type: "checkbox",
-		});
-		checkbox.checked = plugin.settings.statusFilter.includes(statusId);
-
-		checkbox.addEventListener("change", async () => {
-			const currentFilter = plugin.settings.statusFilter;
-
-			if (checkbox.checked) {
-				plugin.settings.statusFilter = [...currentFilter, statusId];
-			} else {
-				plugin.settings.statusFilter = currentFilter.filter(
-					(id) => id !== statusId,
-				);
-			}
-
-			await plugin.saveSettings();
-			updateFilterNote();
-		});
-
-		label.createSpan({ text: statusName });
-	}
-}
+};

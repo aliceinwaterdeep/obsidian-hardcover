@@ -1,26 +1,16 @@
-import {
-	App,
-	ButtonComponent,
-	PluginSettingTab,
-	setIcon,
-	Setting,
-} from "obsidian";
+import { App, PluginSettingTab, Setting } from "obsidian";
 import { REPO_ISSUES_URL, REPO_URL } from "src/config/constants";
 import ObsidianHardcover from "src/main";
-import { renderDebugInfo, renderDevOptions } from "./settings/DebugSettings";
+import { renderDebugSection } from "./settings/DebugSettings";
 import { renderApiTokenSetting } from "./settings/ApiSettings";
 import {
 	renderFolderSetting,
 	renderFilenameTemplateSetting,
 } from "./settings/FileSettings";
-import {
-	addSyncButton,
-	renderLastSyncTimestampSetting,
-	renderStatusFilterSetting,
-	renderSyncInfoMessages,
-} from "./settings/SyncSettings";
+import { renderSyncSection } from "./settings/SyncSettings";
+import { renderStatusFilterSetting } from "./settings/StatusFilterSettings";
+import { renderLastSyncTimestampSetting } from "./settings/LastSyncSettings";
 import { renderGroupingSettings } from "./settings/GroupingSettings";
-import { renderWikilinkSettings } from "./settings/WikilinkSettings";
 import { renderNoteTemplateSettings } from "./settings/NoteTemplateSettings";
 import { renderStatusMappingSettings } from "./settings/StatusMappingSettings";
 
@@ -70,28 +60,7 @@ export default class SettingsTab extends PluginSettingTab {
 		containerEl.createEl("hr");
 
 		//  SECTION 4: SYNC
-		this.addMainSyncButton(containerEl);
-		renderSyncInfoMessages(containerEl);
-
-		containerEl.createEl("hr");
-
-		//  SECTION 5: DEBUG
-		this.addDebugSection(containerEl);
-
-		//  SECTION 6: DEV OPTIONS
-		if (IS_DEV) {
-			new Setting(containerEl).setName("Developer options").setHeading();
-			renderDevOptions(containerEl, this.plugin);
-		}
-
-		containerEl.createEl("hr");
-
-		//  SECTION 7: SOURCE
-		this.addSourceSection(containerEl);
-	}
-
-	private addMainSyncButton(containerEl: HTMLElement): void {
-		const button = addSyncButton({
+		renderSyncSection({
 			containerEl: containerEl,
 			plugin: this.plugin,
 			name: "Sync Hardcover library",
@@ -102,16 +71,24 @@ export default class SettingsTab extends PluginSettingTab {
 			onSyncComplete: () => this.display(),
 			settingClassName: "obhc-sync-cta",
 		});
-	}
 
-	private addDebugSection(containerEl: HTMLElement): void {
-		renderDebugInfo(
+		containerEl.createEl("hr");
+
+		//  SECTION 5: DEBUG
+		new Setting(containerEl).setName("Debug").setHeading();
+
+		renderDebugSection(
 			containerEl,
 			this.plugin,
 			this.debugBookLimit,
 			(limit) => (this.debugBookLimit = limit),
 			() => this.display(),
 		);
+
+		containerEl.createEl("hr");
+
+		//  SECTION 7: SOURCE
+		this.addSourceSection(containerEl);
 	}
 
 	private addSourceSection(containerEl: HTMLElement): void {
