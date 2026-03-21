@@ -172,6 +172,21 @@ export class TemplateDataBuilder {
 			variables.status = this.mapStatus(userBook.status_id);
 		}
 
+		// review
+		if (userBook.review && userBook.review.trim()) {
+			variables.review = userBook.review;
+		} else if (userBook.review_raw && userBook.review_raw.trim()) {
+			variables.review = userBook.review_raw;
+		}
+
+		// quotes
+		if (userBook.reading_journals) {
+			const quotes = userBook.reading_journals.map((q) => q.entry);
+			if (quotes.length > 0) {
+				variables.quotes = quotes;
+			}
+		}
+
 		// reading activity
 		if (readingActivity && readingActivity.length > 0) {
 			const activity = extractReadingActivity(readingActivity);
