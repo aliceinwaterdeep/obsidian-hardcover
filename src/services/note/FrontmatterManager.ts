@@ -125,4 +125,54 @@ export class FrontmatterManager {
 
 		return { bodyText: content };
 	}
+
+	updateFrontmatterObject(
+		frontmatter: Record<string, any>,
+		newData: Record<string, any>,
+		managedKeys: Set<string>,
+		preserveCustomFrontmatter: boolean,
+		managedOrder: string[],
+	): void {
+		const original = { ...frontmatter };
+		const originalKeys = Object.keys(frontmatter);
+		const added = new Set<string>();
+
+		const managedOrderToUse =
+			managedOrder && managedOrder.length > 0
+				? managedOrder
+				: Object.keys(newData);
+
+		const newManagedValues = new Map<string, string>();
+		for (const key of managedKeys) {
+			if (key in newData) {
+				newManagedValues.set(JSON.stringify(newData[key]), key);
+			}
+		}
+
+		for (const key of originalKeys) {
+			delete frontmatter[key];
+		}
+
+		for (const key of managedOrderToUse) {
+			if (key in newData) {
+				frontmatter[key] = newData[key];
+				added.add(key);
+			}
+		}
+
+		if (preserveCustomFrontmatter) {
+			for (const key of originalKeys) {
+				if (!managedKeys.has(key) && !added.has(key)) {
+					const oldValue = original[key];
+					const serialized = JSON.stringify(oldValue);
+
+					if (newManagedValues.has(serialized)) {
+						// value matches a managed key = likely a rename, skip it
+					} else {
+						frontmatter[key] = oldValue;
+					}
+				}
+			}
+		}
+	}
 }
