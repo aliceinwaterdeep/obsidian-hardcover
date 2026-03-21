@@ -5,9 +5,11 @@ import ObsidianHardcover from "src/main";
 import { BookMetadata, GroupingSettings } from "src/types";
 import { FileUtils } from "src/utils/FileUtils";
 import { BodyTemplateRenderer } from "./note/BodyTemplateRenderer";
+import { FrontmatterManager } from "./note/FrontmatterManager";
 
 export class NoteService {
 	private bodyTemplateRenderer: BodyTemplateRenderer;
+	private frontmatterManager: FrontmatterManager;
 
 	constructor(
 		private vault: Vault,
@@ -16,6 +18,7 @@ export class NoteService {
 	) {
 		this.plugin = plugin;
 		this.bodyTemplateRenderer = new BodyTemplateRenderer(plugin);
+		this.frontmatterManager = new FrontmatterManager(plugin);
 	}
 
 	async createNote(
@@ -35,7 +38,8 @@ export class NoteService {
 			}
 
 			// prepare frontmatter with proper ordering and filtering
-			const frontmatterData = this.prepareFrontmatter(bookMetadata);
+			const frontmatterData =
+				this.frontmatterManager.prepareFrontmatter(bookMetadata);
 
 			// create body content only
 			const bodyContent = this.bodyTemplateRenderer.render(bookMetadata);
@@ -81,10 +85,11 @@ export class NoteService {
 		try {
 			const originalPath = existingFile.path;
 			const existingContent = await this.vault.cachedRead(existingFile);
-			const { bodyText: existingBodyText } = this.extractFrontmatter(
-				existingContent,
-				existingFile,
-			);
+			const { bodyText: existingBodyText } =
+				this.frontmatterManager.extractFrontmatter(
+					existingContent,
+					existingFile,
+				);
 
 			// read existing frontmatter before modifications
 			const existingFrontmatter: Record<string, any> = {};
@@ -94,7 +99,8 @@ export class NoteService {
 				Object.assign(existingFrontmatter, fileCache.frontmatter);
 			}
 
-			const managedFrontmatterKeys = this.getManagedFrontmatterKeys();
+			const managedFrontmatterKeys =
+				this.frontmatterManager.getManagedFrontmatterKeys();
 			const preserveCustomFrontmatter =
 				this.plugin.settings.preserveCustomFrontmatter !== false;
 
@@ -155,7 +161,8 @@ export class NoteService {
 			}
 
 			// prepare frontmatter data once
-			const frontmatterDataToWrite = this.prepareFrontmatter(bookMetadata);
+			const frontmatterDataToWrite =
+				this.frontmatterManager.prepareFrontmatter(bookMetadata);
 
 			// check if the file needs to be renamed/moved
 			if (originalPath !== targetPath) {
@@ -184,7 +191,7 @@ export class NoteService {
 							frontmatterDataToWrite,
 							managedFrontmatterKeys,
 							preserveCustomFrontmatter,
-							this.getManagedOrder(frontmatterDataToWrite),
+							this.frontmatterManager.getManagedOrder(frontmatterDataToWrite),
 						);
 					},
 				);
@@ -206,7 +213,7 @@ export class NoteService {
 							frontmatterDataToWrite,
 							managedFrontmatterKeys,
 							preserveCustomFrontmatter,
-							this.getManagedOrder(frontmatterDataToWrite),
+							this.frontmatterManager.getManagedOrder(frontmatterDataToWrite),
 						);
 					},
 				);
@@ -376,40 +383,6 @@ export class NoteService {
 		}
 	}
 
-	private prepareFrontmatter(metadata: BookMetadata): Record<string, any> {
-		const frontmatterData: Record<string, any> = {
-			hardcoverBookId: metadata.hardcoverBookId,
-			...metadata.frontmatter,
-		};
-		const prepared: Record<string, any> = {};
-
-		// get managed order from template
-		const managedOrder = this.getManagedOrder(frontmatterData);
-
-		// add properties in the order they appear in the template
-		for (const propName of managedOrder) {
-			if (!frontmatterData.hasOwnProperty(propName)) continue;
-
-			const value = frontmatterData[propName];
-
-			// skip undefined/null values
-			if (value === undefined || value === null) continue;
-
-			// remove all \n sequences and replace with spaces to avoid frontmatter issues
-			if (propName === "description" && typeof value === "string") {
-				const cleanValue = value.replace(/\\n/g, " ").trim();
-				// remove any multiple spaces that might result
-				const finalValue = cleanValue.replace(/\s+/g, " ");
-				prepared[propName] = finalValue;
-			} else {
-				// for everything else, just add it directly: Obsidian's processFrontMatter will handle arrays, strings, etc.
-				prepared[propName] = value;
-			}
-		}
-
-		return prepared;
-	}
-
 	private updateFrontmatterObject(
 		frontmatter: Record<string, any>,
 		newData: Record<string, any>,
@@ -464,93 +437,6 @@ export class NoteService {
 				}
 			}
 		}
-	}
-
-	private getManagedFrontmatterKeys(): Set<string> {
-		const keys = new Set<string>();
-
-		// hardcoverBookId is always managed by the plugin
-		keys.add("hardcoverBookId");
-
-		// parse the noteTemplate to extract YAML property names
-		const template = this.plugin.settings.noteTemplate;
-
-		// extract YAML block (between --- delimiters)
-		const yamlMatch = template.match(/^---\n([\s\S]*?)\n---/);
-
-		if (yamlMatch && yamlMatch[1]) {
-			const yamlContent = yamlMatch[1];
-
-			// extract property names (everything before the first : on each line)
-			const lines = yamlContent.split("\n");
-			for (const line of lines) {
-				const trimmed = line.trim();
-				if (trimmed && !trimmed.startsWith("#")) {
-					const colonIndex = trimmed.indexOf(":");
-					if (colonIndex > 0) {
-						const propName = trimmed.substring(0, colonIndex).trim();
-						keys.add(propName);
-					}
-				}
-			}
-		}
-
-		return keys;
-	}
-
-	private getManagedOrder(frontmatterData: Record<string, any>): string[] {
-		const order: string[] = [];
-
-		// hardcoverBookId always comes first
-		if ("hardcoverBookId" in frontmatterData) {
-			order.push("hardcoverBookId");
-		}
-
-		// parse the noteTemplate to get the order from YAML block
-		const template = this.plugin.settings.noteTemplate;
-
-		// extract YAML block
-		const yamlMatch = template.match(/^---\n([\s\S]*?)\n---/);
-
-		if (yamlMatch && yamlMatch[1]) {
-			const yamlContent = yamlMatch[1];
-
-			// extract property names in order
-			const lines = yamlContent.split("\n");
-			for (const line of lines) {
-				const trimmed = line.trim();
-				if (trimmed && !trimmed.startsWith("#")) {
-					const colonIndex = trimmed.indexOf(":");
-					if (colonIndex > 0) {
-						const propName = trimmed.substring(0, colonIndex).trim();
-						// add to order if it exists in the data and isn't already added
-						if (propName in frontmatterData && !order.includes(propName)) {
-							order.push(propName);
-						}
-					}
-				}
-			}
-		}
-
-		return order;
-	}
-
-	private extractFrontmatter(
-		content: string,
-		file: TFile,
-	): {
-		bodyText: string;
-	} {
-		const cache = this.plugin.app.metadataCache.getFileCache(file);
-		const frontmatterEnd = cache?.frontmatterPosition?.end;
-
-		if (frontmatterEnd !== undefined) {
-			const endOffset = frontmatterEnd.offset;
-			const bodyText = content.slice(endOffset);
-			return { bodyText };
-		}
-
-		return { bodyText: content };
 	}
 
 	/**
