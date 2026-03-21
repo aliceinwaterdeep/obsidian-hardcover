@@ -242,7 +242,7 @@ export class NoteService {
 		let basePath = normalizePath(this.plugin.settings.targetFolder);
 
 		if (groupingSettings.enabled) {
-			const directories = this.buildDirectoryPath(
+			const directories = this.notePathBuilder.buildDirectoryPath(
 				bookMetadata,
 				groupingSettings,
 				rawContributors,
