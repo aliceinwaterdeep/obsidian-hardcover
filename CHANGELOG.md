@@ -1,5 +1,30 @@
 # Changelog
 
+## 2.0.0
+
+### ⚠️ Breaking Changes
+
+Major update with **automatic migration**. Your settings will be converted to the new format with no data loss. Notes will look identical after upgrade.
+A backup of your data is always recommended in case of issues.
+
+See [V2 Migration](docs/v2-migration.md) for migration details.
+
+### Added
+
+- **Customizable template** with variables for complete control over the note frontmatter and body
+- **Custom properties**: you can add custom properties and values (e.g. tags) in your template and they will be added to all notes
+- **Split book/edition data**: use both sources in the same note
+- **Global wikilink settings**: apply to both frontmatter and body
+
+### Changed
+
+- Settings structure updated to support template system
+- Frontmatter toggles replaced by note template
+- Quotes format and status mapping moved to dedicated settings
+- Filename template syntax changed from `${}` to `{{}}` for consistency with most Obsidian plugins
+
+Huge thanks to @wolleydev & @cjmedia who requested this feature!
+
 ## 1.9.0
 
 ### New

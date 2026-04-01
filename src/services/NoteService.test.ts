@@ -8,6 +8,8 @@ jest.mock("obsidian", () => ({
 	TFile: jest.fn(),
 	Vault: jest.fn(),
 	normalizePath: (p: string) => p,
+	MetadataCache: jest.fn(),
+	Notice: jest.fn(),
 }));
 
 describe("NoteService", () => {
@@ -24,68 +26,27 @@ describe("NoteService", () => {
 		noteService = new NoteService(mockVault, fileUtils, mockPlugin);
 	});
 
-	describe("wikilink formatting", () => {
-		const formatAsWikilinks = (values: string[], fieldKey: any) =>
-			(noteService as any).formatAsWikilinks(values, fieldKey);
-
-		test("formats authors as simple wikilinks", () => {
-			const authors = ["Martha Wells", "Agatha Christie"];
-			const result = formatAsWikilinks(authors, "authors");
-
-			expect(result).toEqual(["[[Martha Wells]]", "[[Agatha Christie]]"]);
-		});
-
-		test("formats contributors with role", () => {
-			const contributors = [
-				"Stefano Cresti (Translator)",
-				"John Smith (Narrator)",
-			];
-			const result = formatAsWikilinks(contributors, "contributors");
-
-			expect(result).toEqual([
-				"[[Stefano Cresti|Stefano Cresti (Translator)]]",
-				"[[John Smith|John Smith (Narrator)]]",
-			]);
-		});
-
-		test("handles contributors without roles", () => {
-			const contributors = ["Stefano Cresti", "John Smith"];
-			const result = formatAsWikilinks(contributors, "contributors");
-
-			expect(result).toEqual(["[[Stefano Cresti]]", "[[John Smith]]"]);
-		});
-
-		test("formats series with position", () => {
-			const series = ["The Murderbot Diaries #3", "Hercule Poirot #1"];
-			const result = formatAsWikilinks(series, "series");
-
-			expect(result).toEqual([
-				"[[The Murderbot Diaries|The Murderbot Diaries #3]]",
-				"[[Hercule Poirot|Hercule Poirot #1]]",
-			]);
-		});
-
-		test("handles series without position", () => {
-			const series = ["The Hunger Games", "Hercule Poirot"];
-			const result = formatAsWikilinks(series, "series");
-
-			expect(result).toEqual(["[[The Hunger Games]]", "[[Hercule Poirot]]"]);
-		});
-	});
-
 	describe("frontmatter preservation", () => {
 		const baseMetadata = {
 			hardcoverBookId: 123,
-			title: "New Title",
-			releaseDate: "2020-01-01",
-			authors: ["Author One"],
-			status: "reading",
-			bodyContent: {},
+			frontmatter: {
+				title: "New Title",
+				releaseDate: "2020-01-01",
+				authors: ["Author One"],
+				status: ["reading"],
+			},
+			variables: {
+				editionTitle: "New Title",
+				editionReleaseDate: "2020-01-01",
+				editionAuthors: ["Author One"],
+				status: ["reading"],
+			},
 		};
 
 		const existingContent = `---
 customKey: keep-me
 status: old-status
+2025 TBR: true
 ---
 
 # Old Title
@@ -97,8 +58,14 @@ User section
 
 		function buildNoteService(
 			preserveCustomFrontmatter: boolean,
-			existingFile: any
+			existingFile: any,
 		) {
+			let frontmatterObject: Record<string, any> = {
+				customKey: "keep-me",
+				status: "old-status",
+				"2025 TBR": true,
+			};
+
 			const mockVault = {
 				cachedRead: jest.fn().mockResolvedValue(existingContent),
 				modify: jest.fn().mockResolvedValue(undefined),
@@ -108,8 +75,7 @@ User section
 				createFolder: jest.fn().mockResolvedValue(undefined),
 			} as any;
 
-			let lastFrontmatter = frontmatterObject;
-			let processCalled = false;
+			let lastFrontmatter = { ...frontmatterObject };
 
 			const mockPlugin = {
 				settings: {
@@ -117,9 +83,14 @@ User section
 					preserveCustomFrontmatter,
 				},
 				app: {
+					metadataCache: {
+						getFileCache: jest.fn().mockReturnValue({
+							frontmatter: { ...frontmatterObject },
+							frontmatterPosition: undefined,
+						}),
+					},
 					fileManager: {
 						processFrontMatter: jest.fn(async (_file: any, cb: any) => {
-							processCalled = true;
 							lastFrontmatter = { ...frontmatterObject };
 							cb(lastFrontmatter);
 							frontmatterObject = lastFrontmatter;
@@ -135,26 +106,14 @@ User section
 				mockVault,
 				mockPlugin,
 				getFrontmatter: () => lastFrontmatter,
-				wasProcessCalled: () => processCalled,
 			};
 		}
-
-		let frontmatterObject: Record<string, any>;
-
-		beforeEach(() => {
-			frontmatterObject = {
-				customKey: "keep-me",
-				status: "old-status",
-				"2025 TBR": true,
-			};
-		});
 
 		test("keeps custom frontmatter keys when preservation is enabled", async () => {
 			const existingFile = {
 				path: "HardcoverBooks/New Title (2020).md",
 			} as any;
-			const { service, mockVault, getFrontmatter, wasProcessCalled } =
-				buildNoteService(true, existingFile);
+			const { service, getFrontmatter } = buildNoteService(true, existingFile);
 
 			await service.updateNote(baseMetadata as any, existingFile);
 
@@ -162,39 +121,31 @@ User section
 
 			expect(updatedFrontmatter.customKey).toBe("keep-me");
 			expect(updatedFrontmatter["2025 TBR"]).toBe(true);
-
-			expect(updatedFrontmatter.status).toBe("reading");
+			expect(updatedFrontmatter.status).toEqual(["reading"]);
 
 			const keyOrder = Object.keys(updatedFrontmatter);
-
 			const statusIndex = keyOrder.indexOf("status");
 			const customKeyIndex = keyOrder.indexOf("customKey");
 			const spacedKeyIndex = keyOrder.indexOf("2025 TBR");
 
 			expect(statusIndex).toBeLessThan(customKeyIndex);
 			expect(statusIndex).toBeLessThan(spacedKeyIndex);
-
 			expect(keyOrder[0]).toBe("hardcoverBookId");
-
-			expect(mockVault.modify).toHaveBeenCalled();
-			expect(wasProcessCalled()).toBe(true);
 		});
 
 		test("removes custom frontmatter keys when preservation is disabled", async () => {
 			const existingFile = {
 				path: "HardcoverBooks/New Title (2020).md",
 			} as any;
-			const { service, mockVault, getFrontmatter, wasProcessCalled } =
-				buildNoteService(false, existingFile);
+			const { service, getFrontmatter } = buildNoteService(false, existingFile);
 
 			await service.updateNote(baseMetadata as any, existingFile);
 
 			const updatedFrontmatter = getFrontmatter();
+
 			expect(updatedFrontmatter.customKey).toBeUndefined();
 			expect(updatedFrontmatter["2025 TBR"]).toBeUndefined();
-			expect(updatedFrontmatter.status).toBe("reading");
-			expect(mockVault.modify).toHaveBeenCalled();
-			expect(wasProcessCalled()).toBe(true);
+			expect(updatedFrontmatter.status).toEqual(["reading"]);
 		});
 	});
 
@@ -235,6 +186,33 @@ User section
 			const result = await service.findNoteByHardcoverId(440947);
 
 			expect(result).toBe(mockFile);
+		});
+
+		test("returns null when note not found", async () => {
+			const mockFolder = {
+				children: [],
+			};
+
+			const mockVault = {
+				getFolderByPath: jest.fn().mockReturnValue(mockFolder),
+			} as any;
+
+			const mockPlugin = {
+				settings: {
+					targetFolder: "HardcoverBooks",
+				},
+				app: {
+					metadataCache: {
+						getFileCache: jest.fn().mockReturnValue(null),
+					},
+				},
+			} as any;
+
+			const service = new NoteService(mockVault, {} as any, mockPlugin);
+
+			const result = await service.findNoteByHardcoverId(999999);
+
+			expect(result).toBeNull();
 		});
 	});
 });

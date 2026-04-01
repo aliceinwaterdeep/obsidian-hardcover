@@ -19,20 +19,21 @@ export interface PluginSettings {
 	userId: number | null;
 	booksCount: number | null;
 
-	// field configuration
-	fieldsSettings: FieldsSettings;
 	preserveCustomFrontmatter: boolean;
 
 	// status filter - empty array means sync all statuses
 	statusFilter: number[];
 
-	// data source preferences
-	dataSourcePreferences: {
-		titleSource: DataSource;
-		coverSource: DataSource;
-		releaseDateSource: DataSource;
-		authorsSource: DataSource;
-		contributorsSource: DataSource;
+	noteTemplate: string;
+	keepEmptyHeadings: boolean;
+	quotesFormat: "blockquote" | "callout";
+	wikilinkSettings: {
+		authors: boolean;
+		contributors: boolean;
+		series: boolean;
+		publisher: boolean;
+		genres: boolean;
+		lists: boolean;
 	};
 
 	statusMapping: {
@@ -44,11 +45,9 @@ export interface PluginSettings {
 	filenameTemplate: string;
 }
 
-type DataSource = "book" | "edition";
 export interface FieldConfig {
 	enabled: boolean;
 	propertyName: string;
-	wikilinks?: boolean;
 	bodyHeading?: string;
 }
 
@@ -57,23 +56,24 @@ export interface ActivityDateFieldConfig extends FieldConfig {
 	endPropertyName: string;
 }
 
-export interface QuotesFieldConfig extends FieldConfig {
-	format: "blockquote" | "callout";
-}
-
-export interface FieldsSettings {
+export interface FrontmatterFieldsSettings {
 	// user_books fields
 	rating: FieldConfig;
 	status: FieldConfig;
 	review: FieldConfig;
-	quotes: QuotesFieldConfig;
+	quotes: FieldConfig;
 
 	// book or edition fields
-	title: FieldConfig;
-	cover: FieldConfig;
-	authors: FieldConfig;
-	contributors: FieldConfig;
-	releaseDate: FieldConfig;
+	bookTitle: FieldConfig;
+	editionTitle: FieldConfig;
+	bookCover: FieldConfig;
+	editionCover: FieldConfig;
+	bookReleaseDate: FieldConfig;
+	editionReleaseDate: FieldConfig;
+	bookAuthors: FieldConfig;
+	editionAuthors: FieldConfig;
+	bookContributors: FieldConfig;
+	editionContributors: FieldConfig;
 
 	// book fields
 	description: FieldConfig;
@@ -97,28 +97,43 @@ export interface FieldsSettings {
 	readYears: FieldConfig;
 }
 
-export interface FieldDefinition {
-	key: keyof FieldsSettings;
-	name: string;
-	description: string;
-	hasDataSource?: boolean;
-	isActivityDateField?: boolean;
-	supportsWikilinks?: boolean;
-}
-
 export interface BookMetadata {
 	hardcoverBookId: number;
-	bodyContent: {
-		title?: string;
-		coverUrl?: string;
-		review?: string;
-		quotes?: string[];
-	};
-	// allow for dynamic properties based on user custom property names
-	[key: string]: any;
+	frontmatter: Record<string, any>; // all frontmatter properties (using custom property names)
+	variables: Record<string, any>;
 }
 
 export interface BookMetadataWithContributors {
 	metadata: BookMetadata;
 	rawContributors?: Record<any, any>[];
+}
+
+// legacy interface to keep because of migrations from old settings to new
+export interface FrontmatterFieldsSettings {
+	bookTitle: FieldConfig;
+	editionTitle: FieldConfig;
+	bookCover: FieldConfig;
+	editionCover: FieldConfig;
+	bookReleaseDate: FieldConfig;
+	editionReleaseDate: FieldConfig;
+	bookAuthors: FieldConfig;
+	editionAuthors: FieldConfig;
+	bookContributors: FieldConfig;
+	editionContributors: FieldConfig;
+	description: FieldConfig;
+	series: FieldConfig;
+	publisher: FieldConfig;
+	isbn10: FieldConfig;
+	isbn13: FieldConfig;
+	url: FieldConfig;
+	genres: FieldConfig;
+	lists: FieldConfig;
+	status: FieldConfig;
+	rating: FieldConfig;
+	firstRead: ActivityDateFieldConfig;
+	lastRead: ActivityDateFieldConfig;
+	totalReads: FieldConfig;
+	readYears: FieldConfig;
+	review: FieldConfig;
+	quotes: FieldConfig;
 }

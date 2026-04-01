@@ -1,5 +1,4 @@
 import { normalizePath } from "obsidian";
-import { FieldsSettings } from "src/types";
 
 export class FileUtils {
 	sanitizeFilename(name: string): string {
@@ -37,43 +36,76 @@ export class FileUtils {
 		return !normalizedPath || normalizedPath === "/";
 	}
 
-	processFilenameTemplate(
-		template: string,
-		metadata: any,
-		fieldsSettings: FieldsSettings
-	): string {
+	processFilenameTemplate(template: string, availableData: any): string {
 		let filename = template;
 
-		const titleProperty = fieldsSettings.title.propertyName;
-		if (metadata[titleProperty]) {
-			filename = filename.replace(/\${title}/g, metadata[titleProperty]);
+		// {{editionTitle}}
+		const editionTitleValue = availableData.editionTitle;
+		if (editionTitleValue) {
+			filename = filename.replace(/\{\{editionTitle\}\}/g, editionTitleValue);
 		}
 
-		const authorsProperty = fieldsSettings.authors.propertyName;
-		if (metadata[authorsProperty] && Array.isArray(metadata[authorsProperty])) {
-			const authorsString = metadata[authorsProperty].join(", ");
-			filename = filename.replace(/\${authors}/g, authorsString);
+		// {{bookTitle}}
+		const bookTitleValue = availableData.bookTitle;
+		if (bookTitleValue) {
+			filename = filename.replace(/\{\{bookTitle\}\}/g, bookTitleValue);
 		}
 
-		const releaseDateProperty = fieldsSettings.releaseDate.propertyName;
-		if (metadata[releaseDateProperty]) {
+		// {{editionAuthors}}
+		const editionAuthorsValue = availableData.editionAuthors;
+		if (editionAuthorsValue && Array.isArray(editionAuthorsValue)) {
+			const authorsString = editionAuthorsValue.join(", ");
+			filename = filename.replace(/\{\{editionAuthors\}\}/g, authorsString);
+		}
+
+		// {{bookAuthors}}
+		const bookAuthorsValue = availableData.bookAuthors;
+		if (bookAuthorsValue && Array.isArray(bookAuthorsValue)) {
+			const authorsString = bookAuthorsValue.join(", ");
+			filename = filename.replace(/\{\{bookAuthors\}\}/g, authorsString);
+		}
+
+		// {{editionYear}}
+		const editionReleaseDateValue = availableData.editionReleaseDate;
+		if (editionReleaseDateValue) {
 			try {
-				const year = new Date(metadata[releaseDateProperty]).getFullYear();
-
+				const year = new Date(editionReleaseDateValue).getFullYear();
 				if (!isNaN(year)) {
-					filename = filename.replace(/\${year}/g, year.toString());
+					filename = filename.replace(/\{\{editionYear\}\}/g, year.toString());
 				} else {
-					filename = filename.replace(/\${year}/g, "");
+					filename = filename.replace(/\{\{editionYear\}\}/g, "");
 				}
 			} catch (error) {
-				console.error("Error extracting year from release date:", error);
-				filename = filename.replace(/\${year}/g, "");
+				console.error(
+					"Error extracting year from edition release date:",
+					error,
+				);
+				filename = filename.replace(/\{\{editionYear\}\}/g, "");
 			}
 		} else {
-			filename = filename.replace(/\${year}/g, "");
+			filename = filename.replace(/\{\{editionYear\}\}/g, "");
 		}
 
-		// only clean up empty brackets and extra spacing, but preserve user's intentional formatting
+		// {{bookYear}}
+		const bookReleaseDateValue = availableData.bookReleaseDate;
+
+		if (bookReleaseDateValue) {
+			try {
+				const year = new Date(bookReleaseDateValue).getFullYear();
+				if (!isNaN(year)) {
+					filename = filename.replace(/\{\{bookYear\}\}/g, year.toString());
+				} else {
+					filename = filename.replace(/\{\{bookYear\}\}/g, "");
+				}
+			} catch (error) {
+				console.error("Error extracting year from book release date:", error);
+				filename = filename.replace(/\{\{bookYear\}\}/g, "");
+			}
+		} else {
+			filename = filename.replace(/\{\{bookYear\}\}/g, "");
+		}
+
+		// clean up empty brackets and extra spacing
 		filename = filename
 			.replace(/\(\s*\)/g, "")
 			.replace(/\[\s*\]/g, "")
@@ -83,7 +115,8 @@ export class FileUtils {
 			.trim();
 
 		// replace any unsupported template variables with empty string
-		filename = filename.replace(/\${[^}]+}/g, "");
+		filename = filename.replace(/\{\{[^}]+\}\}/g, "");
+
 		return this.sanitizeFilename(filename) + ".md";
 	}
 

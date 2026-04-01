@@ -1,35 +1,29 @@
-import { App, ButtonComponent, PluginSettingTab, Setting } from "obsidian";
+import { App, PluginSettingTab, Setting } from "obsidian";
 import { REPO_ISSUES_URL, REPO_URL } from "src/config/constants";
 import ObsidianHardcover from "src/main";
-import { Accordion } from "./ui/Accordion";
-import { renderDebugInfo, renderDevOptions } from "./settings/DebugSettings";
+import { renderDebugSection } from "./settings/DebugSettings";
 import { renderApiTokenSetting } from "./settings/ApiSettings";
-import { renderFieldSettings } from "./settings/FieldsSettings";
 import {
 	renderFolderSetting,
 	renderFilenameTemplateSetting,
 } from "./settings/FileSettings";
-import {
-	addSyncButton,
-	renderLastSyncTimestampSetting,
-	renderStatusFilterSetting,
-	renderSyncInfoMessages,
-} from "./settings/SyncSettings";
+import { renderSyncSection } from "./settings/SyncSettings";
+import { renderStatusFilterSetting } from "./settings/StatusFilterSettings";
+import { renderLastSyncTimestampSetting } from "./settings/LastSyncSettings";
 import { renderGroupingSettings } from "./settings/GroupingSettings";
+import { renderNoteTemplateSettings } from "./settings/NoteTemplateSettings";
+import { renderStatusMappingSettings } from "./settings/StatusMappingSettings";
 
 export default class SettingsTab extends PluginSettingTab {
 	plugin: ObsidianHardcover;
 	SYNC_CTA_LABEL: string;
 	debugBookLimit: number;
-	accordion: Accordion;
-	private syncButtons: ButtonComponent[] = [];
 
 	constructor(app: App, plugin: ObsidianHardcover) {
 		super(app, plugin);
 		this.plugin = plugin;
 		this.SYNC_CTA_LABEL = "Sync now";
 		this.debugBookLimit = 1;
-		this.accordion = new Accordion(plugin);
 	}
 
 	display(): void {
@@ -37,50 +31,36 @@ export default class SettingsTab extends PluginSettingTab {
 		containerEl.empty();
 		containerEl.addClass("obhc-settings");
 
-		this.syncButtons = [];
+		//  SECTION 1: GENERAL
+		new Setting(containerEl).setName("General").setHeading();
 
-		// config section
-		renderApiTokenSetting(containerEl, this.plugin, () =>
-			this.updateSyncButtonsState()
-		);
-		renderFolderSetting(containerEl, this.plugin, () =>
-			this.updateSyncButtonsState()
-		);
-		renderGroupingSettings(containerEl, this.plugin, () => this.display());
-		renderFilenameTemplateSetting(containerEl, this.plugin);
+		renderApiTokenSetting(containerEl, this.plugin);
+		renderFolderSetting(containerEl, this.plugin);
 		renderStatusFilterSetting(containerEl, this.plugin);
 		renderLastSyncTimestampSetting(containerEl, this.plugin, () =>
-			this.display()
+			this.display(),
 		);
 
-		// fields section
-		renderFieldSettings(containerEl, this.plugin, this.accordion);
+		containerEl.createEl("hr");
+
+		//  SECTION 2: FILE ORGANIZATION
+		new Setting(containerEl).setName("File Organization").setHeading();
+
+		renderGroupingSettings(containerEl, this.plugin, () => this.display());
+		renderFilenameTemplateSetting(containerEl, this.plugin);
 
 		containerEl.createEl("hr");
 
-		// sync button
-		this.addMainSyncButton(containerEl);
+		//  SECTION 3: NOTE TEMPLATE
+		new Setting(containerEl).setName("Note Template").setHeading();
 
-		renderSyncInfoMessages(containerEl);
-
-		containerEl.createEl("hr");
-
-		// debug section
-		this.addDebugSection(containerEl);
-
-		// show developer options in dev mode
-		if (IS_DEV) {
-			new Setting(containerEl).setName("Developer options").setHeading();
-			renderDevOptions(containerEl, this.plugin);
-		}
+		renderNoteTemplateSettings(containerEl, this.plugin);
+		renderStatusMappingSettings(containerEl, this.plugin);
 
 		containerEl.createEl("hr");
 
-		this.addSourceSection(containerEl);
-	}
-
-	private addMainSyncButton(containerEl: HTMLElement): void {
-		const button = addSyncButton({
+		//  SECTION 4: SYNC
+		renderSyncSection({
 			containerEl: containerEl,
 			plugin: this.plugin,
 			name: "Sync Hardcover library",
@@ -88,26 +68,27 @@ export default class SettingsTab extends PluginSettingTab {
 				"Sync your Hardcover books to your notes. For testing, you can sync a limited number of books in the Debug section below.",
 			buttonText: this.SYNC_CTA_LABEL,
 			isMainCTA: true,
-			updateSyncButtonsState: () => this.updateSyncButtonsState(),
 			onSyncComplete: () => this.display(),
 			settingClassName: "obhc-sync-cta",
 		});
 
-		this.syncButtons.push(button);
-	}
+		containerEl.createEl("hr");
 
-	private addDebugSection(containerEl: HTMLElement): void {
-		const button = renderDebugInfo(
+		//  SECTION 5: DEBUG
+		new Setting(containerEl).setName("Debug").setHeading();
+
+		renderDebugSection(
 			containerEl,
 			this.plugin,
 			this.debugBookLimit,
-			() => this.updateSyncButtonsState(),
 			(limit) => (this.debugBookLimit = limit),
-			() => this.display()
+			() => this.display(),
 		);
 
-		this.syncButtons.push(button);
-		this.updateSyncButtonsState();
+		containerEl.createEl("hr");
+
+		//  SECTION 7: SOURCE
+		this.addSourceSection(containerEl);
 	}
 
 	private addSourceSection(containerEl: HTMLElement): void {
@@ -126,16 +107,5 @@ export default class SettingsTab extends PluginSettingTab {
 			href: REPO_ISSUES_URL,
 			cls: "obhc-source-link",
 		});
-	}
-
-	async updateSyncButtonsState(): Promise<void> {
-		const validation = await this.plugin.validateSyncConstraints();
-		const isDisabled = !validation.isValid;
-		const tooltipText = validation.errorMessage || "";
-
-		for (const button of this.syncButtons) {
-			button.setDisabled(isDisabled);
-			button.setTooltip(tooltipText);
-		}
 	}
 }

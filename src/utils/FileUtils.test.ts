@@ -1,5 +1,4 @@
 import { FileUtils } from "./FileUtils";
-import { DEFAULT_FIELDS_SETTINGS } from "../config/defaultSettings";
 
 jest.mock("obsidian", () => ({
 	normalizePath: (path: string) => {
@@ -7,6 +6,7 @@ jest.mock("obsidian", () => ({
 		if (!path) return "";
 		return path.replace(/\\/g, "/").replace(/\/+/g, "/");
 	},
+	Notice: jest.fn(),
 }));
 
 describe("FileUtils", () => {
@@ -25,76 +25,91 @@ describe("FileUtils", () => {
 	describe("sanitizeFilename", () => {
 		test("removes illegal characters", () => {
 			expect(fileUtils.sanitizeFilename("Book\\Title:With*Bad?Chars")).toBe(
-				"BookTitleWithBadChars"
+				"BookTitleWithBadChars",
 			);
 		});
 
 		test("handles multiple spaces and trimming", () => {
 			expect(fileUtils.sanitizeFilename("  Book   With    Spaces  ")).toBe(
-				"Book With Spaces"
+				"Book With Spaces",
 			);
 		});
 	});
 
 	describe("processFilenameTemplate", () => {
-		test("replaces all variables correctly", () => {
+		test("replaces edition variables correctly", () => {
 			const metadata = {
-				title: MOCK_BOOK.title,
-				releaseDate: MOCK_BOOK.releaseDate,
-				authors: [MOCK_BOOK.author],
+				editionTitle: MOCK_BOOK.title,
+				editionReleaseDate: MOCK_BOOK.releaseDate,
+				editionAuthors: [MOCK_BOOK.author],
 			};
 			expect(
 				fileUtils.processFilenameTemplate(
-					"${title} by ${authors} (${year})",
+					"{{editionTitle}} by {{editionAuthors}} ({{editionYear}})",
 					metadata,
-					DEFAULT_FIELDS_SETTINGS
-				)
+				),
 			).toBe("All Systems Red by Martha Wells (2017).md");
 		});
 
-		test("handles missing data gracefully", () => {
-			const metadata = { title: MOCK_BOOK.title };
+		test("replaces book variables correctly", () => {
+			const metadata = {
+				bookTitle: "The Book Title",
+				bookAuthors: ["Book Author"],
+				bookReleaseDate: "2026-01-01",
+			};
 			expect(
 				fileUtils.processFilenameTemplate(
-					"${title} (${year})",
+					"{{bookTitle}} by {{bookAuthors}} ({{bookYear}})",
 					metadata,
-					DEFAULT_FIELDS_SETTINGS
-				)
+				),
+			).toBe("The Book Title by Book Author (2026).md");
+		});
+
+		test("handles missing data gracefully", () => {
+			const metadata = {
+				editionTitle: MOCK_BOOK.title,
+			};
+			expect(
+				fileUtils.processFilenameTemplate(
+					"{{editionTitle}} ({{editionYear}})",
+					metadata,
+				),
 			).toBe("All Systems Red.md");
 		});
 
 		test("handles invalid release date", () => {
-			const metadata = { title: MOCK_BOOK.title, releaseDate: "invalid" };
+			const metadata = {
+				editionTitle: MOCK_BOOK.title,
+				editionReleaseDate: "invalid",
+			};
 			expect(
 				fileUtils.processFilenameTemplate(
-					"${title} (${year})",
+					"{{editionTitle}} ({{editionYear}})",
 					metadata,
-					DEFAULT_FIELDS_SETTINGS
-				)
+				),
 			).toBe("All Systems Red.md");
 		});
 
-		test("handles custom property names", () => {
-			const customSettings = {
-				...DEFAULT_FIELDS_SETTINGS,
-				title: { enabled: true, propertyName: "bookTitle" },
-				authors: { enabled: true, propertyName: "bookAuthors" },
-				releaseDate: { enabled: true, propertyName: "publicationDate" },
-			};
-
+		test("handles multiple authors", () => {
 			const metadata = {
-				bookTitle: "All Systems Red",
-				publicationDate: "2017-05-02",
-				bookAuthors: ["Martha Wells"],
+				editionAuthors: ["Author One", "Author Two", "Author Three"],
 			};
+			expect(
+				fileUtils.processFilenameTemplate("{{editionAuthors}}", metadata),
+			).toBe("Author One, Author Two, Author Three.md");
+		});
 
+		test("handles empty authors array", () => {
+			const metadata = {
+				editionTitle: "Test Book",
+				editionAuthors: [],
+			};
 			expect(
 				fileUtils.processFilenameTemplate(
-					"${title} by ${authors} (${year})",
+					"{{editionTitle}} by {{editionAuthors}}",
 					metadata,
-					customSettings
-				)
-			).toBe("All Systems Red by Martha Wells (2017).md");
+				),
+			).toBe("Test Book by.md");
 		});
 	});
 

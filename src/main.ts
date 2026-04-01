@@ -7,8 +7,9 @@ import { MetadataService } from "./services/MetadataService";
 import { FileUtils } from "./utils/FileUtils";
 import { NoteService } from "./services/NoteService";
 import { DEFAULT_SETTINGS } from "./config/defaultSettings";
-import { SettingsMigrationService } from "./services/SettingsMigrationService";
+import { SettingsMigrationService } from "./services/migrations";
 import { EnvUtils } from "./utils/EnvUtils";
+import { validateNoteTemplate } from "./utils/TemplateValidation";
 
 export default class ObsidianHardcover extends Plugin {
 	settings: PluginSettings;
@@ -77,24 +78,28 @@ export default class ObsidianHardcover extends Plugin {
 	async loadSettings() {
 		const savedData = await this.loadData();
 
+		// ensure settings exist before service initialization
 		this.settings = Object.assign({}, DEFAULT_SETTINGS, savedData);
 
 		// check if migration is needed
-		if (
-			!savedData ||
-			typeof savedData.settingsVersion === "undefined" ||
-			savedData.settingsVersion < DEFAULT_SETTINGS.settingsVersion
-		) {
-			// apply migrations
-			this.settings = SettingsMigrationService.migrateSettings(
-				this.settings,
-				this.app,
-			);
+		if (savedData) {
+			const savedVersion = savedData.settingsVersion ?? 0;
 
-			// save the migrated settings
-			await this.saveSettings();
-			if (IS_DEV) {
-				console.debug("Settings migration completed and saved");
+			if (savedVersion < DEFAULT_SETTINGS.settingsVersion) {
+				// apply migrations on clean old data
+				this.settings = SettingsMigrationService.migrateSettings(
+					this.settings,
+					this.app,
+				);
+
+				// then merge with defaults to fill any missing properties
+				this.settings = Object.assign({}, DEFAULT_SETTINGS, this.settings);
+
+				// save the migrated settings
+				await this.saveSettings();
+				if (IS_DEV) {
+					console.debug("Settings migration completed and saved");
+				}
 			}
 		}
 	}
@@ -141,6 +146,15 @@ export default class ObsidianHardcover extends Plugin {
 				isValid: false,
 				errorMessage:
 					"Please enter your Hardcover API key in the settings or in a .env file.",
+			};
+		}
+
+		const templateValidation = validateNoteTemplate(this.settings.noteTemplate);
+
+		if (!templateValidation.valid) {
+			return {
+				isValid: false,
+				errorMessage: `Invalid note template: ${templateValidation.error}`,
 			};
 		}
 

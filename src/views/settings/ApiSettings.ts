@@ -6,7 +6,6 @@ import { HARDCOVER_API_KEY_URL } from "src/config/constants";
 export function renderApiTokenSetting(
 	containerEl: HTMLElement,
 	plugin: ObsidianHardcover,
-	onSettingsChanged: () => void,
 ): void {
 	const setting = new Setting(containerEl).setName("Hardcover API key");
 
@@ -49,7 +48,6 @@ export function renderApiTokenSetting(
 					.onChange(async (value) => {
 						plugin.settings.apiKey = value;
 						await plugin.saveSettings();
-						onSettingsChanged();
 					});
 			});
 		}

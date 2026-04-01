@@ -1,72 +1,58 @@
-import { FieldsSettings, PluginSettings } from "src/types";
+import { PluginSettings } from "src/types";
 import { HARDCOVER_STATUS_MAP } from "./statusMapping";
 
-export const DEFAULT_FIELDS_SETTINGS: FieldsSettings = {
-	rating: { enabled: true, propertyName: "rating" },
-	status: { enabled: true, propertyName: "status" },
-	review: { enabled: true, propertyName: "review", bodyHeading: "Review" },
-	quotes: {
-		enabled: false,
-		propertyName: "quotes",
-		format: "blockquote",
-		bodyHeading: "Quotes",
-	},
+export const DEFAULT_NOTE_TEMPLATE = `---
+title: {{editionTitle}}
+cover: {{editionCover}}
+releaseDate: {{editionReleaseDate}}
+authors: {{editionAuthors}}
+contributors: {{editionContributors}}
+description: {{description}}
+series: {{series}}
+publisher: {{publisher}}
+genres: {{genres}}
+url: {{url}}
+rating: {{rating}}
+status: {{status}}
+firstReadStart: {{firstReadStart}}
+firstReadEnd: {{firstReadEnd}}
+lastReadStart: {{lastReadStart}}
+lastReadEnd: {{lastReadEnd}}
+totalReads: {{totalReads}}
+readYears: {{readYears}}
+---
 
-	title: { enabled: true, propertyName: "title" },
-	cover: { enabled: true, propertyName: "cover" },
-	authors: { enabled: true, propertyName: "authors" },
-	contributors: { enabled: true, propertyName: "contributors" },
-	releaseDate: { enabled: true, propertyName: "releaseDate" },
-	url: { enabled: true, propertyName: "url" },
+# {{editionTitle}}
+![{{editionTitle}} Cover|300]({{editionCover}})
 
-	description: { enabled: true, propertyName: "description" },
-	series: {
-		enabled: true,
-		propertyName: "seriesName",
-	},
-	genres: { enabled: true, propertyName: "genres" },
-	lists: { enabled: false, propertyName: "lists" },
+{{description}}
 
-	publisher: { enabled: true, propertyName: "publisher" },
+## Review
+{{review}}
+`;
 
-	isbn10: { enabled: false, propertyName: "isbn10" },
-	isbn13: { enabled: false, propertyName: "isbn13" },
-
-	firstRead: {
-		enabled: true,
-		propertyName: "firstRead",
-		startPropertyName: "firstReadStart",
-		endPropertyName: "firstReadEnd",
-	},
-	lastRead: {
-		enabled: true,
-		propertyName: "lastRead",
-		startPropertyName: "lastReadStart",
-		endPropertyName: "lastReadEnd",
-	},
-	totalReads: { enabled: true, propertyName: "totalReads" },
-	readYears: { enabled: false, propertyName: "readYears" },
-};
-
-export const DEFAULT_FILENAME_FORMAT = "${title} (${year})";
+export const DEFAULT_FILENAME_FORMAT = "{{editionTitle}} ({{editionYear}})";
 
 export const DEFAULT_SETTINGS: PluginSettings = {
-	settingsVersion: 11,
+	settingsVersion: 13,
 	apiKey: "",
 	lastSyncTimestamp: "",
 	userId: null,
 	booksCount: null,
 	preserveCustomFrontmatter: true,
 	statusFilter: [1, 2, 3, 5],
-	fieldsSettings: DEFAULT_FIELDS_SETTINGS,
-	dataSourcePreferences: {
-		titleSource: "edition",
-		coverSource: "edition",
-		releaseDateSource: "edition",
-		authorsSource: "edition",
-		contributorsSource: "edition",
-	},
 	statusMapping: HARDCOVER_STATUS_MAP,
+	noteTemplate: DEFAULT_NOTE_TEMPLATE,
+	keepEmptyHeadings: false,
+	quotesFormat: "blockquote",
+	wikilinkSettings: {
+		authors: false,
+		contributors: false,
+		series: false,
+		publisher: false,
+		genres: false,
+		lists: false,
+	},
 	targetFolder: "HardcoverBooks",
 	grouping: {
 		enabled: false,

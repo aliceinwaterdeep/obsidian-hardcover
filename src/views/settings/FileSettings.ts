@@ -5,12 +5,12 @@ import { markSettingAsRequired } from "../ui/SettingsHelpers";
 
 export function renderFilenameTemplateSetting(
 	containerEl: HTMLElement,
-	plugin: ObsidianHardcover
+	plugin: ObsidianHardcover,
 ): void {
 	new Setting(containerEl)
 		.setName("Filename template")
 		.setDesc(
-			"Pattern used to generate filenames. Available variables: ${title}, ${authors}, ${year}. Note: The variables ${authors} and ${year} will only work if you've enabled the Authors and Release Date fields in the settings below."
+			"Pattern used to generate filenames. Available variables: {{bookTitle}}, {{editionTitle}}, {{bookAuthors}}, {{editionAuthors}}, {{bookYear}}, {{editionYear}}.",
 		)
 		.addText((text) =>
 			text
@@ -19,14 +19,13 @@ export function renderFilenameTemplateSetting(
 				.onChange(async (value) => {
 					plugin.settings.filenameTemplate = value || DEFAULT_FILENAME_FORMAT;
 					await plugin.saveSettings();
-				})
+				}),
 		);
 }
 
 export function renderFolderSetting(
 	containerEl: HTMLElement,
 	plugin: ObsidianHardcover,
-	onSettingsChanged: () => void
 ): Setting {
 	const baseDesc =
 		"The folder where book notes will be stored (required, will be created if it doesn't exist)";
@@ -47,7 +46,7 @@ export function renderFolderSetting(
 				if (isRootOrEmpty) {
 					text.inputEl.addClass("has-error");
 					setting.setDesc(
-						`${baseDesc} - Please specify a subfolder. Using the vault root is not allowed.`
+						`${baseDesc} - Please specify a subfolder. Using the vault root is not allowed.`,
 					);
 				} else {
 					text.inputEl.removeClass("has-error");
@@ -56,7 +55,6 @@ export function renderFolderSetting(
 
 				plugin.settings.targetFolder = value;
 				await plugin.saveSettings();
-				onSettingsChanged();
 			});
 	});
 

@@ -1,10 +1,49 @@
-import { FieldsSettings, PluginSettings } from "src/types";
+import { PluginSettings } from "src/types";
 
 export class QueryBuilder {
 	private settings: PluginSettings;
+	private requiredFields: Set<string>;
 
 	constructor(settings: PluginSettings) {
 		this.settings = settings;
+		this.requiredFields = this.determineRequiredFields();
+	}
+
+	private determineRequiredFields(): Set<string> {
+		const required = new Set<string>();
+		const { noteTemplate, filenameTemplate } = this.settings;
+
+		required.add("hardcoverBookId");
+
+		// step 1: parse noteTemplate for {{variables}} (both YAML and body)
+		const noteVarMatches = noteTemplate.match(/\{\{(\w+)\}\}/g);
+		if (noteVarMatches) {
+			for (const match of noteVarMatches) {
+				// extract variable name: {{bookTitle}} -> bookTitle
+				const varName = match.replace(/\{\{|\}\}/g, "");
+				required.add(varName);
+			}
+		}
+
+		// step 2: parse filename template for {{variables}}
+		const filenameVarMatches = filenameTemplate.match(/\{\{(\w+)\}\}/g);
+		if (filenameVarMatches) {
+			for (const match of filenameVarMatches) {
+				// extract variable name: {{editionTitle}} -> editionTitle
+				const varName = match.replace(/\{\{|\}\}/g, "");
+
+				// handle  year variables
+				if (varName === "bookYear") {
+					required.add("bookReleaseDate");
+				} else if (varName === "editionYear") {
+					required.add("editionReleaseDate");
+				} else {
+					required.add(varName);
+				}
+			}
+		}
+
+		return required;
 	}
 
 	buildUserBooksQuery(
@@ -13,13 +52,10 @@ export class QueryBuilder {
 		updatedAfter?: string,
 		status?: number[],
 	): string {
-		const fieldsSettings = this.settings.fieldsSettings;
-		const dataPrefs = this.settings.dataSourcePreferences;
-
-		const userBooksFields = this.buildUserBooksFields(fieldsSettings);
-		const bookFields = this.buildBookFields(fieldsSettings, dataPrefs);
-		const editionFields = this.buildEditionFields(fieldsSettings, dataPrefs);
-		const readsFields = this.buildReadsFields(fieldsSettings);
+		const userBooksFields = this.buildUserBooksFields();
+		const bookFields = this.buildBookFields();
+		const editionFields = this.buildEditionFields();
+		const readsFields = this.buildReadsFields();
 		const hasStatusFilter = status && status.length > 0;
 
 		// build where clause with optional timestamp and status filters
@@ -68,138 +104,141 @@ export class QueryBuilder {
         `;
 	}
 
-	private buildUserBooksFields(settings: FieldsSettings): string {
+	private buildUserBooksFields(): string {
 		const fields: string[] = [];
 
-		if (settings.rating.enabled) {
+		// helper to check if we need a field
+		const needsField = (fieldKey: string): boolean => {
+			return this.requiredFields.has(fieldKey);
+		};
+
+		if (needsField("rating")) {
 			fields.push("rating");
 		}
 
-		if (settings.status.enabled) {
+		if (needsField("status")) {
 			fields.push("status_id");
 		}
 
-		if (settings.review?.enabled) {
+		if (needsField("review")) {
 			// temporarily querying both fields since the review field can return null for some users (known HC issue)
 			fields.push("review");
 			fields.push("review_raw");
 		}
 
-		if (settings.quotes.enabled) {
+		if (needsField("quotes")) {
 			fields.push(`reading_journals(
-					where: {event: {_eq: "quote"}}
-					order_by: {created_at: asc}
-				) {
-					entry
-				}`);
+                where: {event: {_eq: "quote"}}
+                order_by: {created_at: asc}
+            ) {
+                entry
+            }`);
 		}
 
 		return fields.join("\n                    ");
 	}
 
-	private buildBookFields(
-		settings: FieldsSettings,
-		dataPrefs: PluginSettings["dataSourcePreferences"],
-	): string {
-		const fields: string[] = ["title"]; // always include at least one field to avoid empty selection in the query
+	private buildBookFields(): string {
+		const fields: string[] = ["title"]; // always include at least title
 
-		// release date from book level (if preferred)
-		if (
-			settings.releaseDate.enabled &&
-			dataPrefs.releaseDateSource === "book"
-		) {
-			fields.push("release_date");
+		// helper to check if we need a field
+		const needsField = (fieldKey: string): boolean => {
+			return this.requiredFields.has(fieldKey);
+		};
+
+		if (needsField("bookTitle")) {
+			// title already in fields array
 		}
 
-		// cover from book level (if preferred)
-		if (settings.cover.enabled && dataPrefs.coverSource === "book") {
+		if (needsField("bookCover")) {
 			fields.push("cached_image");
 		}
 
-		if (settings.description.enabled) {
-			fields.push("description");
+		if (needsField("bookReleaseDate")) {
+			fields.push("release_date");
 		}
 
-		if (settings.url.enabled) {
-			fields.push("slug");
-		}
-
-		if (settings.series.enabled) {
-			fields.push(`book_series {
-				series {
-					name
-				}
-				position
-    	}`);
-		}
-
-		//  authors/contributors from book level (if preferred)
-		if (
-			(settings.authors.enabled && dataPrefs.authorsSource === "book") ||
-			(settings.contributors.enabled && dataPrefs.contributorsSource === "book")
-		) {
+		if (needsField("bookAuthors") || needsField("bookContributors")) {
 			fields.push("cached_contributors");
 		}
 
-		// genres
-		if (settings.genres.enabled) {
+		if (needsField("description")) {
+			fields.push("description");
+		}
+
+		if (needsField("url")) {
+			fields.push("slug");
+		}
+
+		if (needsField("series")) {
+			fields.push(`book_series {
+		series {
+			name
+		}
+		position
+	}`);
+		}
+
+		if (needsField("genres")) {
 			fields.push("cached_tags");
 		}
 
 		return fields.join("\n                        ");
 	}
 
-	private buildEditionFields(
-		settings: FieldsSettings,
-		dataPrefs: PluginSettings["dataSourcePreferences"],
-	): string {
-		const fields: string[] = ["title"]; // always include at least one field to avoid empty selection in the query
+	private buildEditionFields(): string {
+		const fields: string[] = ["title"]; // always include at least title
 
-		// release date from edition level (if preferred)
-		if (
-			settings.releaseDate.enabled &&
-			dataPrefs.releaseDateSource === "edition"
-		) {
-			fields.push("release_date");
-		}
+		// helper to check if we need a field
+		const needsField = (fieldKey: string): boolean => {
+			return this.requiredFields.has(fieldKey);
+		};
 
-		// cover from edition level (if preferred)
-		if (settings.cover.enabled && dataPrefs.coverSource === "edition") {
+		if (needsField("editionCover")) {
 			fields.push("cached_image");
 		}
 
-		// authors/contributors from edition level (if preferred)
-		if (
-			(settings.authors.enabled && dataPrefs.authorsSource === "edition") ||
-			(settings.contributors.enabled &&
-				dataPrefs.contributorsSource === "edition")
-		) {
+		if (needsField("editionReleaseDate")) {
+			fields.push("release_date");
+		}
+
+		if (needsField("editionAuthors") || needsField("editionContributors")) {
 			fields.push("cached_contributors");
 		}
 
-		if (settings.publisher.enabled) {
+		if (needsField("publisher")) {
 			fields.push(`publisher {
-                            name
-                        }`);
+		name
+	}`);
 		}
 
-		if (settings.isbn10.enabled) {
+		if (needsField("isbn10")) {
 			fields.push("isbn_10");
 		}
 
-		if (settings.isbn13.enabled) {
+		if (needsField("isbn13")) {
 			fields.push("isbn_13");
 		}
 
 		return fields.join("\n                        ");
 	}
 
-	private buildReadsFields(settings: FieldsSettings): string {
-		// only include reads if any read-related fields are enabled
+	private buildReadsFields(): string {
+		// helper to check if we need a field
+		const needsField = (fieldKey: string): boolean => {
+			return this.requiredFields.has(fieldKey);
+		};
+
+		// only include reads if any read-related fields are needed
 		if (
-			settings.firstRead.enabled ||
-			settings.lastRead.enabled ||
-			settings.totalReads.enabled
+			needsField("firstRead") ||
+			needsField("lastRead") ||
+			needsField("totalReads") ||
+			needsField("readYears") ||
+			needsField("firstReadStart") ||
+			needsField("firstReadEnd") ||
+			needsField("lastReadStart") ||
+			needsField("lastReadEnd")
 		) {
 			return `user_book_reads(order_by: {started_at: asc}) {
                         started_at

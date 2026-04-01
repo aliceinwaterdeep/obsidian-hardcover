@@ -1,5 +1,4 @@
-import { SettingsMigrationService } from "./SettingsMigrationService";
-import { PluginSettings } from "../types";
+import { SettingsMigrationService } from "./migrations";
 import { DEFAULT_SETTINGS } from "../config/defaultSettings";
 
 describe("SettingsMigrationService", () => {
@@ -18,7 +17,7 @@ describe("SettingsMigrationService", () => {
 				apiKey: "test-key",
 				lastSyncTimestamp: "2023-01-01T00:00:00Z",
 				userId: 123,
-				fieldsSettings: DEFAULT_SETTINGS.fieldsSettings,
+				frontmatterFields: DEFAULT_SETTINGS.frontmatterFields,
 				// missing settingsVersion field
 			};
 
@@ -31,17 +30,56 @@ describe("SettingsMigrationService", () => {
 		});
 
 		test("applies migration to version 0 settings", () => {
+			// Test v0 format migration - input has old v11 structure with dataSourcePreferences
 			const v0Settings = {
 				settingsVersion: 0,
 				apiKey: "test-key",
-				fieldsSettings: DEFAULT_SETTINGS.fieldsSettings,
-				dataSourcePreferences: DEFAULT_SETTINGS.dataSourcePreferences,
+				frontmatterFields: {
+					title: { enabled: true, propertyName: "title" },
+					cover: { enabled: true, propertyName: "cover" },
+					releaseDate: { enabled: true, propertyName: "releaseDate" },
+					authors: { enabled: true, propertyName: "authors" },
+					contributors: { enabled: true, propertyName: "contributors" },
+					description: { enabled: true, propertyName: "description" },
+					review: { enabled: true, propertyName: "review" },
+					quotes: { enabled: true, propertyName: "quotes" },
+					series: { enabled: true, propertyName: "series" },
+					publisher: { enabled: true, propertyName: "publisher" },
+					genres: { enabled: true, propertyName: "genres" },
+					lists: { enabled: false, propertyName: "lists" },
+					url: { enabled: true, propertyName: "url" },
+					isbn10: { enabled: false, propertyName: "isbn10" },
+					isbn13: { enabled: false, propertyName: "isbn13" },
+					rating: { enabled: true, propertyName: "rating" },
+					status: { enabled: true, propertyName: "status" },
+					firstRead: {
+						enabled: true,
+						propertyName: "firstRead",
+						startPropertyName: "firstReadStart",
+						endPropertyName: "firstReadEnd",
+					},
+					lastRead: {
+						enabled: true,
+						propertyName: "lastRead",
+						startPropertyName: "lastReadStart",
+						endPropertyName: "lastReadEnd",
+					},
+					totalReads: { enabled: true, propertyName: "totalReads" },
+					readYears: { enabled: false, propertyName: "readYears" },
+				},
+				dataSourcePreferences: {
+					titleSource: "edition",
+					coverSource: "edition",
+					releaseDateSource: "edition",
+					authorsSource: "edition",
+					contributorsSource: "edition",
+				},
 				preserveCustomFrontmatter: true,
-			} as PluginSettings;
+			} as any;
 
 			const result = SettingsMigrationService.migrateSettings(v0Settings);
 
-			expect(result.settingsVersion).toBe(DEFAULT_SETTINGS.settingsVersion);
+			expect(result.settingsVersion).toBe(13);
 			expect(result.apiKey).toBe("test-key");
 		});
 
@@ -53,33 +91,68 @@ describe("SettingsMigrationService", () => {
 				userId: 456,
 				booksCount: 150,
 				targetFolder: "MyBooks",
-				fieldsSettings: {
-					...DEFAULT_SETTINGS.fieldsSettings,
-					rating: { enabled: false, propertyName: "myRating" },
+				frontmatterFields: {
+					title: { enabled: true, propertyName: "title" },
+					cover: { enabled: true, propertyName: "cover" },
+					releaseDate: { enabled: true, propertyName: "releaseDate" },
+					authors: { enabled: true, propertyName: "authors" },
+					contributors: { enabled: true, propertyName: "contributors" },
+					description: { enabled: true, propertyName: "description" },
+					review: { enabled: true, propertyName: "review" },
+					quotes: { enabled: true, propertyName: "quotes" },
+					series: { enabled: true, propertyName: "series" },
+					publisher: { enabled: true, propertyName: "publisher" },
+					genres: { enabled: true, propertyName: "genres" },
+					lists: { enabled: false, propertyName: "lists" },
+					url: { enabled: true, propertyName: "url" },
+					isbn10: { enabled: false, propertyName: "isbn10" },
+					isbn13: { enabled: false, propertyName: "isbn13" },
+					rating: { enabled: true, propertyName: "rating" },
+					status: { enabled: true, propertyName: "status" },
+					firstRead: {
+						enabled: true,
+						propertyName: "firstRead",
+						startPropertyName: "firstReadStart",
+						endPropertyName: "firstReadEnd",
+					},
+					lastRead: {
+						enabled: true,
+						propertyName: "lastRead",
+						startPropertyName: "lastReadStart",
+						endPropertyName: "lastReadEnd",
+					},
+					totalReads: { enabled: true, propertyName: "totalReads" },
+					readYears: { enabled: false, propertyName: "readYears" },
 				},
-				dataSourcePreferences: DEFAULT_SETTINGS.dataSourcePreferences,
+				dataSourcePreferences: {
+					titleSource: "edition",
+					coverSource: "edition",
+					releaseDateSource: "edition",
+					authorsSource: "edition",
+					contributorsSource: "edition",
+				},
 				statusMapping: { 1: "Want to Read", 3: "Finished" },
 				filenameTemplate: "${title} by ${authors}",
 				preserveCustomFrontmatter: true,
-			} as PluginSettings;
+			} as any;
 
 			const result = SettingsMigrationService.migrateSettings(userSettings);
 
 			// version should be updated
-			expect(result.settingsVersion).toBe(DEFAULT_SETTINGS.settingsVersion);
+			expect(result.settingsVersion).toBe(13);
 
 			// user data should be preserved
 			expect(result.apiKey).toBe("user-api-key");
 			expect(result.lastSyncTimestamp).toBe("2023-06-15T12:00:00Z");
 			expect(result.userId).toBe(456);
 			expect(result.targetFolder).toBe("MyBooks");
-			expect(result.fieldsSettings.rating.enabled).toBe(false);
-			expect(result.fieldsSettings.rating.propertyName).toBe("myRating");
 			expect(result.statusMapping).toEqual({
 				1: "Want to Read",
 				3: "Finished",
 			});
-			expect(result.filenameTemplate).toBe("${title} by ${authors}");
+			expect(result.filenameTemplate).toBe(
+				"{{editionTitle}} by {{editionAuthors}}",
+			);
 			expect(result.preserveCustomFrontmatter).toBe(true);
 		});
 
@@ -87,14 +160,52 @@ describe("SettingsMigrationService", () => {
 			const v6Settings = {
 				settingsVersion: 6,
 				apiKey: "abc",
-				fieldsSettings: DEFAULT_SETTINGS.fieldsSettings,
-				dataSourcePreferences: DEFAULT_SETTINGS.dataSourcePreferences,
+				frontmatterFields: {
+					title: { enabled: true, propertyName: "title" },
+					cover: { enabled: true, propertyName: "cover" },
+					releaseDate: { enabled: true, propertyName: "releaseDate" },
+					authors: { enabled: true, propertyName: "authors" },
+					contributors: { enabled: true, propertyName: "contributors" },
+					description: { enabled: true, propertyName: "description" },
+					review: { enabled: true, propertyName: "review" },
+					quotes: { enabled: true, propertyName: "quotes" },
+					series: { enabled: true, propertyName: "series" },
+					publisher: { enabled: true, propertyName: "publisher" },
+					genres: { enabled: true, propertyName: "genres" },
+					lists: { enabled: false, propertyName: "lists" },
+					url: { enabled: true, propertyName: "url" },
+					isbn10: { enabled: false, propertyName: "isbn10" },
+					isbn13: { enabled: false, propertyName: "isbn13" },
+					rating: { enabled: true, propertyName: "rating" },
+					status: { enabled: true, propertyName: "status" },
+					firstRead: {
+						enabled: true,
+						propertyName: "firstRead",
+						startPropertyName: "firstReadStart",
+						endPropertyName: "firstReadEnd",
+					},
+					lastRead: {
+						enabled: true,
+						propertyName: "lastRead",
+						startPropertyName: "lastReadStart",
+						endPropertyName: "lastReadEnd",
+					},
+					totalReads: { enabled: true, propertyName: "totalReads" },
+					readYears: { enabled: false, propertyName: "readYears" },
+				},
+				dataSourcePreferences: {
+					titleSource: "edition",
+					coverSource: "edition",
+					releaseDateSource: "edition",
+					authorsSource: "edition",
+					contributorsSource: "edition",
+				},
 				grouping: DEFAULT_SETTINGS.grouping,
-			} as PluginSettings;
+			} as any;
 
 			const result = SettingsMigrationService.migrateSettings(v6Settings);
 
-			expect(result.settingsVersion).toBe(DEFAULT_SETTINGS.settingsVersion);
+			expect(result.settingsVersion).toBe(13);
 			expect(result.preserveCustomFrontmatter).toBe(true);
 		});
 
@@ -102,15 +213,175 @@ describe("SettingsMigrationService", () => {
 			const v6Settings = {
 				settingsVersion: 6,
 				apiKey: "abc",
-				fieldsSettings: DEFAULT_SETTINGS.fieldsSettings,
-				dataSourcePreferences: DEFAULT_SETTINGS.dataSourcePreferences,
+				frontmatterFields: {
+					title: { enabled: true, propertyName: "title" },
+					cover: { enabled: true, propertyName: "cover" },
+					releaseDate: { enabled: true, propertyName: "releaseDate" },
+					authors: { enabled: true, propertyName: "authors" },
+					contributors: { enabled: true, propertyName: "contributors" },
+					description: { enabled: true, propertyName: "description" },
+					review: { enabled: true, propertyName: "review" },
+					quotes: { enabled: true, propertyName: "quotes" },
+					series: { enabled: true, propertyName: "series" },
+					publisher: { enabled: true, propertyName: "publisher" },
+					genres: { enabled: true, propertyName: "genres" },
+					lists: { enabled: false, propertyName: "lists" },
+					url: { enabled: true, propertyName: "url" },
+					isbn10: { enabled: false, propertyName: "isbn10" },
+					isbn13: { enabled: false, propertyName: "isbn13" },
+					rating: { enabled: true, propertyName: "rating" },
+					status: { enabled: true, propertyName: "status" },
+					firstRead: {
+						enabled: true,
+						propertyName: "firstRead",
+						startPropertyName: "firstReadStart",
+						endPropertyName: "firstReadEnd",
+					},
+					lastRead: {
+						enabled: true,
+						propertyName: "lastRead",
+						startPropertyName: "lastReadStart",
+						endPropertyName: "lastReadEnd",
+					},
+					totalReads: { enabled: true, propertyName: "totalReads" },
+					readYears: { enabled: false, propertyName: "readYears" },
+				},
+				dataSourcePreferences: {
+					titleSource: "edition",
+					coverSource: "edition",
+					releaseDateSource: "edition",
+					authorsSource: "edition",
+					contributorsSource: "edition",
+				},
 				preserveCustomFrontmatter: false,
 				grouping: DEFAULT_SETTINGS.grouping,
-			} as PluginSettings;
+			} as any;
 
 			const result = SettingsMigrationService.migrateSettings(v6Settings);
 
 			expect(result.preserveCustomFrontmatter).toBe(false);
+		});
+
+		test("extracts wikilink settings correctly", () => {
+			const v11Settings = {
+				settingsVersion: 11,
+				frontmatterFields: {
+					title: { enabled: true, propertyName: "title" },
+					cover: { enabled: true, propertyName: "cover" },
+					releaseDate: { enabled: true, propertyName: "releaseDate" },
+					authors: { enabled: true, propertyName: "authors", wikilinks: true },
+					contributors: {
+						enabled: true,
+						propertyName: "contributors",
+						wikilinks: false,
+					},
+					series: { enabled: true, propertyName: "series", wikilinks: true },
+					publisher: {
+						enabled: true,
+						propertyName: "publisher",
+						wikilinks: false,
+					},
+					genres: { enabled: true, propertyName: "genres", wikilinks: true },
+					lists: { enabled: false, propertyName: "lists", wikilinks: false },
+					description: { enabled: true, propertyName: "description" },
+					review: { enabled: true, propertyName: "review" },
+					quotes: { enabled: true, propertyName: "quotes" },
+					url: { enabled: true, propertyName: "url" },
+					isbn10: { enabled: false, propertyName: "isbn10" },
+					isbn13: { enabled: false, propertyName: "isbn13" },
+					rating: { enabled: true, propertyName: "rating" },
+					status: { enabled: true, propertyName: "status" },
+					firstRead: {
+						enabled: true,
+						propertyName: "firstRead",
+						startPropertyName: "firstReadStart",
+						endPropertyName: "firstReadEnd",
+					},
+					lastRead: {
+						enabled: true,
+						propertyName: "lastRead",
+						startPropertyName: "lastReadStart",
+						endPropertyName: "lastReadEnd",
+					},
+					totalReads: { enabled: true, propertyName: "totalReads" },
+					readYears: { enabled: false, propertyName: "readYears" },
+				},
+				dataSourcePreferences: {
+					titleSource: "edition",
+					coverSource: "edition",
+					releaseDateSource: "edition",
+					authorsSource: "edition",
+					contributorsSource: "edition",
+				},
+			} as any;
+
+			const result = SettingsMigrationService.migrateSettings(v11Settings);
+
+			expect(result.wikilinkSettings).toEqual({
+				authors: true,
+				contributors: false,
+				series: true,
+				publisher: false,
+				genres: true,
+				lists: false,
+			});
+		});
+
+		test("defaults wikilink settings to false when missing", () => {
+			const v11Settings = {
+				settingsVersion: 11,
+				frontmatterFields: {
+					title: { enabled: true, propertyName: "title" },
+					cover: { enabled: true, propertyName: "cover" },
+					releaseDate: { enabled: true, propertyName: "releaseDate" },
+					authors: { enabled: true, propertyName: "authors" }, // no wikilinks property
+					contributors: { enabled: true, propertyName: "contributors" },
+					series: { enabled: true, propertyName: "series" },
+					publisher: { enabled: true, propertyName: "publisher" },
+					genres: { enabled: true, propertyName: "genres" },
+					lists: { enabled: false, propertyName: "lists" },
+					description: { enabled: true, propertyName: "description" },
+					review: { enabled: true, propertyName: "review" },
+					quotes: { enabled: true, propertyName: "quotes" },
+					url: { enabled: true, propertyName: "url" },
+					isbn10: { enabled: false, propertyName: "isbn10" },
+					isbn13: { enabled: false, propertyName: "isbn13" },
+					rating: { enabled: true, propertyName: "rating" },
+					status: { enabled: true, propertyName: "status" },
+					firstRead: {
+						enabled: true,
+						propertyName: "firstRead",
+						startPropertyName: "firstReadStart",
+						endPropertyName: "firstReadEnd",
+					},
+					lastRead: {
+						enabled: true,
+						propertyName: "lastRead",
+						startPropertyName: "lastReadStart",
+						endPropertyName: "lastReadEnd",
+					},
+					totalReads: { enabled: true, propertyName: "totalReads" },
+					readYears: { enabled: false, propertyName: "readYears" },
+				},
+				dataSourcePreferences: {
+					titleSource: "edition",
+					coverSource: "edition",
+					releaseDateSource: "edition",
+					authorsSource: "edition",
+					contributorsSource: "edition",
+				},
+			} as any;
+
+			const result = SettingsMigrationService.migrateSettings(v11Settings);
+
+			expect(result.wikilinkSettings).toEqual({
+				authors: false,
+				contributors: false,
+				series: false,
+				publisher: false,
+				genres: false,
+				lists: false,
+			});
 		});
 	});
 });
