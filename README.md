@@ -67,7 +67,7 @@ v2.0.0 introduces customizable note templates and splits book/edition fields. **
 
 1. Download the ZIP file from the [latest release](https://github.com/aliceinwaterdeep/obsidian-hardcover/releases/latest)
 2. Extract the ZIP file to your vault's plugins folder: `YourVaultName/.obsidian/plugins/`
-3. You should now have a folder: `YourVaultName/.obsidian/plugins/hardcover-X.X.X/` containing 3 files
+3. You should now have a folder: `YourVaultName/.obsidian/plugins/hardcover` containing 3 files
 4. Restart Obsidian or go to Settings -> Community plugins -> Reload plugins
 5. Enable "Hardcover" in Settings -> Community plugins
 
