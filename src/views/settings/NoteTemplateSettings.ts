@@ -9,7 +9,7 @@ export function renderNoteTemplateSettings(
 ): void {
 	const setting = new Setting(containerEl);
 	setting.descEl.innerHTML =
-		"Customize the structure of your notes including YAML frontmatter and body content. Do not remove the enclosing `---` from the frontmatter or the template will be invalid.<br><br> ⚠️ Template content is regenerated on each sync, use this only for book data coming from Hardcover; add your personal notes below the <!-- obsidian-hardcover-plugin-end --> delimiter in each note file.";
+		"Customize the structure of your notes including YAML frontmatter and body content. Do not remove the enclosing `---` from the frontmatter or the template will be invalid.<br><br> ⚠️ On each sync, the plugin regenerates note content using fresh data from Hardcover. Values in `{{ }}` placeholders are updated automatically. Custom properties you add to this template will appear in all notes. Personal notes added below the `< !-- obsidian-hardcover-plugin-end -- >` delimiter in individual note files are never modified.";
 
 	const editorContainer = containerEl.createDiv({
 		cls: "obhc-template-editor",
@@ -51,7 +51,9 @@ export function renderNoteTemplateSettings(
 
 	new Setting(containerEl)
 		.setName("Preserve additional custom properties")
-		.setDesc("Keep any additional properties you manually add to your notes.")
+		.setDesc(
+			"Keep any additional properties you manually add to your notes (not in the template above).",
+		)
 		.addToggle((toggle) =>
 			toggle
 				.setValue(plugin.settings.preserveCustomFrontmatter)
