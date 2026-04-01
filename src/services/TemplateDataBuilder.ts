@@ -8,6 +8,7 @@ import {
 	extractReadingActivity,
 	extractSeriesInfo,
 } from "./metadata/MetadataHelpers";
+import { WikilinkFormatter } from "src/utils/WikilinkFormatter";
 
 export class TemplateDataBuilder {
 	private settings: PluginSettings;
@@ -210,67 +211,6 @@ export class TemplateDataBuilder {
 			}
 		}
 
-		// apply wikilink formatting to variables if enabled
-		const wikilinkFields = [
-			{
-				key: "bookAuthors",
-				enabled: this.settings.wikilinkSettings.authors,
-				type: "authors",
-			},
-			{
-				key: "editionAuthors",
-				enabled: this.settings.wikilinkSettings.authors,
-				type: "authors",
-			},
-			{
-				key: "bookContributors",
-				enabled: this.settings.wikilinkSettings.contributors,
-				type: "contributors",
-			},
-			{
-				key: "editionContributors",
-				enabled: this.settings.wikilinkSettings.contributors,
-				type: "contributors",
-			},
-			{
-				key: "series",
-				enabled: this.settings.wikilinkSettings.series,
-				type: "series",
-			},
-			{
-				key: "genres",
-				enabled: this.settings.wikilinkSettings.genres,
-				type: "genres",
-			},
-			{
-				key: "lists",
-				enabled: this.settings.wikilinkSettings.lists,
-				type: "lists",
-			},
-		];
-
-		for (const field of wikilinkFields) {
-			if (
-				field.enabled &&
-				variables[field.key] &&
-				Array.isArray(variables[field.key])
-			) {
-				variables[field.key] = this.formatAsWikilinks(
-					variables[field.key],
-					field.type,
-				);
-			}
-		}
-
-		// publisher is a simpler format
-		if (
-			this.settings.wikilinkSettings.publisher &&
-			variables.publisher &&
-			Array.isArray(variables.publisher)
-		) {
-			variables.publisher = variables.publisher.map((p) => `[[${p}]]`);
-		}
-
 		//  substitute variables in the parsed template
 		for (const [key, value] of Object.entries(parsedTemplate)) {
 			const substitutedValue = this.substituteValue(value, variables);
@@ -322,6 +262,13 @@ export class TemplateDataBuilder {
 					result = result.replace(/\n/g, " ").trim();
 					result = result.replace(/\s+/g, " "); // remove multiple spaces
 				}
+
+				// apply wikilinks for frontmatter if needed
+				result = WikilinkFormatter.applyWikilinksIfNeeded(
+					result,
+					varName,
+					this.settings,
+				);
 
 				return result;
 			}
@@ -388,24 +335,5 @@ export class TemplateDataBuilder {
 			);
 			return {};
 		}
-	}
-
-	private formatAsWikilinks(values: string[], fieldKey: string): string[] {
-		return values.map((value) => {
-			// extract base name for contributors and series
-			if (fieldKey === "contributors") {
-				const match = value.match(/^(.+?)\s*\((.+)\)$/);
-				if (match) {
-					return `[[${match[1].trim()}|${value}]]`;
-				}
-			} else if (fieldKey === "series") {
-				const match = value.match(/^(.+?)\s*#(\d+)$/);
-				if (match) {
-					return `[[${match[1].trim()}|${value}]]`;
-				}
-			}
-
-			return `[[${value}]]`;
-		});
 	}
 }

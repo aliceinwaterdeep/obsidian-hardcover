@@ -1,6 +1,7 @@
 import { CONTENT_DELIMITER } from "src/config/constants";
 import { BookMetadata } from "src/types";
 import ObsidianHardcover from "src/main";
+import { WikilinkFormatter } from "src/utils/WikilinkFormatter";
 
 export class BodyTemplateRenderer {
 	constructor(private plugin: ObsidianHardcover) {}
@@ -98,6 +99,73 @@ export class BodyTemplateRenderer {
 		vars.readYears = formatArray(
 			bookMetadata.variables?.readYears?.map(String),
 		);
+
+		// apply wikilinks to fields for body template
+		const wikilinkSettings = this.plugin.settings.wikilinkSettings;
+
+		// authors
+		if (wikilinkSettings.authors) {
+			if (vars.bookAuthors) {
+				vars.bookAuthors = WikilinkFormatter.formatAsWikilinks(
+					vars.bookAuthors.split(", "),
+					"authors",
+				).join(", ");
+			}
+			if (vars.editionAuthors) {
+				vars.editionAuthors = WikilinkFormatter.formatAsWikilinks(
+					vars.editionAuthors.split(", "),
+					"authors",
+				).join(", ");
+			}
+		}
+
+		// contributors
+		if (wikilinkSettings.contributors) {
+			if (vars.bookContributors) {
+				vars.bookContributors = WikilinkFormatter.formatAsWikilinks(
+					vars.bookContributors.split(", "),
+					"contributors",
+				).join(", ");
+			}
+			if (vars.editionContributors) {
+				vars.editionContributors = WikilinkFormatter.formatAsWikilinks(
+					vars.editionContributors.split(", "),
+					"contributors",
+				).join(", ");
+			}
+		}
+
+		// series
+		if (wikilinkSettings.series && vars.series) {
+			vars.series = WikilinkFormatter.formatAsWikilinks(
+				vars.series.split(", "),
+				"series",
+			).join(", ");
+		}
+
+		// publisher
+		if (wikilinkSettings.publisher && vars.publisher) {
+			vars.publisher = WikilinkFormatter.formatAsWikilinks(
+				vars.publisher.split(", "),
+				"publisher",
+			).join(", ");
+		}
+
+		// genres
+		if (wikilinkSettings.genres && vars.genres) {
+			vars.genres = WikilinkFormatter.formatAsWikilinks(
+				vars.genres.split(", "),
+				"genres",
+			).join(", ");
+		}
+
+		// lists
+		if (wikilinkSettings.lists && vars.lists) {
+			vars.lists = WikilinkFormatter.formatAsWikilinks(
+				vars.lists.split(", "),
+				"lists",
+			).join(", ");
+		}
 
 		return vars;
 	}
