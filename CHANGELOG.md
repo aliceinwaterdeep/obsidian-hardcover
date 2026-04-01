@@ -1,5 +1,11 @@
 # Changelog
 
+## 2.0.1
+
+### Fixed
+
+- Improved the informational texts in the settings UI for better clarity.
+
 ## 2.0.0
 
 ### ⚠️ Breaking Changes
