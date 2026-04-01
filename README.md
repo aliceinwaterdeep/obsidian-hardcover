@@ -4,7 +4,8 @@ Syncs your [Hardcover](https://hardcover.app) library to your Obsidian vault, cr
 
 [![GitHub downloads](https://img.shields.io/github/downloads/aliceinwaterdeep/obsidian-hardcover/total)](https://github.com/aliceinwaterdeep/obsidian-hardcover/releases)
 
-![obsidian-hardcover-demo](https://github.com/user-attachments/assets/c7d3f900-65b8-45c0-b89c-58a25410149d)
+![obsidian-hardcover-v2-demo](https://github.com/user-attachments/assets/2ab555c4-b024-4752-9818-a61693edc57b)
+
 
 ## ⚠️ Version 2.0.0 - Breaking Changes
 
