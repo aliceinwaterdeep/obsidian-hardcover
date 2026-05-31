@@ -44,6 +44,10 @@ export class TemplateDataBuilder {
 
 		// always add hardcoverBookId (even if not in template)
 		frontmatter.hardcoverBookId = userBook.book_id;
+		variables.bookId = userBook.book_id;
+		if (edition?.id) {
+			variables.editionId = edition.id;
+		}
 
 		// book/edition titles
 		if (book?.title) {

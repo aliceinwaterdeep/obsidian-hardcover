@@ -105,6 +105,18 @@ export class FileUtils {
 			filename = filename.replace(/\{\{bookYear\}\}/g, "");
 		}
 
+		// {{bookId}}
+		const bookIdValue = availableData.bookId;
+		if (bookIdValue) {
+			filename = filename.replace(/\{\{bookId\}\}/g, String(bookIdValue));
+		}
+
+		// {{editionId}}
+		const editionIdValue = availableData.editionId;
+		if (editionIdValue) {
+			filename = filename.replace(/\{\{editionId\}\}/g, String(editionIdValue));
+		}
+
 		// clean up empty brackets and extra spacing
 		filename = filename
 			.replace(/\(\s*\)/g, "")
