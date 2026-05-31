@@ -136,9 +136,6 @@ export class NoteService {
 
 			// get current file's directory and filename
 			const currentDirectory = this.fileUtils.getDirectoryPath(originalPath);
-			const currentFilename = originalPath.substring(
-				currentDirectory ? currentDirectory.length + 1 : 0,
-			);
 
 			// get new directory and filename
 			const newDirectory = this.fileUtils.getDirectoryPath(newPath);

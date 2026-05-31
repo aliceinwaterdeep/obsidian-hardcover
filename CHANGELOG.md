@@ -6,6 +6,10 @@
 
 - New variables {{bookId}} and {{editionId}} available in both filename and body templates.
 
+#### Fixed
+
+- General code cleanup and improvements. No change in functionality.
+
 ### Fixed
 
 - Improved the informational texts in the settings UI for better clarity.

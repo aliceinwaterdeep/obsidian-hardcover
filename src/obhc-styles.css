@@ -211,3 +211,7 @@
 	min-width: 140px;
 	flex-shrink: 0;
 }
+
+.obhc-no-border-top {
+	border-top: none !important;
+}

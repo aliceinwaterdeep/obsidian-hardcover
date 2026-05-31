@@ -47,8 +47,8 @@ export class QueryBuilder {
 	}
 
 	buildUserBooksQuery(
-		offset: number,
-		limit: number,
+		_offset: number,
+		_limit: number,
 		updatedAfter?: string,
 		status?: number[],
 	): string {

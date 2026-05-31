@@ -249,7 +249,7 @@ export class SyncService {
 					let bookTitle = "Unknown";
 					try {
 						bookTitle = book.edition?.title || book.book?.title || "Unknown";
-					} catch (e) {
+					} catch {
 						// console.debug("Could not get book title:", e);
 					}
 

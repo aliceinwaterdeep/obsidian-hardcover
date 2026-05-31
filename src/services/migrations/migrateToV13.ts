@@ -1,4 +1,4 @@
-import { FrontmatterFieldsSettings, PluginSettings } from "src/types";
+import { PluginSettings } from "src/types";
 import { LegacySettings } from "src/types/migrations";
 
 export function migrateToV13(settings: LegacySettings): PluginSettings {
