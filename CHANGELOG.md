@@ -1,6 +1,10 @@
 # Changelog
 
-## 2.0.1
+## 2.1.0
+
+### Added
+
+- New variables {{bookId}} and {{editionId}} available in both filename and body templates.
 
 ### Fixed
 
