@@ -47,8 +47,8 @@ export class QueryBuilder {
 	}
 
 	buildUserBooksQuery(
-		offset: number,
-		limit: number,
+		_offset: number,
+		_limit: number,
 		updatedAfter?: string,
 		status?: number[],
 	): string {
@@ -146,6 +146,10 @@ export class QueryBuilder {
 			return this.requiredFields.has(fieldKey);
 		};
 
+		if (needsField("bookId")) {
+			fields.push("id");
+		}
+
 		if (needsField("bookTitle")) {
 			// title already in fields array
 		}
@@ -193,6 +197,10 @@ export class QueryBuilder {
 		const needsField = (fieldKey: string): boolean => {
 			return this.requiredFields.has(fieldKey);
 		};
+
+		if (needsField("editionId")) {
+			fields.push("id");
+		}
 
 		if (needsField("editionCover")) {
 			fields.push("cached_image");

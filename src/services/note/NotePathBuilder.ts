@@ -139,7 +139,7 @@ export class NotePathBuilder {
 
 			// extract series name from wikilink format: [[Series|Series #1]] -> Series
 			const wikilinkMatch = seriesName.match(
-				/^\[\[([^|\]]+)(?:\|[^\]]+)?\]\]$/,
+				/^\[\[([^|[\]]+)(?:\|[^\]]+)?\]\]$/,
 			);
 			if (wikilinkMatch) {
 				seriesName = wikilinkMatch[1];

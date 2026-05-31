@@ -10,7 +10,7 @@ export function renderFilenameTemplateSetting(
 	new Setting(containerEl)
 		.setName("Filename template")
 		.setDesc(
-			"Pattern used to generate filenames. Available variables: {{bookTitle}}, {{editionTitle}}, {{bookAuthors}}, {{editionAuthors}}, {{bookYear}}, {{editionYear}}.",
+			"Pattern used to generate filenames. Available variables: {{bookId}}, {{editionId}}, {{bookTitle}}, {{editionTitle}}, {{bookAuthors}}, {{editionAuthors}}, {{bookYear}}, {{editionYear}}.",
 		)
 		.addText((text) =>
 			text

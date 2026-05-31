@@ -49,6 +49,7 @@ export interface HardcoverUserBook {
 }
 
 interface HardcoverBook {
+	id: number;
 	title: string;
 	description: string | null;
 	release_date: string;
@@ -69,6 +70,7 @@ interface HardcoverBook {
 }
 
 interface HardcoverEdition {
+	id: number;
 	title: string;
 	release_date: string;
 	cached_image: Record<string, any>;

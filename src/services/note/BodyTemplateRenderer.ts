@@ -78,6 +78,8 @@ export class BodyTemplateRenderer {
 		vars.publisher = formatArray(bookMetadata.variables?.publisher);
 		vars.isbn10 = bookMetadata.variables?.isbn10 || "";
 		vars.isbn13 = bookMetadata.variables?.isbn13 || "";
+		vars.bookId = formatNumber(bookMetadata.variables?.bookId);
+		vars.editionId = formatNumber(bookMetadata.variables?.editionId);
 
 		// user data fields
 		vars.rating = formatNumber(bookMetadata.variables?.rating);

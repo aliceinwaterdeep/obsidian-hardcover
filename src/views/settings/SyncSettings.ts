@@ -1,6 +1,5 @@
 import { ButtonComponent, Setting } from "obsidian";
 import { CONTENT_DELIMITER } from "src/config/constants";
-import { HARDCOVER_STATUS_MAP } from "src/config/statusMapping";
 import ObsidianHardcover from "src/main";
 
 export interface SyncButtonConfig {
@@ -23,7 +22,14 @@ export function renderSyncSection(config: SyncButtonConfig) {
 	renderSyncButton(config);
 
 	const setting = new Setting(containerEl);
-	setting.descEl.innerHTML = `⚠️ Content below the ${CONTENT_DELIMITER} delimiter in your notes will be preserved during syncs. Regular backups of your vault are still recommended.<br><br> For large libraries (500+ books), sync may take several minutes due to Hardcover's API rate limits (60 requests/minute). The plugin will automatically pace requests to respect these limits.`;
+	setting.descEl.createSpan({
+		text: `⚠️ Content below the ${CONTENT_DELIMITER} delimiter in your notes will be preserved during syncs. Regular backups of your vault are still recommended.`,
+	});
+	setting.descEl.createEl("br");
+	setting.descEl.createEl("br");
+	setting.descEl.createSpan({
+		text: "For large libraries (500+ books), sync may take several minutes due to Hardcover's API rate limits (60 requests/minute). The plugin will automatically pace requests to respect these limits.",
+	});
 }
 
 export const renderSyncButton = (config: SyncButtonConfig): ButtonComponent => {

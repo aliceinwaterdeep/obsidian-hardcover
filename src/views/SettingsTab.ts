@@ -32,7 +32,7 @@ export default class SettingsTab extends PluginSettingTab {
 		containerEl.addClass("obhc-settings");
 
 		//  SECTION 1: GENERAL
-		new Setting(containerEl).setName("General").setHeading();
+		new Setting(containerEl).setName("Setup").setHeading();
 
 		renderApiTokenSetting(containerEl, this.plugin);
 		renderFolderSetting(containerEl, this.plugin);

@@ -105,6 +105,20 @@ export class FileUtils {
 			filename = filename.replace(/\{\{bookYear\}\}/g, "");
 		}
 
+		// {{bookId}}
+		const bookIdValue = availableData.bookId;
+		if (bookIdValue) {
+			filename = filename.replace(/\{\{bookId\}\}/g, String(bookIdValue));
+		}
+
+		// {{editionId}}
+		const editionIdValue = availableData.editionId;
+		if (editionIdValue) {
+			filename = filename.replace(/\{\{editionId\}\}/g, String(editionIdValue));
+		}
+
+		console.log({ availableData });
+
 		// clean up empty brackets and extra spacing
 		filename = filename
 			.replace(/\(\s*\)/g, "")
@@ -128,12 +142,12 @@ export class FileUtils {
 				.replace(/\]/g, "\\]")
 				// obsidian formatting chars
 				.replace(/\*/g, "\\*")
-				.replace(/\_/g, "\\_")
-				.replace(/\`/g, "\\`")
+				.replace(/_/g, "\\_")
+				.replace(/`/g, "\\`")
 				// headings and tags
-				.replace(/\#/g, "\\#")
+				.replace(/#/g, "\\#")
 				// HTML tags
-				.replace(/\</g, "\\<")
+				.replace(/</g, "\\<")
 		);
 	}
 

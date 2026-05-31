@@ -1,4 +1,4 @@
-import { App, Notice, Plugin } from "obsidian";
+import { Notice, Plugin } from "obsidian";
 import { HardcoverAPI } from "src/api/HardcoverAPI";
 import SettingsTab from "./views/SettingsTab";
 import { PluginSettings } from "./types";
@@ -42,12 +42,12 @@ export default class ObsidianHardcover extends Plugin {
 			id: "sync-hardcover-library",
 			name: "Sync library",
 			callback: () => {
-				this.triggerSync();
+				void this.triggerSync();
 			},
 		});
 
 		this.addRibbonIcon("book", "Sync Hardcover library", () => {
-			this.triggerSync();
+			void this.triggerSync();
 		});
 
 		// Add a settings tab to configure the plugin

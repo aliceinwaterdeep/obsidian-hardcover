@@ -54,5 +54,5 @@ export function renderApiTokenSetting(
 	};
 
 	// initial state
-	updateEnvMessage();
+	void updateEnvMessage();
 }

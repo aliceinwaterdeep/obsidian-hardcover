@@ -4,7 +4,7 @@ export function createSetting(
 	containerEl: HTMLElement,
 	name: string,
 	description: string,
-	settingClassName?: string
+	settingClassName?: string,
 ): Setting {
 	const setting = new Setting(containerEl).setName(name).setDesc(description);
 
@@ -16,9 +16,7 @@ export function createSetting(
 }
 
 export function markSettingAsRequired(setting: Setting): Setting {
-	const asterisk = document.createElement("span");
-	asterisk.textContent = " *";
-	asterisk.className = "obhc-required";
+	const asterisk = createSpan({ text: " *", cls: "obhc-required" });
 	setting.nameEl.appendChild(asterisk);
 
 	return setting;

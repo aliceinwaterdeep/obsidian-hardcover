@@ -5,12 +5,12 @@ import ObsidianHardcover from "src/main";
 export function renderGroupingSettings(
 	containerEl: HTMLElement,
 	plugin: ObsidianHardcover,
-	onSettingsChanged: () => void
+	onSettingsChanged: () => void,
 ): void {
 	const groupSetting = new Setting(containerEl)
 		.setName("Group into subfolders")
 		.setDesc(
-			"Group your book notes into subdirectories for better organization"
+			"Group your book notes into subdirectories for better organization",
 		)
 		.addToggle((toggle) =>
 			toggle
@@ -19,10 +19,10 @@ export function renderGroupingSettings(
 					plugin.settings.grouping.enabled = value;
 					await plugin.saveSettings();
 					onSettingsChanged();
-				})
+				}),
 		);
 
-	groupSetting.settingEl.style.borderTop = "none";
+	groupSetting.settingEl.addClass("obhc-no-border-top");
 
 	if (plugin.settings.grouping.enabled) {
 		new Setting(containerEl)
@@ -38,7 +38,7 @@ export function renderGroupingSettings(
 						plugin.settings.grouping.groupBy = value;
 						await plugin.saveSettings();
 						onSettingsChanged();
-					})
+					}),
 			);
 	}
 
@@ -59,10 +59,10 @@ export function renderGroupingSettings(
 							? "lastFirst"
 							: "firstLast";
 						await plugin.saveSettings();
-					})
+					}),
 			);
 
-		authorFormatSetting.settingEl.style.borderTop = "none";
+		authorFormatSetting.settingEl.addClass("obhc-no-border-top");
 
 		new Setting(containerEl)
 			.setName("Missing author handling")
@@ -71,7 +71,7 @@ export function renderGroupingSettings(
 				dropdown
 					.addOption(
 						"useFallbackPriority",
-						"Use fallback priority (Writer → Editor → first contributor)"
+						"Use fallback priority (Writer → Editor → first contributor)",
 					)
 					.addOption("useFallbackFolder", "Use fallback folder")
 					.setValue(plugin.settings.grouping.noAuthorBehavior)
@@ -80,8 +80,8 @@ export function renderGroupingSettings(
 							plugin.settings.grouping.noAuthorBehavior = value;
 							await plugin.saveSettings();
 							onSettingsChanged();
-						}
-					)
+						},
+					),
 			);
 
 		// show folder name input only if useFallbackFolder is selected
@@ -96,10 +96,10 @@ export function renderGroupingSettings(
 						.onChange(async (value) => {
 							plugin.settings.grouping.fallbackFolderName = value || "Various";
 							await plugin.saveSettings();
-						})
+						}),
 				);
 
-			fallbackFolderSetting.settingEl.style.borderTop = "none";
+			fallbackFolderSetting.settingEl.addClass("obhc-no-border-top");
 		}
 
 		new Setting(containerEl)
@@ -114,7 +114,7 @@ export function renderGroupingSettings(
 						plugin.settings.grouping.multipleAuthorsBehavior = value;
 						await plugin.saveSettings();
 						onSettingsChanged();
-					})
+					}),
 			);
 
 		if (
@@ -132,10 +132,10 @@ export function renderGroupingSettings(
 							plugin.settings.grouping.collectionsFolderName =
 								value || "Collections";
 							await plugin.saveSettings();
-						})
+						}),
 				);
 
-			collectionsFolderSetting.settingEl.style.borderTop = "none";
+			collectionsFolderSetting.settingEl.addClass("obhc-no-border-top");
 		}
 	}
 
@@ -143,7 +143,7 @@ export function renderGroupingSettings(
 		new Setting(containerEl)
 			.setName("Auto-organize notes")
 			.setDesc(
-				"Automatically move notes to match your grouping settings on every sync (default behavior). Disable to keep notes where you've manually placed them. Note: manually renamed folders may result in split collections when new books are added."
+				"Automatically move notes to match your grouping settings on every sync (default behavior). Disable to keep notes where you've manually placed them. Note: manually renamed folders may result in split collections when new books are added.",
 			)
 			.addToggle((toggle) =>
 				toggle
@@ -151,7 +151,7 @@ export function renderGroupingSettings(
 					.onChange(async (value) => {
 						plugin.settings.grouping.autoOrganizeFolders = value;
 						await plugin.saveSettings();
-					})
+					}),
 			);
 	}
 }

@@ -17,7 +17,8 @@ export class FrontmatterManager {
 
 		// add properties in the order they appear in the template
 		for (const propName of managedOrder) {
-			if (!frontmatterData.hasOwnProperty(propName)) continue;
+			if (!Object.prototype.hasOwnProperty.call(frontmatterData, propName))
+				continue;
 
 			const value = frontmatterData[propName];
 

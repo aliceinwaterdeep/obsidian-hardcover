@@ -1,5 +1,3 @@
-import { PluginSettings } from "src/types";
-
 // legacy settings structure used by migrations to access properties that existed in older versions
 export interface LegacySettings {
 	settingsVersion?: number;

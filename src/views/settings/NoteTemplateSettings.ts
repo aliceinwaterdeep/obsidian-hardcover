@@ -1,4 +1,4 @@
-import { setIcon, Setting } from "obsidian";
+import { Setting } from "obsidian";
 import ObsidianHardcover from "src/main";
 import { DEFAULT_NOTE_TEMPLATE } from "src/config/defaultSettings";
 import { renderWikilinkSettings } from "./WikilinkSettings";
@@ -8,8 +8,14 @@ export function renderNoteTemplateSettings(
 	plugin: ObsidianHardcover,
 ): void {
 	const setting = new Setting(containerEl);
-	setting.descEl.innerHTML =
-		"Customize the structure of your notes including YAML frontmatter and body content. Do not remove the enclosing `---` from the frontmatter or the template will be invalid.<br><br> ⚠️ On each sync, the plugin regenerates note content using fresh data from Hardcover. Values in `{{ }}` placeholders are updated automatically. Custom properties you add to this template will appear in all notes. Personal notes added below the `< !-- obsidian-hardcover-plugin-end -- >` delimiter in individual note files are never modified.";
+	setting.descEl.createSpan({
+		text: "Customize the structure of your notes including YAML frontmatter and body content. Do not remove the enclosing `---` from the frontmatter or the template will be invalid.",
+	});
+	setting.descEl.createEl("br");
+	setting.descEl.createEl("br");
+	setting.descEl.createSpan({
+		text: "⚠️ On each sync, the plugin regenerates note content using fresh data from Hardcover. Values in {{ }} placeholders are updated automatically. Custom properties you add to this template will appear in all notes. Personal notes added below the delimiter in individual note files are never modified.",
+	});
 
 	const editorContainer = containerEl.createDiv({
 		cls: "obhc-template-editor",
@@ -32,16 +38,29 @@ export function renderNoteTemplateSettings(
 
 	const hsetting = new Setting(containerEl);
 	hsetting.setName("Available variables");
-	hsetting.descEl.innerHTML =
-		"Book/Edition: {{bookTitle}}, {{editionTitle}}, {{bookCover}}, {{editionCover}}, {{bookReleaseDate}}, {{editionReleaseDate}}, {{bookAuthors}}, {{editionAuthors}}, {{bookContributors}}, {{editionContributors}}" +
-		"<br><br>" +
-		"Book data: {{description}}, {{url}}, {{series}}, {{genres}}" +
-		"<br><br>" +
-		"Edition data: {{publisher}}, {{isbn10}}, {{isbn13}}" +
-		"<br><br>" +
-		"Your data: {{rating}}, {{status}}, {{review}}, {{quotes}}, {{lists}}" +
-		"<br><br>" +
-		"Reading activity: {{firstReadStart}}, {{firstReadEnd}}, {{lastReadStart}}, {{lastReadEnd}}, {{totalReads}}, {{readYears}}";
+	hsetting.descEl.createSpan({
+		text: "Book/Edition: {{bookTitle}}, {{editionTitle}}, {{bookCover}}, {{editionCover}}, {{bookReleaseDate}}, {{editionReleaseDate}}, {{bookAuthors}}, {{editionAuthors}}, {{bookContributors}}, {{editionContributors}}",
+	});
+	hsetting.descEl.createEl("br");
+	hsetting.descEl.createEl("br");
+	hsetting.descEl.createSpan({
+		text: "Book data: {{description}}, {{url}}, {{series}}, {{genres}}",
+	});
+	hsetting.descEl.createEl("br");
+	hsetting.descEl.createEl("br");
+	hsetting.descEl.createSpan({
+		text: "Edition data: {{publisher}}, {{isbn10}}, {{isbn13}}",
+	});
+	hsetting.descEl.createEl("br");
+	hsetting.descEl.createEl("br");
+	hsetting.descEl.createSpan({
+		text: "Your data: {{rating}}, {{status}}, {{review}}, {{quotes}}, {{lists}}",
+	});
+	hsetting.descEl.createEl("br");
+	hsetting.descEl.createEl("br");
+	hsetting.descEl.createSpan({
+		text: "Reading activity: {{firstReadStart}}, {{firstReadEnd}}, {{lastReadStart}}, {{lastReadEnd}}, {{totalReads}}, {{readYears}}",
+	});
 
 	new Setting(containerEl).setDesc(
 		"⚠️ For array fields like {{authors}}, {{contributors}}, {{series}}, {{publisher}}, {{genres}} and {{lists}}, " +

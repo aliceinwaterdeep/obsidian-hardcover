@@ -6,7 +6,6 @@ Syncs your [Hardcover](https://hardcover.app) library to your Obsidian vault, cr
 
 ![obsidian-hardcover-v2-demo](https://github.com/user-attachments/assets/2ab555c4-b024-4752-9818-a61693edc57b)
 
-
 ## ⚠️ Version 2.0.0 - Breaking Changes
 
 v2.0.0 introduces customizable note templates and splits book/edition fields. **Your settings will be automatically migrated**. [See migration docs if you're curious](docs/v2-migration.md).
@@ -164,6 +163,7 @@ authors: {{editionAuthors}}
 
 **Book vs Edition Data:**
 
+- Id: `{{bookId}}` / `{{editionId}}`
 - Title: `{{bookTitle}}` / `{{editionTitle}}`
 - Cover: `{{bookCover}}` / `{{editionCover}}`
 - Release Date: `{{bookReleaseDate}}` / `{{editionReleaseDate}}`
