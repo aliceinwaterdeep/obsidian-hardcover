@@ -112,6 +112,13 @@ describe("TemplateDataBuilder", () => {
 			expect(variables.status).toEqual(["Read"]);
 		});
 
+		test("extracts paused status as array", () => {
+			const pausedBook = { ...MOCK_USER_BOOK, status_id: 4 };
+			const { variables } = builder.build(pausedBook);
+
+			expect(variables.status).toEqual(["Paused"]);
+		});
+
 		test("extracts description", () => {
 			const { variables } = builder.build(MOCK_USER_BOOK);
 

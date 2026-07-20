@@ -40,7 +40,7 @@ export const DEFAULT_SETTINGS: PluginSettings = {
 	userId: null,
 	booksCount: null,
 	preserveCustomFrontmatter: true,
-	statusFilter: [1, 2, 3, 5],
+	statusFilter: [1, 2, 3, 4, 5],
 	statusMapping: HARDCOVER_STATUS_MAP,
 	noteTemplate: DEFAULT_NOTE_TEMPLATE,
 	keepEmptyHeadings: false,

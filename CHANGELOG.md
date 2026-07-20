@@ -1,5 +1,9 @@
 # Changelog
 
+### Added
+
+- Support for the new Paused status.
+
 ## 2.1.0
 
 ### Added
