@@ -3,6 +3,7 @@
 ### Added
 
 - Support for the new Paused status.
+- New field in the Debug section to sync one or more specific books by Hardcover book ID (comma-separated), regardless of the status filter. It doesn't affect the last sync timestamp used for regular syncs. Useful for fixing a book that didn't sync correctly without having to modify the timestamp by hand.
 
 ### Changed
 

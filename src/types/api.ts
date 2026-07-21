@@ -25,6 +25,7 @@ export interface LibraryPageParams {
 	limit: number;
 	updatedAfter?: string;
 	status?: number[];
+	bookIds?: number[];
 }
 
 export interface FetchLibraryParams {

@@ -1,8 +1,13 @@
-import { Notice } from "obsidian";
+import { Notice, TFile } from "obsidian";
 import { HardcoverAPI } from "src/api/HardcoverAPI";
 import { HARDCOVER_STATUS_MAP } from "src/config/statusMapping";
 import ObsidianHardcover from "src/main";
 import { UserList } from "src/types";
+
+type ProcessBookResult =
+	| { status: "created" }
+	| { status: "updated" }
+	| { status: "failed"; id: number; title: string; error: string };
 
 export class SyncService {
 	private plugin: ObsidianHardcover;
@@ -163,6 +168,147 @@ export class SyncService {
 		return map;
 	}
 
+	private async processBookIntoNote(
+		book: any,
+		bookToListsMap: Map<number, string[]> | null,
+		noteIndex: Map<number, TFile>,
+	): Promise<ProcessBookResult> {
+		const { metadataService, noteService } = this.plugin;
+
+		try {
+			const { metadata, rawContributors } = metadataService.buildMetadata(
+				book,
+				bookToListsMap,
+			);
+
+			// check if note already exists by checking hardcover book Id, using the pre-built index
+			const existingNote = noteIndex.get(book.book_id) || null;
+
+			if (existingNote) {
+				await noteService.updateNote(metadata, existingNote, rawContributors);
+				return { status: "updated" };
+			} else {
+				await noteService.createNote(metadata, rawContributors);
+				return { status: "created" };
+			}
+		} catch (error) {
+			console.error("Error processing book:", error);
+
+			// attmempt to extract title for better error reporting
+			let bookTitle = "Unknown";
+			try {
+				bookTitle = book.edition?.title || book.book?.title || "Unknown";
+			} catch {
+				// console.debug("Could not get book title:", e);
+			}
+
+			return {
+				status: "failed",
+				id: book.book_id,
+				title: bookTitle,
+				error: error.message,
+			};
+		}
+	}
+
+	async syncBooksByIds(rawInput: string): Promise<void> {
+		const { targetFolder } = this.plugin.settings;
+
+		if (this.plugin.fileUtils.isRootOrEmpty(targetFolder)) {
+			new Notice(
+				"Please specify a subfolder for your Hardcover books. Using the vault root is not supported.",
+			);
+			return;
+		}
+
+		const parsedIds = rawInput
+			.split(",")
+			.map((id) => id.trim())
+			.filter((id) => id.length > 0)
+			.map((id) => parseInt(id, 10));
+
+		const invalidCount = parsedIds.filter((id) => isNaN(id)).length;
+		const bookIds = Array.from(
+			new Set(parsedIds.filter((id) => !isNaN(id))),
+		);
+
+		if (bookIds.length === 0) {
+			new Notice(
+				"No valid book IDs provided. Enter a comma-separated list of Hardcover book IDs (e.g. 12345, 67890).",
+			);
+			return;
+		}
+
+		const notice = new Notice(`Syncing ${bookIds.length} book(s)...`, 0);
+
+		try {
+			const userId = await this.ensureUserId();
+
+			const includeLists =
+				this.plugin.settings.noteTemplate.includes("{{lists}}");
+			const userLists = includeLists
+				? await this.hardcoverAPI.fetchUserLists(userId)
+				: undefined;
+			const bookToListsMap = userLists
+				? this.buildBookToListsMap(userLists)
+				: null;
+
+			const books = await this.hardcoverAPI.fetchBooksByIds(userId, bookIds);
+
+			const noteIndex = this.plugin.noteService.buildNoteIndex();
+
+			let createdNotesCount = 0;
+			let updatedNotesCount = 0;
+			const failedBooks: Array<{ id: number; title: string; error: string }> =
+				[];
+
+			for (const book of books) {
+				const result = await this.processBookIntoNote(
+					book,
+					bookToListsMap,
+					noteIndex,
+				);
+
+				if (result.status === "created") {
+					createdNotesCount++;
+				} else if (result.status === "updated") {
+					updatedNotesCount++;
+				} else {
+					failedBooks.push(result);
+				}
+			}
+
+			notice.hide();
+
+			const foundIds = new Set(books.map((b: any) => b.book_id));
+			const notFoundIds = bookIds.filter((id) => !foundIds.has(id));
+
+			let message = `Sync complete: ${createdNotesCount} created, ${updatedNotesCount} updated!`;
+
+			if (failedBooks.length > 0) {
+				message += ` (${failedBooks.length} failed to process)`;
+				console.warn("Books failed to process:", failedBooks);
+			}
+
+			if (notFoundIds.length > 0) {
+				message += ` (${notFoundIds.length} ID(s) not found in your library: ${notFoundIds.join(", ")})`;
+			}
+
+			if (invalidCount > 0) {
+				message += ` (${invalidCount} invalid ID(s) ignored)`;
+			}
+
+			new Notice(message, 10000);
+		} catch (error) {
+			notice.hide();
+			console.error("Error syncing books by id:", error);
+			new Notice(
+				"Error syncing book(s). Check console for details.",
+				10000,
+			);
+		}
+	}
+
 	private async syncBooks(
 		userId: number,
 		totalBooks: number,
@@ -171,7 +317,7 @@ export class SyncService {
 		isFilteringStatuses: boolean = false,
 	) {
 		const { lastSyncTimestamp, statusFilter } = this.plugin.settings;
-		const { metadataService, noteService } = this.plugin;
+		const { noteService } = this.plugin;
 
 		const notice = new Notice("Syncing Hardcover library...", 0);
 
@@ -220,45 +366,18 @@ export class SyncService {
 				updateProgress("Creating notes");
 				const book = books[i];
 
-				try {
-					const { metadata, rawContributors } = metadataService.buildMetadata(
-						book,
-						bookToListsMap,
-					);
+				const result = await this.processBookIntoNote(
+					book,
+					bookToListsMap,
+					noteIndex,
+				);
 
-					// check if note already exists by checking hardcover book Id, using the pre-built index
-					const existingNote = noteIndex.get(book.book_id) || null;
-
-					if (existingNote) {
-						// update existing note
-						await noteService.updateNote(
-							metadata,
-							existingNote,
-							rawContributors,
-						);
-						updatedNotesCount++;
-					} else {
-						// create new note
-						await noteService.createNote(metadata, rawContributors);
-						createdNotesCount++;
-					}
-				} catch (error) {
-					console.error("Error processing book:", error);
-
-					// attmempt to extract title for better error reporting
-					let bookTitle = "Unknown";
-					try {
-						bookTitle = book.edition?.title || book.book?.title || "Unknown";
-					} catch {
-						// console.debug("Could not get book title:", e);
-					}
-
-					failedBooks.push({
-						id: book.book_id,
-						title: bookTitle,
-						error: error.message,
-					});
-
+				if (result.status === "created") {
+					createdNotesCount++;
+				} else if (result.status === "updated") {
+					updatedNotesCount++;
+				} else {
+					failedBooks.push(result);
 					failedBooksCount++;
 					// continue with next book instead of blocking the whole sync
 				}

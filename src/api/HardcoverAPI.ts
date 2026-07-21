@@ -182,12 +182,14 @@ export class HardcoverAPI {
 		limit = 100,
 		updatedAfter,
 		status,
+		bookIds,
 	}: LibraryPageParams): Promise<any[]> {
 		const query = this.queryBuilder.buildUserBooksQuery(
 			offset,
 			limit,
 			updatedAfter,
-			status
+			status,
+			bookIds
 		);
 
 		const variables = {
@@ -196,10 +198,24 @@ export class HardcoverAPI {
 			limit,
 			...(updatedAfter ? { updatedAfter } : {}),
 			...(status && status.length > 0 ? { statusIds: status } : {}),
+			...(bookIds && bookIds.length > 0 ? { bookIds } : {}),
 		};
 
 		const data = await this.graphqlRequest(query, variables);
 		return data.user_books;
+	}
+
+	// fetches a specific set of books by id in a single request (no pagination needed)
+	async fetchBooksByIds(
+		userId: number,
+		bookIds: number[]
+	): Promise<any[]> {
+		return this.fetchLibraryPage({
+			userId,
+			offset: 0,
+			limit: bookIds.length,
+			bookIds,
+		});
 	}
 
 	async fetchBooksCount(userId: number): Promise<number> {
