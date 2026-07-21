@@ -12,6 +12,7 @@
 ### Fixed
 
 - Rereads are now only counted when a read has a finish date. A book you started but haven't finished/haven't DNFed no longer affects `totalReads`, `readYears`, or the first/last read dates.
+- Resolved a batch of Dependabot security alerts by updating transitive dev/build dependencies. The plugin has no runtime dependencies, so none of these were ever affecting users.
 
 ## 2.1.0
 
