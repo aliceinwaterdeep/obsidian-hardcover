@@ -33,6 +33,7 @@ export default tseslint.config(
 			"@typescript-eslint/no-deprecated": "warn",
 			"no-console": ["warn", { allow: ["warn", "error", "debug"] }],
 			"obsidianmd/settings-tab/prefer-setting-definitions": "warn",
+			"obsidianmd/no-tfile-tfolder-cast": "warn",
 		},
 	},
 );

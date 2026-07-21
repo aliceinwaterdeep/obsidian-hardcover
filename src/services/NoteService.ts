@@ -322,13 +322,13 @@ export class NoteService {
 		const files: TFile[] = [];
 
 		const traverse = (current: TFolder) => {
-			for (const child of current.children as Array<
-				Partial<TFile> & Partial<TFolder>
-			>) {
-				if (child.extension === "md") {
-					files.push(child as TFile);
-				} else if (child.children) {
-					traverse(child as TFolder);
+			for (const child of current.children) {
+				if (child instanceof TFile) {
+					if (child.extension === "md") {
+						files.push(child);
+					}
+				} else if (child instanceof TFolder) {
+					traverse(child);
 				}
 			}
 		};

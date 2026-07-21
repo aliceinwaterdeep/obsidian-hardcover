@@ -1,3 +1,4 @@
+import { TFile, TFolder } from "obsidian";
 import { NoteService } from "./NoteService";
 import { PluginSettings } from "../types";
 import { DEFAULT_SETTINGS } from "../config/defaultSettings";
@@ -6,11 +7,20 @@ import { CONTENT_DELIMITER } from "../config/constants";
 
 jest.mock("obsidian", () => ({
 	TFile: jest.fn(),
+	TFolder: jest.fn(),
 	Vault: jest.fn(),
 	normalizePath: (p: string) => p,
 	MetadataCache: jest.fn(),
 	Notice: jest.fn(),
 }));
+
+function makeMockFile(props: Record<string, unknown>): TFile {
+	return Object.setPrototypeOf(props, TFile.prototype);
+}
+
+function makeMockFolder(props: Record<string, unknown>): TFolder {
+	return Object.setPrototypeOf(props, TFolder.prototype);
+}
 
 describe("NoteService", () => {
 	let noteService: NoteService;
@@ -151,18 +161,18 @@ User section
 
 	describe("findNoteByHardcoverId", () => {
 		test("finds note in nested folders", async () => {
-			const mockFile = {
+			const mockFile = makeMockFile({
 				path: "HardcoverBooks/Author/Title.md",
 				extension: "md",
-			} as any;
+			});
 
-			const mockFolder = {
+			const mockFolder = makeMockFolder({
 				children: [
-					{
+					makeMockFolder({
 						children: [mockFile],
-					},
+					}),
 				],
-			};
+			});
 
 			const mockVault = {
 				getFolderByPath: jest.fn().mockReturnValue(mockFolder),
@@ -189,9 +199,9 @@ User section
 		});
 
 		test("returns null when note not found", async () => {
-			const mockFolder = {
+			const mockFolder = makeMockFolder({
 				children: [],
-			};
+			});
 
 			const mockVault = {
 				getFolderByPath: jest.fn().mockReturnValue(mockFolder),
