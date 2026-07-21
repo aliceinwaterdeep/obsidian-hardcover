@@ -210,16 +210,16 @@ describe("TemplateDataBuilder", () => {
 	});
 
 	describe("wikilink formatting", () => {
-		test("applies wikilinks to authors when enabled", () => {
+		test("does not apply wikilinks to authors in variables when enabled", () => {
 			mockSettings.wikilinkSettings.authors = true;
 			builder.updateSettings(mockSettings);
 
 			const { variables } = builder.build(MOCK_USER_BOOK);
 
-			expect(variables.editionAuthors).toEqual(["[[Edition Author]]"]);
+			expect(variables.editionAuthors).toEqual(["Edition Author"]);
 		});
 
-		test("does not apply wikilinks to authors when disabled", () => {
+		test("does not apply wikilinks to authors in variables when disabled", () => {
 			mockSettings.wikilinkSettings.authors = false;
 			builder.updateSettings(mockSettings);
 
@@ -239,7 +239,7 @@ describe("TemplateDataBuilder", () => {
 			expect(variables.lists).toEqual(["TBR 2024", "Favorites"]);
 		});
 
-		test("applies wikilinks to lists when enabled", () => {
+		test("does not apply wikilinks to lists in variables when enabled", () => {
 			mockSettings.wikilinkSettings.lists = true;
 			builder.updateSettings(mockSettings);
 
@@ -248,7 +248,7 @@ describe("TemplateDataBuilder", () => {
 
 			const { variables } = builder.build(MOCK_USER_BOOK, listsMap);
 
-			expect(variables.lists).toEqual(["[[TBR 2024]]", "[[Favorites]]"]);
+			expect(variables.lists).toEqual(["TBR 2024", "Favorites"]);
 		});
 	});
 
