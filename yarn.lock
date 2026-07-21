@@ -1878,13 +1878,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"builtin-modules@npm:5.3.0":
-  version: 5.3.0
-  resolution: "builtin-modules@npm:5.3.0"
-  checksum: 10c0/0251cf1bb44494353669de425fd7db2211338eecda1dafb04c7b64f57f5b0a738188cdfa854c7f82453df5ee9220537ad268c5f1d1ded873b65b8107928155f0
-  languageName: node
-  linkType: hard
-
 "cacache@npm:^20.0.1":
   version: 20.0.3
   resolution: "cacache@npm:20.0.3"
@@ -3657,7 +3650,6 @@ __metadata:
     "@types/node": "npm:^25.0.2"
     "@typescript-eslint/eslint-plugin": "npm:8.65.0"
     "@typescript-eslint/parser": "npm:8.65.0"
-    builtin-modules: "npm:5.3.0"
     esbuild: "npm:0.28.1"
     jest: "npm:^30.4.2"
     obsidian: "npm:^1.13.1"
