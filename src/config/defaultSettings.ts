@@ -34,7 +34,7 @@ readYears: {{readYears}}
 export const DEFAULT_FILENAME_FORMAT = "{{editionTitle}} ({{editionYear}})";
 
 export const DEFAULT_SETTINGS: PluginSettings = {
-	settingsVersion: 13,
+	settingsVersion: 14,
 	apiKey: "",
 	lastSyncTimestamp: "",
 	userId: null,

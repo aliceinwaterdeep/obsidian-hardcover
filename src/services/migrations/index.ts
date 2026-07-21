@@ -14,6 +14,7 @@ import { migrateToV10 } from "./migrateToV10";
 import { migrateToV11 } from "./migrateToV11";
 import { migrateToV12 } from "./migrateToV12";
 import { migrateToV13 } from "./migrateToV13";
+import { migrateToV14 } from "./migrateToV14";
 import { LegacySettings } from "src/types/migrations";
 
 export class SettingsMigrationService {
@@ -80,6 +81,10 @@ export class SettingsMigrationService {
 
 		if (currentVersion < 13) {
 			settings = migrateToV13(settings);
+		}
+
+		if (currentVersion < 14) {
+			settings = migrateToV14(settings);
 		}
 
 		// update version number

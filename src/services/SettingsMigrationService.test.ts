@@ -79,7 +79,7 @@ describe("SettingsMigrationService", () => {
 
 			const result = SettingsMigrationService.migrateSettings(v0Settings);
 
-			expect(result.settingsVersion).toBe(13);
+			expect(result.settingsVersion).toBe(DEFAULT_SETTINGS.settingsVersion);
 			expect(result.apiKey).toBe("test-key");
 		});
 
@@ -139,16 +139,20 @@ describe("SettingsMigrationService", () => {
 			const result = SettingsMigrationService.migrateSettings(userSettings);
 
 			// version should be updated
-			expect(result.settingsVersion).toBe(13);
+			expect(result.settingsVersion).toBe(DEFAULT_SETTINGS.settingsVersion);
 
 			// user data should be preserved
 			expect(result.apiKey).toBe("user-api-key");
 			expect(result.lastSyncTimestamp).toBe("2023-06-15T12:00:00Z");
 			expect(result.userId).toBe(456);
 			expect(result.targetFolder).toBe("MyBooks");
+			// custom labels are preserved, missing statuses (e.g. Paused) are backfilled
 			expect(result.statusMapping).toEqual({
 				1: "Want to Read",
+				2: "Currently Reading",
 				3: "Finished",
+				4: "Paused",
+				5: "Did Not Finish",
 			});
 			expect(result.filenameTemplate).toBe(
 				"{{editionTitle}} by {{editionAuthors}}",
@@ -205,7 +209,7 @@ describe("SettingsMigrationService", () => {
 
 			const result = SettingsMigrationService.migrateSettings(v6Settings);
 
-			expect(result.settingsVersion).toBe(13);
+			expect(result.settingsVersion).toBe(DEFAULT_SETTINGS.settingsVersion);
 			expect(result.preserveCustomFrontmatter).toBe(true);
 		});
 
@@ -382,6 +386,37 @@ describe("SettingsMigrationService", () => {
 				genres: false,
 				lists: false,
 			});
+		});
+
+		test("backfills statusMapping and extends statusFilter to include Paused when user was syncing everything (v13 -> v14)", () => {
+			const v13Settings = {
+				settingsVersion: 13,
+				statusMapping: { 1: "Want to Read", 2: "Currently Reading", 3: "Read", 5: "Did Not Finish" },
+				statusFilter: [1, 2, 3, 5],
+			} as any;
+
+			const result = SettingsMigrationService.migrateSettings(v13Settings);
+
+			expect(result.statusMapping).toEqual({
+				1: "Want to Read",
+				2: "Currently Reading",
+				3: "Read",
+				4: "Paused",
+				5: "Did Not Finish",
+			});
+			expect(result.statusFilter).toEqual([1, 2, 3, 5, 4]);
+		});
+
+		test("does not extend a deliberately customized statusFilter (v13 -> v14)", () => {
+			const v13Settings = {
+				settingsVersion: 13,
+				statusMapping: { 1: "Want to Read", 3: "Read" },
+				statusFilter: [3], // user chose to only sync "Read" books
+			} as any;
+
+			const result = SettingsMigrationService.migrateSettings(v13Settings);
+
+			expect(result.statusFilter).toEqual([3]);
 		});
 	});
 });
