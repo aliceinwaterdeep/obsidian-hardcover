@@ -8,6 +8,10 @@
 
 - Reviews now use Hardcover's new `review_markdown` field so your review will keep all the formatting you added. One exception is spoilers: the spoiler markers (`||text||`) are stripped as they are not supported by Obsidian.
 
+### Fixed
+
+- Rereads are now only counted when a read has a finish date. A book you started but haven't finished/haven't DNFed no longer affects `totalReads`, `readYears`, or the first/last read dates.
+
 ## 2.1.0
 
 ### Added

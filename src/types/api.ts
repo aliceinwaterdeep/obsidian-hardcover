@@ -83,8 +83,8 @@ interface HardcoverEdition {
 }
 
 export interface HardcoverUserBooksReads {
-	started_at: string;
-	finished_at: string;
+	started_at: string | null;
+	finished_at: string | null;
 }
 
 export interface HardcoverBookSeries {
