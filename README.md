@@ -48,7 +48,7 @@ v2.0.0 introduces customizable note templates and splits book/edition fields. **
 
 ## Requirements
 
-- **Obsidian 1.11.1 or later**
+- **Obsidian 1.11.4 or later**
 - Hardcover API key (get it from [your account settings](https://hardcover.app/account/api))
 
 > **Note for existing users:** Version 1.9.0 introduced this requirement. If you're on an older version of Obsidian, stay on plugin version 1.8.1 or earlier.
@@ -186,7 +186,7 @@ authors: {{editionAuthors}}
 
 - `{{rating}}` - Your rating
 - `{{status}}` - Reading status
-- `{{review}}` - Your written review
+- `{{review}}` - Your review (formatted from Hardcover's markdown)
 - `{{quotes}}` - Highlights from reading journal
 - `{{lists}}` - Your Hardcover lists
 
@@ -356,7 +356,7 @@ Ideas for new features are collected [here](https://github.com/aliceinwaterdeep/
 
 _Feel free to [open an issue](https://github.com/aliceinwaterdeep/obsidian-hardcover/issues) if you find bugs or have a feature idea!_
 
-Contributions are more than welcome! It would be great if you could open an issue to discuss what you'd like to contribute to before opening a PR.
+Contributions are more than welcome! See [CONTRIBUTING.md](CONTRIBUTING.md) for dev setup and PR guidelines.
 
 ---
 

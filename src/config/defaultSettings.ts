@@ -34,13 +34,13 @@ readYears: {{readYears}}
 export const DEFAULT_FILENAME_FORMAT = "{{editionTitle}} ({{editionYear}})";
 
 export const DEFAULT_SETTINGS: PluginSettings = {
-	settingsVersion: 13,
+	settingsVersion: 14,
 	apiKey: "",
 	lastSyncTimestamp: "",
 	userId: null,
 	booksCount: null,
 	preserveCustomFrontmatter: true,
-	statusFilter: [1, 2, 3, 5],
+	statusFilter: [1, 2, 3, 4, 5],
 	statusMapping: HARDCOVER_STATUS_MAP,
 	noteTemplate: DEFAULT_NOTE_TEMPLATE,
 	keepEmptyHeadings: false,

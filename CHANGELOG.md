@@ -1,5 +1,21 @@
 # Changelog
 
+## 2.2.0
+
+### Added
+
+- Support for the new Paused status.
+- New field in the Debug section to sync one or more specific books by Hardcover book ID (comma-separated), regardless of the status filter. It doesn't affect the last sync timestamp used for regular syncs. Useful for fixing a book that didn't sync correctly without having to modify the timestamp by hand.
+
+### Changed
+
+- Reviews now use Hardcover's new `review_markdown` field so your review will keep all the formatting you added. One exception is spoilers: the spoiler markers (`||text||`) are stripped as they are not supported by Obsidian.
+
+### Fixed
+
+- Rereads are now only counted when a read has a finish date. A book you started but haven't finished/haven't DNFed no longer affects `totalReads`, `readYears`, or the first/last read dates.
+- Resolved a batch of Dependabot security alerts by updating transitive dev/build dependencies. The plugin has no runtime dependencies, so none of these were ever affecting users.
+
 ## 2.1.0
 
 ### Added

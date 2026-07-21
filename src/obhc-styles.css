@@ -1,11 +1,3 @@
-.obhc-hidden {
-	display: none !important;
-}
-
-.obhc-visible {
-	display: block !important;
-}
-
 .obhc-required {
 	color: var(--text-error);
 }
@@ -21,57 +13,13 @@
 	margin-bottom: 5px;
 }
 
-.obhc-settings .has-error {
-	border-color: var(--text-error) !important;
+.obhc-settings .setting-item-control input.has-error {
+	border-color: var(--text-error);
 }
 
 .obhc-env-message {
 	color: var(--text-muted);
 	font-size: 0.9em;
-}
-
-.obhc-accordion {
-	margin-bottom: 8px;
-	border: 1px solid var(--background-modifier-border);
-	border-radius: 4px;
-}
-.obhc-accordion-header {
-	display: flex;
-	align-items: center;
-	cursor: pointer;
-	padding: 5px;
-	border-radius: 4px 4px 0 0;
-}
-.obhc-accordion-header:hover {
-	background-color: var(--interactive-hover);
-}
-.obhc-accordion-icon {
-	margin-right: 4px;
-	transform: translateY(2px);
-	transition: transform 0.2s ease;
-}
-.obhc-accordion-icon.expanded {
-	transform: rotate(90deg);
-}
-.obhc-accordion-content {
-	padding: 8px;
-	display: none;
-	border-top: 1px solid var(--background-modifier-border);
-}
-.obhc-accordion-content.expanded {
-	display: block;
-}
-.obhc-field-toggle {
-	margin-left: auto !important;
-	padding: 0 !important;
-	border: none !important;
-}
-.obhc-field-toggle .checkbox-container {
-	margin: 0 !important;
-}
-.obhc-field-label {
-	font-size: 1em;
-	margin-right: 10px;
 }
 
 /* Debug section styles */
@@ -212,6 +160,6 @@
 	flex-shrink: 0;
 }
 
-.obhc-no-border-top {
-	border-top: none !important;
+.obhc-settings .setting-item.obhc-no-border-top {
+	border-top: none;
 }

@@ -86,13 +86,23 @@ export function extractReadingActivity(reads: HardcoverUserBooksReads[]) {
 		return { firstRead: null, lastRead: null, totalReads: 0, readYears: [] };
 	}
 
-	// create a copy of the array
-	const sortedReads = [...reads];
+	// only completed reads count: an in progress read (started but not finished) shouldn't be counted as a (re)read
+	const completedReads = reads.filter(
+		(read): read is HardcoverUserBooksReads & { finished_at: string } =>
+			!!read.finished_at,
+	);
 
-	// sort by started_at date (oldest first)
+	if (completedReads.length === 0) {
+		return { firstRead: null, lastRead: null, totalReads: 0, readYears: [] };
+	}
+
+	// create a copy of the array
+	const sortedReads = [...completedReads];
+
+	// sort by finished_at date (oldest first)
 	sortedReads.sort((a, b) => {
-		const dateA = new Date(a.started_at || "");
-		const dateB = new Date(b.started_at || "");
+		const dateA = new Date(a.finished_at);
+		const dateB = new Date(b.finished_at);
 		return dateA.getTime() - dateB.getTime();
 	});
 
@@ -107,14 +117,10 @@ export function extractReadingActivity(reads: HardcoverUserBooksReads[]) {
 	// extract array of unique years from reading activity
 	const readYears = sortedReads
 		.map((read) => {
-			// try to get the year from finished_at, fall back to started_at
-			const dateStr = read.finished_at || read.started_at;
-			if (!dateStr) return null;
-
 			try {
-				return new Date(dateStr).getFullYear().toString();
+				return new Date(read.finished_at).getFullYear().toString();
 			} catch (e) {
-				console.warn("Error parsing date:", dateStr, e);
+				console.warn("Error parsing date:", read.finished_at, e);
 				return null;
 			}
 		})

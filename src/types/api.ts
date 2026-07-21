@@ -25,6 +25,7 @@ export interface LibraryPageParams {
 	limit: number;
 	updatedAfter?: string;
 	status?: number[];
+	bookIds?: number[];
 }
 
 export interface FetchLibraryParams {
@@ -40,7 +41,7 @@ export interface HardcoverUserBook {
 	updated_at: string;
 	rating: number | null;
 	status_id: number;
-	review: string | null;
+	review_markdown: string | null;
 	review_raw: string | null;
 	book: HardcoverBook;
 	edition: HardcoverEdition;
@@ -83,8 +84,8 @@ interface HardcoverEdition {
 }
 
 export interface HardcoverUserBooksReads {
-	started_at: string;
-	finished_at: string;
+	started_at: string | null;
+	finished_at: string | null;
 }
 
 export interface HardcoverBookSeries {

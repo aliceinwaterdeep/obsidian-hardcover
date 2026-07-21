@@ -51,20 +51,25 @@ export class QueryBuilder {
 		_limit: number,
 		updatedAfter?: string,
 		status?: number[],
+		bookIds?: number[],
 	): string {
 		const userBooksFields = this.buildUserBooksFields();
 		const bookFields = this.buildBookFields();
 		const editionFields = this.buildEditionFields();
 		const readsFields = this.buildReadsFields();
 		const hasStatusFilter = status && status.length > 0;
+		const hasBookIdsFilter = bookIds && bookIds.length > 0;
 
-		// build where clause with optional timestamp and status filters
+		// build where clause with optional timestamp, status, and book id filters
 		let whereClause = `where: {user_id: {_eq: $userId}`;
 		if (updatedAfter) {
 			whereClause += `, updated_at: {_gt: $updatedAfter}`;
 		}
 		if (hasStatusFilter) {
 			whereClause += `, status_id: {_in: $statusIds}`;
+		}
+		if (hasBookIdsFilter) {
+			whereClause += `, book_id: {_in: $bookIds}`;
 		}
 		whereClause += `}`;
 
@@ -74,6 +79,9 @@ export class QueryBuilder {
 		}
 		if (hasStatusFilter) {
 			variableDeclarations += ", $statusIds: [Int!]!";
+		}
+		if (hasBookIdsFilter) {
+			variableDeclarations += ", $bookIds: [Int!]!";
 		}
 
 		return `
@@ -121,8 +129,8 @@ export class QueryBuilder {
 		}
 
 		if (needsField("review")) {
-			// temporarily querying both fields since the review field can return null for some users (known HC issue)
-			fields.push("review");
+			// review_raw is a fallback in case review_markdown returns null
+			fields.push("review_markdown");
 			fields.push("review_raw");
 		}
 
