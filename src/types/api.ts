@@ -40,7 +40,7 @@ export interface HardcoverUserBook {
 	updated_at: string;
 	rating: number | null;
 	status_id: number;
-	review: string | null;
+	review_markdown: string | null;
 	review_raw: string | null;
 	book: HardcoverBook;
 	edition: HardcoverEdition;

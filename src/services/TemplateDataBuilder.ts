@@ -178,8 +178,10 @@ export class TemplateDataBuilder {
 		}
 
 		// review
-		if (userBook.review && userBook.review.trim()) {
-			variables.review = userBook.review;
+		if (userBook.review_markdown && userBook.review_markdown.trim()) {
+			variables.review = this.stripSpoilerMarkers(
+				userBook.review_markdown,
+			);
 		} else if (userBook.review_raw && userBook.review_raw.trim()) {
 			variables.review = userBook.review_raw;
 		}
@@ -310,6 +312,10 @@ export class TemplateDataBuilder {
 			this.settings.statusMapping[statusId] || `Unknown (${statusId})`;
 		// return as array so obsidian property is a list
 		return [statusText];
+	}
+
+	private stripSpoilerMarkers(text: string): string {
+		return text.replace(/\|\|([\s\S]+?)\|\|/g, "$1");
 	}
 
 	private parseTemplateYAML(template: string): Record<string, any> {

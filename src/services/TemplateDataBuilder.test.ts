@@ -24,7 +24,7 @@ describe("TemplateDataBuilder", () => {
 		book_id: 12345,
 		status_id: 3,
 		rating: 5,
-		review: "Great book",
+		review_markdown: "Great book",
 		review_raw: null,
 		updated_at: "2023-01-15T00:00:00Z",
 		book: {
@@ -117,6 +117,33 @@ describe("TemplateDataBuilder", () => {
 			const { variables } = builder.build(pausedBook);
 
 			expect(variables.status).toEqual(["Paused"]);
+		});
+
+		test("extracts review from review_markdown, stripping spoiler markers", () => {
+			const bookWithReview = {
+				...MOCK_USER_BOOK,
+				review_markdown:
+					"I loved [First Lie Wins](https://hardcover.app/id/book/880916) but ||the ending was predictable||.",
+				review_raw: null,
+			};
+			const { variables } = builder.build(bookWithReview);
+
+			expect(variables.review).toBe(
+				"I loved [First Lie Wins](https://hardcover.app/id/book/880916) but the ending was predictable.",
+			);
+		});
+
+		test("falls back to review_raw when review_markdown is null", () => {
+			const bookWithReview = {
+				...MOCK_USER_BOOK,
+				review_markdown: null,
+				review_raw: "I loved First Lie Wins but the ending was predictable.",
+			};
+			const { variables } = builder.build(bookWithReview);
+
+			expect(variables.review).toBe(
+				"I loved First Lie Wins but the ending was predictable.",
+			);
 		});
 
 		test("extracts description", () => {

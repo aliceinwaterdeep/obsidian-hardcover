@@ -4,6 +4,10 @@
 
 - Support for the new Paused status.
 
+### Changed
+
+- Reviews now use Hardcover's new `review_markdown` field so your review will keep all the formatting you added. One exception is spoilers: the spoiler markers (`||text||`) are stripped as they are not supported by Obsidian.
+
 ## 2.1.0
 
 ### Added

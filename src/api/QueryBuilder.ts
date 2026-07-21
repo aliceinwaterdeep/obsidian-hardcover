@@ -121,8 +121,8 @@ export class QueryBuilder {
 		}
 
 		if (needsField("review")) {
-			// temporarily querying both fields since the review field can return null for some users (known HC issue)
-			fields.push("review");
+			// review_raw is a fallback in case review_markdown returns null
+			fields.push("review_markdown");
 			fields.push("review_raw");
 		}
 
