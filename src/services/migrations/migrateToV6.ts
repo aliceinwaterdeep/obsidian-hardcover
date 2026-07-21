@@ -7,19 +7,19 @@ export function migrateToV6(settings: LegacySettings): PluginSettings {
 	}
 
 	if (!("noAuthorBehavior" in settings.grouping)) {
-		(settings.grouping as any).noAuthorBehavior = "useFallbackPriority";
+		settings.grouping.noAuthorBehavior = "useFallbackPriority";
 	}
 
 	if (!("fallbackFolderName" in settings.grouping)) {
-		(settings.grouping as any).fallbackFolderName = "Various";
+		settings.grouping.fallbackFolderName = "Various";
 	}
 
 	if (!("multipleAuthorsBehavior" in settings.grouping)) {
-		(settings.grouping as any).multipleAuthorsBehavior = "useFirst";
+		settings.grouping.multipleAuthorsBehavior = "useFirst";
 	}
 
 	if (!("collectionsFolderName" in settings.grouping)) {
-		(settings.grouping as any).collectionsFolderName = "Collections";
+		settings.grouping.collectionsFolderName = "Collections";
 	}
 
 	return settings as PluginSettings;

@@ -25,7 +25,10 @@ export function validateNoteTemplate(template: string): ValidationResult {
 	const yamlContent = yamlMatch[1];
 
 	// wrap {{variables}} for validation
-	let yamlForValidation = yamlContent.replace(/:\s*(\{\{(\w+)\}\})/g, ': "$1"');
+	const yamlForValidation = yamlContent.replace(
+		/:\s*(\{\{(\w+)\}\})/g,
+		': "$1"',
+	);
 
 	try {
 		const parsed = parseYaml(yamlForValidation);

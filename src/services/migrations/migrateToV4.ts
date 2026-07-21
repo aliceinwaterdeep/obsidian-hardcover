@@ -7,7 +7,7 @@ export function migrateToV4(settings: LegacySettings): PluginSettings {
 	}
 
 	if (!settings.frontmatterFields.lists) {
-		(settings.frontmatterFields as any).lists = {
+		settings.frontmatterFields.lists = {
 			enabled: false,
 			propertyName: "lists",
 			wikilinks: false,

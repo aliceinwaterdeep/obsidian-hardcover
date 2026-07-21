@@ -54,9 +54,9 @@ interface HardcoverBook {
 	title: string;
 	description: string | null;
 	release_date: string;
-	cached_image: Record<string, any>;
+	cached_image: HardcoverCachedImage;
 	slug: string;
-	cached_contributors: Record<string, any>[];
+	cached_contributors: HardcoverContributor[];
 	book_series: HardcoverBookSeries[];
 	cached_tags?: {
 		Genre?: Array<{
@@ -74,13 +74,22 @@ interface HardcoverEdition {
 	id: number;
 	title: string;
 	release_date: string;
-	cached_image: Record<string, any>;
-	cached_contributors: Record<string, any>[];
+	cached_image: HardcoverCachedImage;
+	cached_contributors: HardcoverContributor[];
 	publisher: {
 		name: string;
 	};
 	isbn_10: string | null;
 	isbn_13: string | null;
+}
+
+export interface HardcoverCachedImage {
+	url: string;
+}
+
+export interface HardcoverContributor {
+	contribution: string | null;
+	author: { name: string } | null;
 }
 
 export interface HardcoverUserBooksReads {
@@ -104,4 +113,34 @@ export interface UserList {
 
 export interface ReadingJournalQuote {
 	entry: string;
+}
+
+export interface UserBooksQueryResponse {
+	user_books: HardcoverUserBook[];
+}
+
+export interface BooksCountResponse {
+	user_books_aggregate: {
+		aggregate: {
+			count: number;
+		};
+	};
+}
+
+export interface UserLibraryInfoResponse {
+	me: Array<{
+		id: number;
+		user_books_aggregate?: {
+			aggregate?: {
+				count?: number;
+			};
+		};
+		lists?: UserList[];
+	}>;
+}
+
+export interface UserListsResponse {
+	users_by_pk: {
+		lists: UserList[];
+	} | null;
 }

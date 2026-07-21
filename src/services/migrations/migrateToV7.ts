@@ -4,7 +4,7 @@ import { LegacySettings } from "src/types/migrations";
 
 export function migrateToV7(settings: LegacySettings): PluginSettings {
 	if (!("preserveCustomFrontmatter" in settings)) {
-		(settings as any).preserveCustomFrontmatter =
+		settings.preserveCustomFrontmatter =
 			DEFAULT_SETTINGS.preserveCustomFrontmatter;
 	}
 

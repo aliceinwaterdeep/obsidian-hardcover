@@ -2,7 +2,7 @@ import { Notice, TFile } from "obsidian";
 import { HardcoverAPI } from "src/api/HardcoverAPI";
 import { HARDCOVER_STATUS_MAP } from "src/config/statusMapping";
 import ObsidianHardcover from "src/main";
-import { UserList } from "src/types";
+import { HardcoverUserBook, UserList } from "src/types";
 
 type ProcessBookResult =
 	| { status: "created" }
@@ -169,7 +169,7 @@ export class SyncService {
 	}
 
 	private async processBookIntoNote(
-		book: any,
+		book: HardcoverUserBook,
 		bookToListsMap: Map<number, string[]> | null,
 		noteIndex: Map<number, TFile>,
 	): Promise<ProcessBookResult> {
@@ -280,7 +280,7 @@ export class SyncService {
 
 			notice.hide();
 
-			const foundIds = new Set(books.map((b: any) => b.book_id));
+			const foundIds = new Set(books.map((b) => b.book_id));
 			const notFoundIds = bookIds.filter((id) => !foundIds.has(id));
 
 			let message = `Sync complete: ${createdNotesCount} created, ${updatedNotesCount} updated!`;
@@ -355,7 +355,8 @@ export class SyncService {
 			let createdNotesCount = 0;
 			let updatedNotesCount = 0;
 			let failedBooksCount = 0;
-			let failedBooks: Array<{ id: number; title: string; error: string }> = [];
+			const failedBooks: Array<{ id: number; title: string; error: string }> =
+				[];
 
 			// 	Build index of existing notes for O(1) lookups (instead of O(n) per book)
 			updateProgress("Indexing existing notes");

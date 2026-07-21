@@ -1,3 +1,5 @@
+import { PluginSettings } from "src/types";
+
 export class WikilinkFormatter {
 	static formatAsWikilinks(values: string[], fieldType: string): string[] {
 		return values.map((value) => {
@@ -19,10 +21,10 @@ export class WikilinkFormatter {
 	}
 
 	static applyWikilinksIfNeeded(
-		value: any,
+		value: unknown,
 		fieldName: string,
-		settings: any,
-	): any {
+		settings: PluginSettings,
+	): unknown {
 		if (!value) return value;
 
 		// determine if this field should have wikilinks
@@ -49,7 +51,7 @@ export class WikilinkFormatter {
 
 	private static shouldApplyWikilinks(
 		fieldName: string,
-		wikilinkSettings: any,
+		wikilinkSettings: PluginSettings["wikilinkSettings"],
 	): boolean {
 		if (fieldName === "bookAuthors" || fieldName === "editionAuthors") {
 			return wikilinkSettings.authors;

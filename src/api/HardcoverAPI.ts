@@ -6,6 +6,11 @@ import {
 	PluginSettings,
 	UserList,
 	SyncInfo,
+	HardcoverUserBook,
+	UserBooksQueryResponse,
+	BooksCountResponse,
+	UserLibraryInfoResponse,
+	UserListsResponse,
 } from "../types";
 import { GetUserIdResponse, GraphQLResponse, HardcoverUser } from "src/types";
 import { QueryBuilder } from "./QueryBuilder";
@@ -29,7 +34,10 @@ export class HardcoverAPI {
 		this.queryBuilder = new QueryBuilder(settings); // update query builder
 	}
 
-	async graphqlRequest<T>(query: string, variables?: any): Promise<any> {
+	async graphqlRequest<T>(
+		query: string,
+		variables?: Record<string, unknown>,
+	): Promise<T> {
 		// console.log(query);
 
 		const body = JSON.stringify({
@@ -99,7 +107,7 @@ export class HardcoverAPI {
 					throw new Error(`GraphQL Error: ${data.errors[0].message}`);
 				}
 
-				return data.data;
+				return data.data as T;
 			} catch (error) {
 				if (error.message.includes("net::ERR")) {
 					throw new Error(
@@ -121,7 +129,7 @@ export class HardcoverAPI {
 		updatedAfter,
 		status,
 		onProgress,
-	}: FetchLibraryParams): Promise<any[]> {
+	}: FetchLibraryParams): Promise<HardcoverUserBook[]> {
 		if (totalBooks === 0) {
 			return [];
 		}
@@ -137,7 +145,7 @@ export class HardcoverAPI {
 		const delayMs = getDelayMs(totalBooks);
 
 		const pageSize = 100;
-		const allBooks: any[] = [];
+		const allBooks: HardcoverUserBook[] = [];
 		let currentOffset = 0;
 
 		while (currentOffset < totalBooks) {
@@ -183,7 +191,7 @@ export class HardcoverAPI {
 		updatedAfter,
 		status,
 		bookIds,
-	}: LibraryPageParams): Promise<any[]> {
+	}: LibraryPageParams): Promise<HardcoverUserBook[]> {
 		const query = this.queryBuilder.buildUserBooksQuery(
 			offset,
 			limit,
@@ -201,7 +209,10 @@ export class HardcoverAPI {
 			...(bookIds && bookIds.length > 0 ? { bookIds } : {}),
 		};
 
-		const data = await this.graphqlRequest(query, variables);
+		const data = await this.graphqlRequest<UserBooksQueryResponse>(
+			query,
+			variables,
+		);
 		return data.user_books;
 	}
 
@@ -209,7 +220,7 @@ export class HardcoverAPI {
 	async fetchBooksByIds(
 		userId: number,
 		bookIds: number[]
-	): Promise<any[]> {
+	): Promise<HardcoverUserBook[]> {
 		return this.fetchLibraryPage({
 			userId,
 			offset: 0,
@@ -229,7 +240,7 @@ export class HardcoverAPI {
 			}
 		`;
 
-		const data = await this.graphqlRequest(query);
+		const data = await this.graphqlRequest<BooksCountResponse>(query);
 		const {
 			user_books_aggregate: {
 				aggregate: { count },
@@ -275,7 +286,7 @@ export class HardcoverAPI {
 		}
 	`;
 
-		const data = await this.graphqlRequest(query);
+		const data = await this.graphqlRequest<UserLibraryInfoResponse>(query);
 		const user = data.me[0];
 
 		if (!user?.id) {
@@ -309,7 +320,10 @@ export class HardcoverAPI {
 	`;
 
 		const variables = { userId };
-		const data = await this.graphqlRequest(query, variables);
+		const data = await this.graphqlRequest<UserListsResponse>(
+			query,
+			variables,
+		);
 
 		return data.users_by_pk?.lists || [];
 	}

@@ -1,3 +1,5 @@
+import { HardcoverContributor } from "./api";
+
 export interface GroupingSettings {
 	enabled: boolean;
 	groupBy: "author" | "series" | "author-series";
@@ -97,15 +99,48 @@ export interface FrontmatterFieldsSettings {
 	readYears: FieldConfig;
 }
 
+export interface TemplateVariables {
+	bookId?: number;
+	editionId?: number;
+	bookTitle?: string;
+	editionTitle?: string;
+	bookCover?: string;
+	editionCover?: string;
+	bookReleaseDate?: string;
+	editionReleaseDate?: string;
+	bookAuthors?: string[];
+	editionAuthors?: string[];
+	bookContributors?: string[];
+	editionContributors?: string[];
+	description?: string;
+	url?: string;
+	series?: string[];
+	genres?: string[];
+	publisher?: string[];
+	isbn10?: string;
+	isbn13?: string;
+	rating?: string;
+	status?: string[];
+	review?: string;
+	quotes?: string[];
+	lists?: string[];
+	firstReadStart?: string | null;
+	firstReadEnd?: string | null;
+	lastReadStart?: string | null;
+	lastReadEnd?: string | null;
+	totalReads?: number;
+	readYears?: string[];
+}
+
 export interface BookMetadata {
 	hardcoverBookId: number;
-	frontmatter: Record<string, any>; // all frontmatter properties (using custom property names)
-	variables: Record<string, any>;
+	frontmatter: Record<string, unknown>; // all frontmatter properties (using custom property names)
+	variables: TemplateVariables;
 }
 
 export interface BookMetadataWithContributors {
 	metadata: BookMetadata;
-	rawContributors?: Record<any, any>[];
+	rawContributors?: HardcoverContributor[];
 }
 
 // legacy interface to keep because of migrations from old settings to new

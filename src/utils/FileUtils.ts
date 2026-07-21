@@ -1,4 +1,5 @@
 import { normalizePath } from "obsidian";
+import { TemplateVariables } from "src/types";
 
 export class FileUtils {
 	sanitizeFilename(name: string): string {
@@ -36,7 +37,10 @@ export class FileUtils {
 		return !normalizedPath || normalizedPath === "/";
 	}
 
-	processFilenameTemplate(template: string, availableData: any): string {
+	processFilenameTemplate(
+		template: string,
+		availableData: TemplateVariables,
+	): string {
 		let filename = template;
 
 		// {{editionTitle}}

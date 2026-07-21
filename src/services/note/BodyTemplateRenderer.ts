@@ -82,7 +82,7 @@ export class BodyTemplateRenderer {
 		vars.editionId = formatNumber(bookMetadata.variables?.editionId);
 
 		// user data fields
-		vars.rating = formatNumber(bookMetadata.variables?.rating);
+		vars.rating = bookMetadata.variables?.rating || "";
 		vars.status = formatArray(bookMetadata.variables?.status);
 		vars.review = bookMetadata.variables?.review || "";
 

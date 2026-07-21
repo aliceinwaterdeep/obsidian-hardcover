@@ -1,6 +1,11 @@
 import { Notice, parseYaml } from "obsidian";
 import { HARDCOVER_BOOKS_ROUTE, HARDCOVER_URL } from "src/config/constants";
-import { HardcoverUserBook, PluginSettings } from "src/types";
+import {
+	HardcoverContributor,
+	HardcoverUserBook,
+	PluginSettings,
+	TemplateVariables,
+} from "src/types";
 import { FileUtils } from "src/utils/FileUtils";
 import {
 	extractAuthors,
@@ -27,20 +32,20 @@ export class TemplateDataBuilder {
 		userBook: HardcoverUserBook,
 		bookToListsMap?: Map<number, string[]> | null,
 	): {
-		frontmatter: Record<string, any>; // parsed YAML template with variables substituted (for processFrontMatter)
-		variables: Record<string, any>; // all extracted variables (for body template rendering)
-		rawContributors?: Record<any, any>[];
+		frontmatter: Record<string, unknown>; // parsed YAML template with variables substituted (for processFrontMatter)
+		variables: TemplateVariables; // all extracted variables (for body template rendering)
+		rawContributors?: HardcoverContributor[];
 	} {
 		const template = this.settings.noteTemplate;
 		const parsedTemplate = this.parseTemplateYAML(template);
 
-		const frontmatter: Record<string, any> = {};
-		let rawContributors: Record<any, any>[] | undefined;
+		const frontmatter: Record<string, unknown> = {};
+		let rawContributors: HardcoverContributor[] | undefined;
 
 		const { book, edition, user_book_reads: readingActivity } = userBook;
 
 		// build a map of all available variables
-		const variables: Record<string, any> = {};
+		const variables: TemplateVariables = {};
 
 		// always add hardcoverBookId (even if not in template)
 		frontmatter.hardcoverBookId = userBook.book_id;
@@ -151,7 +156,7 @@ export class TemplateDataBuilder {
 
 		// genres
 		if (book?.cached_tags?.Genre) {
-			const genres = book.cached_tags.Genre.map((t: any) => t.tag).filter(
+			const genres = book.cached_tags.Genre.map((t) => t.tag).filter(
 				(genre: string) => !!genre,
 			);
 			if (genres.length > 0) {
@@ -219,7 +224,10 @@ export class TemplateDataBuilder {
 
 		//  substitute variables in the parsed template
 		for (const [key, value] of Object.entries(parsedTemplate)) {
-			const substitutedValue = this.substituteValue(value, variables);
+			const substitutedValue = this.substituteValue(
+				value,
+				variables as Record<string, unknown>,
+			);
 
 			// check if this is a variable placeholder
 			const isVariable =
@@ -254,19 +262,24 @@ export class TemplateDataBuilder {
 		return { frontmatter, variables, rawContributors };
 	}
 
-	private substituteValue(value: any, variables: Record<string, any>): any {
+	private substituteValue(
+		value: unknown,
+		variables: Record<string, unknown>,
+	): unknown {
 		if (typeof value === "string") {
 			// check if it's a variable like {{editionTitle}}
 			const variableMatch = value.match(/^\{\{(\w+)\}\}$/);
 			if (variableMatch) {
 				const varName = variableMatch[1];
 
-				let result = variables[varName] !== undefined ? variables[varName] : "";
+				let result: unknown =
+					variables[varName] !== undefined ? variables[varName] : "";
 
 				// clean description to remove newlines (following v1 approach)
 				if (varName === "description" && typeof result === "string") {
-					result = result.replace(/\n/g, " ").trim();
-					result = result.replace(/\s+/g, " "); // remove multiple spaces
+					let cleaned = result.replace(/\n/g, " ").trim();
+					cleaned = cleaned.replace(/\s+/g, " "); // remove multiple spaces
+					result = cleaned;
 				}
 
 				// apply wikilinks for frontmatter if needed
@@ -297,7 +310,7 @@ export class TemplateDataBuilder {
 			return value.map((item) => this.substituteValue(item, variables));
 		} else if (typeof value === "object" && value !== null) {
 			// recursivly substitute in objects
-			const result: Record<string, any> = {};
+			const result: Record<string, unknown> = {};
 			for (const [k, v] of Object.entries(value)) {
 				result[k] = this.substituteValue(v, variables);
 			}
@@ -318,7 +331,7 @@ export class TemplateDataBuilder {
 		return text.replace(/\|\|([\s\S]+?)\|\|/g, "$1");
 	}
 
-	private parseTemplateYAML(template: string): Record<string, any> {
+	private parseTemplateYAML(template: string): Record<string, unknown> {
 		// extract YAML block from template (between --- delimiters)
 		const yamlMatch = template.match(/^---\n([\s\S]*?)\n---/);
 

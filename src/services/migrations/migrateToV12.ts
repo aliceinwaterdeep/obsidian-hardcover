@@ -13,9 +13,7 @@ export function migrateToV12(settings: LegacySettings): PluginSettings {
 
 	// etep 1: extract wikilink settings from old field configs
 	// in v11, the property was called fieldsSettings
-	// we need to cast to any to access the old property name
-	const oldFields =
-		(settings as any).fieldsSettings || settings.frontmatterFields;
+	const oldFields = settings.fieldsSettings || settings.frontmatterFields;
 
 	settings.wikilinkSettings = {
 		authors: oldFields.authors?.wikilinks || false,
@@ -27,10 +25,11 @@ export function migrateToV12(settings: LegacySettings): PluginSettings {
 	};
 
 	// step 2: extract quotes format
-	settings.quotesFormat = oldFields.quotes?.format || "blockquote";
+	settings.quotesFormat =
+		(oldFields.quotes?.format as "blockquote" | "callout") || "blockquote";
 
 	// step 3: get old data source preferences (or use edition as default)
-	const oldPrefs = (settings as any).dataSourcePreferences || {
+	const oldPrefs = settings.dataSourcePreferences || {
 		titleSource: "edition",
 		coverSource: "edition",
 		releaseDateSource: "edition",
@@ -44,20 +43,20 @@ export function migrateToV12(settings: LegacySettings): PluginSettings {
 
 	// title
 	if (oldPrefs.titleSource === "book") {
-		(settings.frontmatterFields as any).bookTitle = {
+		settings.frontmatterFields.bookTitle = {
 			enabled: oldFields.title?.enabled || false,
 			propertyName: oldFields.title?.propertyName || "title",
 		};
-		(settings.frontmatterFields as any).editionTitle = {
+		settings.frontmatterFields.editionTitle = {
 			enabled: false,
 			propertyName: "editionTitle",
 		};
 	} else {
-		(settings.frontmatterFields as any).bookTitle = {
+		settings.frontmatterFields.bookTitle = {
 			enabled: false,
 			propertyName: "bookTitle",
 		};
-		(settings.frontmatterFields as any).editionTitle = {
+		settings.frontmatterFields.editionTitle = {
 			enabled: oldFields.title?.enabled || false,
 			propertyName: oldFields.title?.propertyName || "title",
 		};
@@ -65,20 +64,20 @@ export function migrateToV12(settings: LegacySettings): PluginSettings {
 
 	// cover
 	if (oldPrefs.coverSource === "book") {
-		(settings.frontmatterFields as any).bookCover = {
+		settings.frontmatterFields.bookCover = {
 			enabled: oldFields.cover?.enabled || false,
 			propertyName: oldFields.cover?.propertyName || "cover",
 		};
-		(settings.frontmatterFields as any).editionCover = {
+		settings.frontmatterFields.editionCover = {
 			enabled: false,
 			propertyName: "editionCover",
 		};
 	} else {
-		(settings.frontmatterFields as any).bookCover = {
+		settings.frontmatterFields.bookCover = {
 			enabled: false,
 			propertyName: "bookCover",
 		};
-		(settings.frontmatterFields as any).editionCover = {
+		settings.frontmatterFields.editionCover = {
 			enabled: oldFields.cover?.enabled || false,
 			propertyName: oldFields.cover?.propertyName || "cover",
 		};
@@ -86,20 +85,20 @@ export function migrateToV12(settings: LegacySettings): PluginSettings {
 
 	// release date
 	if (oldPrefs.releaseDateSource === "book") {
-		(settings.frontmatterFields as any).bookReleaseDate = {
+		settings.frontmatterFields.bookReleaseDate = {
 			enabled: oldFields.releaseDate?.enabled || false,
 			propertyName: oldFields.releaseDate?.propertyName || "releaseDate",
 		};
-		(settings.frontmatterFields as any).editionReleaseDate = {
+		settings.frontmatterFields.editionReleaseDate = {
 			enabled: false,
 			propertyName: "editionReleaseDate",
 		};
 	} else {
-		(settings.frontmatterFields as any).bookReleaseDate = {
+		settings.frontmatterFields.bookReleaseDate = {
 			enabled: false,
 			propertyName: "bookReleaseDate",
 		};
-		(settings.frontmatterFields as any).editionReleaseDate = {
+		settings.frontmatterFields.editionReleaseDate = {
 			enabled: oldFields.releaseDate?.enabled || false,
 			propertyName: oldFields.releaseDate?.propertyName || "releaseDate",
 		};
@@ -107,20 +106,20 @@ export function migrateToV12(settings: LegacySettings): PluginSettings {
 
 	// authors
 	if (oldPrefs.authorsSource === "book") {
-		(settings.frontmatterFields as any).bookAuthors = {
+		settings.frontmatterFields.bookAuthors = {
 			enabled: oldFields.authors?.enabled || false,
 			propertyName: oldFields.authors?.propertyName || "authors",
 		};
-		(settings.frontmatterFields as any).editionAuthors = {
+		settings.frontmatterFields.editionAuthors = {
 			enabled: false,
 			propertyName: "editionAuthors",
 		};
 	} else {
-		(settings.frontmatterFields as any).bookAuthors = {
+		settings.frontmatterFields.bookAuthors = {
 			enabled: false,
 			propertyName: "bookAuthors",
 		};
-		(settings.frontmatterFields as any).editionAuthors = {
+		settings.frontmatterFields.editionAuthors = {
 			enabled: oldFields.authors?.enabled || false,
 			propertyName: oldFields.authors?.propertyName || "authors",
 		};
@@ -128,20 +127,20 @@ export function migrateToV12(settings: LegacySettings): PluginSettings {
 
 	// contributors
 	if (oldPrefs.contributorsSource === "book") {
-		(settings.frontmatterFields as any).bookContributors = {
+		settings.frontmatterFields.bookContributors = {
 			enabled: oldFields.contributors?.enabled || false,
 			propertyName: oldFields.contributors?.propertyName || "contributors",
 		};
-		(settings.frontmatterFields as any).editionContributors = {
+		settings.frontmatterFields.editionContributors = {
 			enabled: false,
 			propertyName: "editionContributors",
 		};
 	} else {
-		(settings.frontmatterFields as any).bookContributors = {
+		settings.frontmatterFields.bookContributors = {
 			enabled: false,
 			propertyName: "bookContributors",
 		};
-		(settings.frontmatterFields as any).editionContributors = {
+		settings.frontmatterFields.editionContributors = {
 			enabled: oldFields.contributors?.enabled || false,
 			propertyName: oldFields.contributors?.propertyName || "contributors",
 		};
@@ -167,7 +166,7 @@ export function migrateToV12(settings: LegacySettings): PluginSettings {
 
 	for (const fieldKey of nonSplitFields) {
 		if (oldFields[fieldKey]) {
-			(settings.frontmatterFields as any)[fieldKey] = {
+			settings.frontmatterFields[fieldKey] = {
 				...oldFields[fieldKey],
 			};
 		}
@@ -262,12 +261,12 @@ export function migrateToV12(settings: LegacySettings): PluginSettings {
 
 	// step 8: clean up obsolete properties
 	// remove old combined field configs
-	delete (settings.frontmatterFields as any).title;
-	delete (settings.frontmatterFields as any).cover;
-	delete (settings.frontmatterFields as any).releaseDate;
-	delete (settings.frontmatterFields as any).authors;
-	delete (settings.frontmatterFields as any).contributors;
-	delete (settings as any).fieldsSettings;
+	delete settings.frontmatterFields.title;
+	delete settings.frontmatterFields.cover;
+	delete settings.frontmatterFields.releaseDate;
+	delete settings.frontmatterFields.authors;
+	delete settings.frontmatterFields.contributors;
+	delete settings.fieldsSettings;
 
 	if (!settings.frontmatterFields) {
 		settings.frontmatterFields = {};
@@ -276,7 +275,7 @@ export function migrateToV12(settings: LegacySettings): PluginSettings {
 	// remove wikilinks from all remaining field configs
 	const allFieldKeys = Object.keys(settings.frontmatterFields);
 	for (const key of allFieldKeys) {
-		const field = (settings.frontmatterFields as any)[key];
+		const field = settings.frontmatterFields[key];
 		if (field && typeof field === "object") {
 			delete field.wikilinks;
 			delete field.bodyHeading;
@@ -289,7 +288,7 @@ export function migrateToV12(settings: LegacySettings): PluginSettings {
 	}
 
 	// remove dataSourcePreferences
-	delete (settings as any).dataSourcePreferences;
+	delete settings.dataSourcePreferences;
 
 	return settings as PluginSettings;
 }

@@ -7,7 +7,7 @@ export function migrateToV9(settings: LegacySettings): PluginSettings {
 	}
 
 	if (!("autoOrganizeFolders" in settings.grouping)) {
-		(settings.grouping as any).autoOrganizeFolders = true;
+		settings.grouping.autoOrganizeFolders = true;
 	}
 
 	return settings as PluginSettings;

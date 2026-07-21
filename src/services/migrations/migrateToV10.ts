@@ -7,7 +7,7 @@ export function migrateToV10(settings: LegacySettings): PluginSettings {
 	}
 
 	if (!settings.frontmatterFields.quotes) {
-		(settings.frontmatterFields as any).quotes = {
+		settings.frontmatterFields.quotes = {
 			enabled: false,
 			propertyName: "quotes",
 			format: "blockquote",

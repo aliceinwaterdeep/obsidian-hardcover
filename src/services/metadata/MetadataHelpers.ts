@@ -1,7 +1,11 @@
-import { HardcoverBookSeries, HardcoverUserBooksReads } from "src/types";
+import {
+	HardcoverBookSeries,
+	HardcoverContributor,
+	HardcoverUserBooksReads,
+} from "src/types";
 import { FileUtils } from "src/utils/FileUtils";
 
-function hasNameAsRole(contributorsData: Record<any, any>[]): boolean {
+function hasNameAsRole(contributorsData: HardcoverContributor[]): boolean {
 	// hc metadata workaround: check if there's only one contributor and their role is their own name
 	return (
 		contributorsData.length === 1 &&
@@ -14,7 +18,9 @@ function capitalizeFirstLetter(text: string): string {
 	return text.charAt(0).toUpperCase() + text.slice(1);
 }
 
-export function extractAuthors(contributorsData: Record<any, any>[]): string[] {
+export function extractAuthors(
+	contributorsData: HardcoverContributor[],
+): string[] {
 	if (!contributorsData || !Array.isArray(contributorsData)) {
 		return [];
 	}
@@ -29,14 +35,14 @@ export function extractAuthors(contributorsData: Record<any, any>[]): string[] {
 				hasNameAsRole(contributorsData), // treat as author
 		)
 		.map((item) => item.author?.name)
-		.filter((name) => !!name) // remove any undefined/null names
+		.filter((name): name is string => !!name) // remove any undefined/null names
 		.slice(0, 5); // limit to 5 authors
 
 	return authors;
 }
 
 export function extractContributors(
-	contributorsData: Record<any, any>[],
+	contributorsData: HardcoverContributor[],
 	fileUtils: FileUtils,
 ): Array<{ name: string; role: string }> {
 	if (!contributorsData || !Array.isArray(contributorsData)) {
@@ -53,7 +59,7 @@ export function extractContributors(
 		.filter((item) => item.contribution && item.contribution !== "Author")
 		.map((item) => ({
 			name: fileUtils.normalizeText(item.author?.name || ""),
-			role: capitalizeFirstLetter(item.contribution),
+			role: capitalizeFirstLetter(item.contribution || ""),
 		}))
 		.filter((name) => !!name) // remove any undefined/null names
 		.slice(0, 5); // limit to 5 authors

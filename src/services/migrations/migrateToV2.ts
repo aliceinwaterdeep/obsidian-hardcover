@@ -17,7 +17,7 @@ export function migrateToV2(settings: LegacySettings): PluginSettings {
 	for (const fieldKey of wikilinkFields) {
 		const fieldConfig = settings.frontmatterFields[fieldKey];
 		if (fieldConfig && !("wikilinks" in fieldConfig)) {
-			(fieldConfig as any).wikilinks = false;
+			fieldConfig.wikilinks = false;
 		}
 	}
 

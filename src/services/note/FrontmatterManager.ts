@@ -5,12 +5,12 @@ import ObsidianHardcover from "src/main";
 export class FrontmatterManager {
 	constructor(private plugin: ObsidianHardcover) {}
 
-	prepareFrontmatter(bookMetadata: BookMetadata): Record<string, any> {
-		const frontmatterData: Record<string, any> = {
+	prepareFrontmatter(bookMetadata: BookMetadata): Record<string, unknown> {
+		const frontmatterData: Record<string, unknown> = {
 			hardcoverBookId: bookMetadata.hardcoverBookId,
 			...bookMetadata.frontmatter,
 		};
-		const prepared: Record<string, any> = {};
+		const prepared: Record<string, unknown> = {};
 
 		// get managed order from template
 		const managedOrder = this.getManagedOrder(frontmatterData);
@@ -72,7 +72,7 @@ export class FrontmatterManager {
 		return keys;
 	}
 
-	getManagedOrder(frontmatterData: Record<string, any>): string[] {
+	getManagedOrder(frontmatterData: Record<string, unknown>): string[] {
 		const order: string[] = [];
 
 		// hardcoverBookId always comes first
@@ -128,8 +128,8 @@ export class FrontmatterManager {
 	}
 
 	updateFrontmatterObject(
-		frontmatter: Record<string, any>,
-		newData: Record<string, any>,
+		frontmatter: Record<string, unknown>,
+		newData: Record<string, unknown>,
 		managedKeys: Set<string>,
 		preserveCustomFrontmatter: boolean,
 		managedOrder: string[],

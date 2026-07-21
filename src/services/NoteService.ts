@@ -2,7 +2,11 @@ import { normalizePath, TFile, TFolder, Vault } from "obsidian";
 import { CONTENT_DELIMITER } from "src/config/constants";
 
 import ObsidianHardcover from "src/main";
-import { BookMetadata, GroupingSettings } from "src/types";
+import {
+	BookMetadata,
+	GroupingSettings,
+	HardcoverContributor,
+} from "src/types";
 import { FileUtils } from "src/utils/FileUtils";
 import { BodyTemplateRenderer } from "./note/BodyTemplateRenderer";
 import { FrontmatterManager } from "./note/FrontmatterManager";
@@ -26,7 +30,7 @@ export class NoteService {
 
 	async createNote(
 		bookMetadata: BookMetadata,
-		rawContributors?: Record<any, any>[],
+		rawContributors?: HardcoverContributor[],
 	): Promise<TFile | null> {
 		try {
 			const fullPath = this.notePathBuilder.generateNotePath(
@@ -83,7 +87,7 @@ export class NoteService {
 	async updateNote(
 		bookMetadata: BookMetadata,
 		existingFile: TFile,
-		rawContributors?: Record<any, any>[],
+		rawContributors?: HardcoverContributor[],
 	): Promise<TFile | null> {
 		try {
 			const originalPath = existingFile.path;
@@ -95,7 +99,7 @@ export class NoteService {
 				);
 
 			// read existing frontmatter before modifications
-			const existingFrontmatter: Record<string, any> = {};
+			const existingFrontmatter: Record<string, unknown> = {};
 			const fileCache =
 				this.plugin.app.metadataCache.getFileCache(existingFile);
 			if (fileCache?.frontmatter) {
@@ -229,7 +233,7 @@ export class NoteService {
 	public generateNotePath(
 		bookMetadata: BookMetadata,
 		groupingSettings: GroupingSettings,
-		rawContributors?: Record<any, any>[],
+		rawContributors?: HardcoverContributor[],
 	): string {
 		const filename = this.fileUtils.processFilenameTemplate(
 			this.plugin.settings.filenameTemplate,
@@ -317,18 +321,14 @@ export class NoteService {
 
 		const files: TFile[] = [];
 
-		const traverse = (current: any) => {
-			for (const child of current.children) {
-				if (
-					(child instanceof TFile || child?.extension === "md") &&
-					child.extension === "md"
-				) {
-					files.push(child);
-				} else if (
-					(typeof TFolder !== "undefined" && child instanceof TFolder) ||
-					child?.children
-				) {
-					traverse(child);
+		const traverse = (current: TFolder) => {
+			for (const child of current.children as Array<
+				Partial<TFile> & Partial<TFolder>
+			>) {
+				if (child.extension === "md") {
+					files.push(child as TFile);
+				} else if (child.children) {
+					traverse(child as TFolder);
 				}
 			}
 		};

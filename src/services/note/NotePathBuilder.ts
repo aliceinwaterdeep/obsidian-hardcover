@@ -1,5 +1,5 @@
 import { normalizePath } from "obsidian";
-import { BookMetadata, GroupingSettings } from "src/types";
+import { BookMetadata, GroupingSettings, HardcoverContributor } from "src/types";
 import { FileUtils } from "src/utils/FileUtils";
 import ObsidianHardcover from "src/main";
 
@@ -12,7 +12,7 @@ export class NotePathBuilder {
 	public generateNotePath(
 		bookMetadata: BookMetadata,
 		groupingSettings: GroupingSettings,
-		rawContributors?: Record<any, any>[],
+		rawContributors?: HardcoverContributor[],
 	): string {
 		const filename = this.fileUtils.processFilenameTemplate(
 			this.plugin.settings.filenameTemplate,
@@ -39,7 +39,7 @@ export class NotePathBuilder {
 	public buildDirectoryPath(
 		bookMetadata: BookMetadata,
 		groupingSettings: GroupingSettings,
-		rawContributors?: Record<any, any>[],
+		rawContributors?: HardcoverContributor[],
 	): string {
 		const pathComponents: string[] = [];
 
@@ -73,7 +73,7 @@ export class NotePathBuilder {
 
 	private getAuthorDirectory(
 		bookMetadata: BookMetadata,
-		rawContributors?: Record<any, any>[],
+		rawContributors?: HardcoverContributor[],
 	): string | null {
 		const authors = bookMetadata.variables.editionAuthors;
 
@@ -209,7 +209,7 @@ export class NotePathBuilder {
 	}
 
 	private findFallbackAuthor(
-		contributorsData: Record<any, any>[],
+		contributorsData: HardcoverContributor[],
 	): string | null {
 		if (
 			!contributorsData ||
@@ -223,7 +223,7 @@ export class NotePathBuilder {
 		const writers = contributorsData
 			.filter((item) => item.contribution === "Writer")
 			.map((item) => item.author?.name)
-			.filter((name) => !!name);
+			.filter((name): name is string => !!name);
 
 		if (writers.length > 0) {
 			return writers[0];
@@ -233,7 +233,7 @@ export class NotePathBuilder {
 		const editors = contributorsData
 			.filter((item) => item.contribution === "Editor")
 			.map((item) => item.author?.name)
-			.filter((name) => !!name);
+			.filter((name): name is string => !!name);
 
 		if (editors.length > 0) {
 			return editors[0];
@@ -242,7 +242,7 @@ export class NotePathBuilder {
 		// use first contributor available
 		const firstContributor = contributorsData
 			.map((item) => item.author?.name)
-			.filter((name) => !!name)[0];
+			.filter((name): name is string => !!name)[0];
 
 		return firstContributor || null;
 	}
