@@ -90,7 +90,7 @@ export class NotePathBuilder {
 		}
 
 		if (Array.isArray(authors) && authors.length > 0) {
-			let authorName = authors[0].replace(/[\[\]']+/g, "");
+			let authorName = authors[0].replace(/[[\]']+/g, "");
 
 			// format the name based on settings
 			if (this.plugin.settings.grouping.authorFormat === "lastFirst") {

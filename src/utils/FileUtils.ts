@@ -117,8 +117,6 @@ export class FileUtils {
 			filename = filename.replace(/\{\{editionId\}\}/g, String(editionIdValue));
 		}
 
-		console.log({ availableData });
-
 		// clean up empty brackets and extra spacing
 		filename = filename
 			.replace(/\(\s*\)/g, "")

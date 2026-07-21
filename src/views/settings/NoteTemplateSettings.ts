@@ -31,9 +31,11 @@ export function renderNoteTemplateSettings(
 	});
 	textarea.value = plugin.settings.noteTemplate || DEFAULT_NOTE_TEMPLATE;
 	textarea.rows = 20;
-	textarea.addEventListener("input", async () => {
-		plugin.settings.noteTemplate = textarea.value;
-		await plugin.saveSettings();
+	textarea.addEventListener("input", () => {
+		void (async () => {
+			plugin.settings.noteTemplate = textarea.value;
+			await plugin.saveSettings();
+		})();
 	});
 
 	const hsetting = new Setting(containerEl);

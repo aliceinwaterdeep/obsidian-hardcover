@@ -53,7 +53,7 @@ export function migrateToV13(settings: LegacySettings): PluginSettings {
 
 		// handle activity date fields since they creatw two properties each
 		if (fieldKey === "firstRead" || fieldKey === "lastRead") {
-			const activityConfig = fieldConfig as any;
+			const activityConfig = fieldConfig;
 			yamlLines.push(
 				`${activityConfig.startPropertyName}: {{${fieldKey}Start}}`,
 			);

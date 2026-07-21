@@ -8,7 +8,7 @@ export function migrateToV12(settings: LegacySettings): PluginSettings {
 
 	// initialize frontmatterFields if it doesn't exist
 	if (!settings.frontmatterFields) {
-		settings.frontmatterFields = {} as any;
+		settings.frontmatterFields = {};
 	}
 
 	// etep 1: extract wikilink settings from old field configs

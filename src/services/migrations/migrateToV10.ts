@@ -20,7 +20,7 @@ export function migrateToV10(settings: LegacySettings): PluginSettings {
 		settings.frontmatterFields.review &&
 		!("bodyHeading" in settings.frontmatterFields.review)
 	) {
-		(settings.frontmatterFields.review as any).bodyHeading = "Review";
+		settings.frontmatterFields.review.bodyHeading = "Review";
 	}
 
 	return settings as PluginSettings;

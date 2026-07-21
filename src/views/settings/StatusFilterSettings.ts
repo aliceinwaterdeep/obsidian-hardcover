@@ -58,19 +58,21 @@ export function renderStatusFilterSetting(
 		});
 		checkbox.checked = plugin.settings.statusFilter.includes(statusId);
 
-		checkbox.addEventListener("change", async () => {
-			const currentFilter = plugin.settings.statusFilter;
+		checkbox.addEventListener("change", () => {
+			void (async () => {
+				const currentFilter = plugin.settings.statusFilter;
 
-			if (checkbox.checked) {
-				plugin.settings.statusFilter = [...currentFilter, statusId];
-			} else {
-				plugin.settings.statusFilter = currentFilter.filter(
-					(id) => id !== statusId,
-				);
-			}
+				if (checkbox.checked) {
+					plugin.settings.statusFilter = [...currentFilter, statusId];
+				} else {
+					plugin.settings.statusFilter = currentFilter.filter(
+						(id) => id !== statusId,
+					);
+				}
 
-			await plugin.saveSettings();
-			updateFilterNote();
+				await plugin.saveSettings();
+				updateFilterNote();
+			})();
 		});
 
 		label.createSpan({ text: statusName });
