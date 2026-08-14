@@ -1,4 +1,4 @@
-import { Setting, ToggleComponent } from "obsidian";
+import { Setting, SettingDefinition, ToggleComponent } from "obsidian";
 import ObsidianHardcover from "src/main";
 
 const WIKILINK_FIELDS = [
@@ -28,11 +28,11 @@ const WIKILINK_FIELDS = [
 	},
 ] as const;
 
-export function renderWikilinkSettings(
-	containerEl: HTMLElement,
+function configureWikilinkSettings(
+	setting: Setting,
 	plugin: ObsidianHardcover,
 ): void {
-	const setting = new Setting(containerEl)
+	setting
 		.setName("Wikilinks")
 		.setDesc(
 			"Format these fields as [[wikilinks]] both in frontmatter and note body",
@@ -59,4 +59,21 @@ export function renderWikilinkSettings(
 				await plugin.saveSettings();
 			});
 	}
+}
+
+export function renderWikilinkSettings(
+	containerEl: HTMLElement,
+	plugin: ObsidianHardcover,
+): void {
+	const setting = new Setting(containerEl);
+	configureWikilinkSettings(setting, plugin);
+}
+
+export function getWikilinkSettingDefinition(
+	plugin: ObsidianHardcover,
+): SettingDefinition {
+	return {
+		name: "Wikilinks",
+		render: (setting) => configureWikilinkSettings(setting, plugin),
+	};
 }
