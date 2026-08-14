@@ -3,15 +3,16 @@ import { DEFAULT_FILENAME_FORMAT } from "src/config/defaultSettings";
 import ObsidianHardcover from "src/main";
 import { markSettingAsRequired } from "../ui/SettingsHelpers";
 
-export function renderFilenameTemplateSetting(
-	containerEl: HTMLElement,
+const FILENAME_TEMPLATE_DESC =
+	"Pattern used to generate filenames. Available variables: {{bookId}}, {{editionId}}, {{bookTitle}}, {{editionTitle}}, {{bookAuthors}}, {{editionAuthors}}, {{bookYear}}, {{editionYear}}.";
+
+function configureFilenameTemplateSetting(
+	setting: Setting,
 	plugin: ObsidianHardcover,
 ): void {
-	new Setting(containerEl)
+	setting
 		.setName("Filename template")
-		.setDesc(
-			"Pattern used to generate filenames. Available variables: {{bookId}}, {{editionId}}, {{bookTitle}}, {{editionTitle}}, {{bookAuthors}}, {{editionAuthors}}, {{bookYear}}, {{editionYear}}.",
-		)
+		.setDesc(FILENAME_TEMPLATE_DESC)
 		.addText((text) =>
 			text
 				.setPlaceholder(DEFAULT_FILENAME_FORMAT)
@@ -21,6 +22,24 @@ export function renderFilenameTemplateSetting(
 					await plugin.saveSettings();
 				}),
 		);
+}
+
+export function renderFilenameTemplateSetting(
+	containerEl: HTMLElement,
+	plugin: ObsidianHardcover,
+): void {
+	const setting = new Setting(containerEl);
+	configureFilenameTemplateSetting(setting, plugin);
+}
+
+export function getFilenameTemplateSettingDefinition(
+	plugin: ObsidianHardcover,
+): SettingDefinition {
+	return {
+		name: "Filename template",
+		desc: FILENAME_TEMPLATE_DESC,
+		render: (setting) => configureFilenameTemplateSetting(setting, plugin),
+	};
 }
 
 const TARGET_FOLDER_BASE_DESC =
