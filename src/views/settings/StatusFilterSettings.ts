@@ -1,12 +1,12 @@
-import { Setting } from "obsidian";
+import { Setting, SettingDefinition } from "obsidian";
 import { HARDCOVER_STATUS_MAP } from "src/config/statusMapping";
 import ObsidianHardcover from "src/main";
 
-export function renderStatusFilterSetting(
-	containerEl: HTMLElement,
+function configureStatusFilterSetting(
+	filterSetting: Setting,
 	plugin: ObsidianHardcover,
 ): void {
-	const filterSetting = new Setting(containerEl)
+	filterSetting
 		.setName("Filter by reading status")
 		.setDesc(
 			"Select which reading statuses to sync. Uncheck to exclude. All statuses synced by default.",
@@ -77,4 +77,21 @@ export function renderStatusFilterSetting(
 
 		label.createSpan({ text: statusName });
 	}
+}
+
+export function renderStatusFilterSetting(
+	containerEl: HTMLElement,
+	plugin: ObsidianHardcover,
+): void {
+	const filterSetting = new Setting(containerEl);
+	configureStatusFilterSetting(filterSetting, plugin);
+}
+
+export function getStatusFilterSettingDefinition(
+	plugin: ObsidianHardcover,
+): SettingDefinition {
+	return {
+		name: "Filter by reading status",
+		render: (setting) => configureStatusFilterSetting(setting, plugin),
+	};
 }

@@ -1,4 +1,4 @@
-import { Setting } from "obsidian";
+import { Setting, SettingDefinition } from "obsidian";
 import { DEFAULT_FILENAME_FORMAT } from "src/config/defaultSettings";
 import ObsidianHardcover from "src/main";
 import { markSettingAsRequired } from "../ui/SettingsHelpers";
@@ -23,16 +23,14 @@ export function renderFilenameTemplateSetting(
 		);
 }
 
-export function renderFolderSetting(
-	containerEl: HTMLElement,
-	plugin: ObsidianHardcover,
-): Setting {
-	const baseDesc =
-		"The folder where book notes will be stored (required, will be created if it doesn't exist)";
+const TARGET_FOLDER_BASE_DESC =
+	"The folder where book notes will be stored (required, will be created if it doesn't exist)";
 
-	const setting = new Setting(containerEl)
-		.setName("Target folder")
-		.setDesc(baseDesc);
+function configureFolderSetting(
+	setting: Setting,
+	plugin: ObsidianHardcover,
+): void {
+	setting.setName("Target folder").setDesc(TARGET_FOLDER_BASE_DESC);
 
 	markSettingAsRequired(setting);
 
@@ -46,17 +44,33 @@ export function renderFolderSetting(
 				if (isRootOrEmpty) {
 					text.inputEl.addClass("has-error");
 					setting.setDesc(
-						`${baseDesc} - Please specify a subfolder. Using the vault root is not allowed.`,
+						`${TARGET_FOLDER_BASE_DESC} - Please specify a subfolder. Using the vault root is not allowed.`,
 					);
 				} else {
 					text.inputEl.removeClass("has-error");
-					setting.setDesc(baseDesc);
+					setting.setDesc(TARGET_FOLDER_BASE_DESC);
 				}
 
 				plugin.settings.targetFolder = value;
 				await plugin.saveSettings();
 			});
 	});
+}
 
+export function renderFolderSetting(
+	containerEl: HTMLElement,
+	plugin: ObsidianHardcover,
+): Setting {
+	const setting = new Setting(containerEl);
+	configureFolderSetting(setting, plugin);
 	return setting;
+}
+
+export function getFolderSettingDefinition(
+	plugin: ObsidianHardcover,
+): SettingDefinition {
+	return {
+		name: "Target folder",
+		render: (setting) => configureFolderSetting(setting, plugin),
+	};
 }

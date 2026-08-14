@@ -1,14 +1,13 @@
-import { Setting, SecretComponent } from "obsidian";
+import { Setting, SecretComponent, SettingDefinition } from "obsidian";
 import ObsidianHardcover from "src/main";
 import { markSettingAsRequired } from "../ui/SettingsHelpers";
 import { HARDCOVER_API_KEY_URL } from "src/config/constants";
 
-export function renderApiTokenSetting(
-	containerEl: HTMLElement,
+function configureApiTokenSetting(
+	setting: Setting,
 	plugin: ObsidianHardcover,
 ): void {
-	const setting = new Setting(containerEl).setName("Hardcover API key");
-
+	setting.setName("Hardcover API key");
 	setting.descEl.empty();
 
 	const apiKeyInfo = setting.descEl.createDiv();
@@ -55,4 +54,21 @@ export function renderApiTokenSetting(
 
 	// initial state
 	void updateEnvMessage();
+}
+
+export function renderApiTokenSetting(
+	containerEl: HTMLElement,
+	plugin: ObsidianHardcover,
+): void {
+	const setting = new Setting(containerEl);
+	configureApiTokenSetting(setting, plugin);
+}
+
+export function getApiTokenSettingDefinition(
+	plugin: ObsidianHardcover,
+): SettingDefinition {
+	return {
+		name: "Hardcover API key",
+		render: (setting) => configureApiTokenSetting(setting, plugin),
+	};
 }
