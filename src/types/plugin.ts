@@ -124,6 +124,7 @@ export interface TemplateVariables {
 	review?: string;
 	quotes?: string[];
 	lists?: string[];
+	dateAdded?: string;
 	firstReadStart?: string | null;
 	firstReadEnd?: string | null;
 	lastReadStart?: string | null;

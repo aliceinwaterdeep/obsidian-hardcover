@@ -69,7 +69,7 @@ export function getNoteTemplateSettingDefinitions(
 				setting.descEl.createEl("br");
 				setting.descEl.createEl("br");
 				setting.descEl.createSpan({
-					text: "Your data: {{rating}}, {{status}}, {{review}}, {{quotes}}, {{lists}}",
+					text: "Your data: {{rating}}, {{status}}, {{review}}, {{quotes}}, {{lists}}, {{dateAdded}}",
 				});
 				setting.descEl.createEl("br");
 				setting.descEl.createEl("br");

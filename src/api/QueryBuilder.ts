@@ -124,6 +124,10 @@ export class QueryBuilder {
 			fields.push("rating");
 		}
 
+		if (needsField("dateAdded")) {
+			fields.push("date_added");
+		}
+
 		if (needsField("status")) {
 			fields.push("status_id");
 		}
