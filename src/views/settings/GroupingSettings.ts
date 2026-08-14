@@ -16,6 +16,7 @@ export function getGroupingSettingDefinitions(
 			name: "Group into subfolders",
 			desc: "Group your book notes into subdirectories for better organization",
 			render: (setting) => {
+				setting.controlEl.empty();
 				setting.settingEl.addClass("obhc-no-border-top");
 				setting.addToggle((toggle) =>
 					toggle
@@ -33,6 +34,7 @@ export function getGroupingSettingDefinitions(
 			desc: "Choose how to organize your books into directories",
 			visible: () => plugin.settings.grouping.enabled,
 			render: (setting) => {
+				setting.controlEl.empty();
 				setting.addDropdown((dropdown) =>
 					dropdown
 						.addOption("author", "Author")
@@ -52,6 +54,7 @@ export function getGroupingSettingDefinitions(
 			desc: "(default is First Name Last Name)",
 			visible: authorGroupingVisible,
 			render: (setting) => {
+				setting.controlEl.empty();
 				setting.settingEl.addClass("obhc-no-border-top");
 				setting.addToggle((toggle) =>
 					toggle
@@ -70,6 +73,7 @@ export function getGroupingSettingDefinitions(
 			desc: "How to organize books with no 'Author' role",
 			visible: authorGroupingVisible,
 			render: (setting) => {
+				setting.controlEl.empty();
 				setting.addDropdown((dropdown) =>
 					dropdown
 						.addOption(
@@ -95,6 +99,7 @@ export function getGroupingSettingDefinitions(
 				authorGroupingVisible() &&
 				plugin.settings.grouping.noAuthorBehavior === "useFallbackFolder",
 			render: (setting) => {
+				setting.controlEl.empty();
 				setting.settingEl.addClass("obhc-no-border-top");
 				setting.addText((text) =>
 					text
@@ -112,6 +117,7 @@ export function getGroupingSettingDefinitions(
 			desc: "How to organize books with multiple 'Author' roles",
 			visible: authorGroupingVisible,
 			render: (setting) => {
+				setting.controlEl.empty();
 				setting.addDropdown((dropdown) =>
 					dropdown
 						.addOption("useFirst", "Use first author")
@@ -133,6 +139,7 @@ export function getGroupingSettingDefinitions(
 				plugin.settings.grouping.multipleAuthorsBehavior ===
 					"useCollectionsFolder",
 			render: (setting) => {
+				setting.controlEl.empty();
 				setting.settingEl.addClass("obhc-no-border-top");
 				setting.addText((text) =>
 					text
@@ -151,6 +158,7 @@ export function getGroupingSettingDefinitions(
 			desc: "Automatically move notes to match your grouping settings on every sync (default behavior). Disable to keep notes where you've manually placed them. Note: manually renamed folders may result in split collections when new books are added.",
 			visible: () => plugin.settings.grouping.enabled,
 			render: (setting) => {
+				setting.controlEl.empty();
 				setting.addToggle((toggle) =>
 					toggle
 						.setValue(plugin.settings.grouping.autoOrganizeFolders)

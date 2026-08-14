@@ -100,6 +100,7 @@ export default class SettingsTab extends PluginSettingTab {
 
 	private renderSourceSection(setting: Setting): void {
 		setting.setClass("obhc-section-source");
+		setting.controlEl.empty();
 
 		const helpContainer = setting.controlEl.createDiv({
 			cls: "obhc-source-container",

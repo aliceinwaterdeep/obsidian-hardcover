@@ -10,6 +10,7 @@ export function getNoteTemplateSettingDefinitions(
 		{
 			name: "",
 			render: (setting) => {
+				setting.descEl.empty();
 				setting.descEl.createSpan({
 					text: "Customize the structure of your notes including YAML frontmatter and body content. Do not remove the enclosing `---` from the frontmatter or the template will be invalid.",
 				});
@@ -24,6 +25,7 @@ export function getNoteTemplateSettingDefinitions(
 			name: "",
 			render: (setting) => {
 				setting.setClass("obhc-section-template-editor");
+				setting.controlEl.empty();
 
 				const editorContainer = setting.controlEl.createDiv({
 					cls: "obhc-template-editor",
@@ -50,6 +52,7 @@ export function getNoteTemplateSettingDefinitions(
 		{
 			name: "Available variables",
 			render: (setting) => {
+				setting.descEl.empty();
 				setting.descEl.createSpan({
 					text: "Book/Edition: {{bookTitle}}, {{editionTitle}}, {{bookCover}}, {{editionCover}}, {{bookReleaseDate}}, {{editionReleaseDate}}, {{bookAuthors}}, {{editionAuthors}}, {{bookContributors}}, {{editionContributors}}",
 				});

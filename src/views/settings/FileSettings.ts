@@ -10,6 +10,8 @@ function configureFilenameTemplateSetting(
 	setting: Setting,
 	plugin: ObsidianHardcover,
 ): void {
+	setting.controlEl.empty();
+
 	setting
 		.setName("Filename template")
 		.setDesc(FILENAME_TEMPLATE_DESC)
@@ -41,6 +43,7 @@ function configureFolderSetting(
 	setting: Setting,
 	plugin: ObsidianHardcover,
 ): void {
+	setting.controlEl.empty();
 	setting.setName("Target folder").setDesc(TARGET_FOLDER_BASE_DESC);
 
 	markSettingAsRequired(setting);

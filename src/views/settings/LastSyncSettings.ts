@@ -7,6 +7,8 @@ function configureLastSyncTimestampSetting(
 	plugin: ObsidianHardcover,
 	onSettingsChanged: () => void,
 ): void {
+	setting.controlEl.empty();
+
 	setting
 		.setName("Last sync timestamp")
 		.setDesc(

@@ -23,6 +23,8 @@ function configureSyncByIdSetting(
 			"Sync one or more books by their Hardcover book ID, regardless of your status filter. Doesn't affect the last sync timestamp used for regular syncs. Enter a comma-separated list (e.g. 12345, 67890).",
 		);
 
+	setting.controlEl.empty();
+
 	setting.addText((text) => {
 		text.setPlaceholder("12345, 67890").onChange((value) => {
 			idsInputValue = value;

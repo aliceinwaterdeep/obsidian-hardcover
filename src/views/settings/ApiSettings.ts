@@ -27,11 +27,7 @@ function configureApiTokenSetting(
 	const updateEnvMessage = async () => {
 		const envApiKey = await plugin.envUtils.getHardcoverApiKey();
 
-		const existingMessage =
-			setting.controlEl.querySelector(".obhc-env-message");
-		if (existingMessage) {
-			existingMessage.remove();
-		}
+		setting.controlEl.empty();
 
 		// show message if .env is being used
 		if (envApiKey) {

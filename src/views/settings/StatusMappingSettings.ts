@@ -18,6 +18,8 @@ function configureStatusMappingSettings(
 		.setDesc("Customize how Hardcover statuses appear in your notes")
 		.setClass("obhc-section-status-mapping");
 
+	setting.controlEl.empty();
+
 	const controlsContainer = setting.controlEl.createDiv({
 		cls: "obhc-status-mapping-inputs",
 	});

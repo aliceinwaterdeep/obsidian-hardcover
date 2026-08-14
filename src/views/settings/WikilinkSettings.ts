@@ -39,6 +39,8 @@ function configureWikilinkSettings(
 		)
 		.setClass("obhc-section-wikilinks");
 
+	setting.controlEl.empty();
+
 	const controlsContainer = setting.controlEl.createDiv({
 		cls: "obhc-wikilink-toggles",
 	});

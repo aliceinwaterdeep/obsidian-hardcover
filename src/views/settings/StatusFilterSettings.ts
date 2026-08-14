@@ -12,6 +12,9 @@ function configureStatusFilterSetting(
 			"Select which reading statuses to sync. Uncheck to exclude. All statuses synced by default.",
 		);
 
+	filterSetting.infoEl.querySelector(".status-filter-note")?.remove();
+	filterSetting.settingEl.querySelector(".status-filter-checkboxes")?.remove();
+
 	const allStatuses = Object.keys(HARDCOVER_STATUS_MAP).map((id) =>
 		parseInt(id),
 	);

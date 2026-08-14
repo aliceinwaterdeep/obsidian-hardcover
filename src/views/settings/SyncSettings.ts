@@ -33,6 +33,7 @@ function configureSyncButtonSetting(
 	} = config;
 
 	setting.setName(name).setDesc(description);
+	setting.controlEl.empty();
 
 	if (settingClassName) {
 		setting.setClass(settingClassName);
@@ -88,6 +89,7 @@ function configureSyncButtonSetting(
 }
 
 function configureSyncInfoSetting(setting: Setting): void {
+	setting.descEl.empty();
 	setting.descEl.createSpan({
 		text: `⚠️ Content below the ${CONTENT_DELIMITER} delimiter in your notes will be preserved during syncs. Regular backups of your vault are still recommended.`,
 	});
