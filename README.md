@@ -48,10 +48,10 @@ v2.0.0 introduces customizable note templates and splits book/edition fields. **
 
 ## Requirements
 
-- **Obsidian 1.11.4 or later**
+- **Obsidian 1.13.0 or later**
 - Hardcover API key (get it from [your account settings](https://hardcover.app/account/api))
 
-> **Note for existing users:** Version 1.9.0 introduced this requirement. If you're on an older version of Obsidian, stay on plugin version 1.8.1 or earlier.
+> **Note for existing users:** Version 2.3.0 introduced this requirement (needed for Obsidian's declarative settings API). If you're on Obsidian 1.11.4–1.12.x, stay on plugin version 2.2.x or earlier.
 
 ## Installation
 
