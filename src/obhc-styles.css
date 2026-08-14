@@ -90,6 +90,7 @@
 .obhc-template-editor {
 	display: flex;
 	flex-direction: column;
+	flex: 1;
 	gap: 1rem;
 	margin-bottom: 1rem;
 }
@@ -103,6 +104,19 @@
 	min-height: 300px;
 	font-family: var(--font-monospace);
 	font-size: 0.9em;
+}
+
+.obhc-section-template-editor {
+	flex-direction: column;
+	align-items: flex-start;
+}
+
+.obhc-section-template-editor .setting-item-control {
+	width: 100%;
+}
+
+.obhc-section-source .setting-item-control {
+	width: 100%;
 }
 
 .obhc-section-wikilinks {

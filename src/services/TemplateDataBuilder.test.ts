@@ -27,6 +27,7 @@ describe("TemplateDataBuilder", () => {
 		review_markdown: "Great book",
 		review_raw: null,
 		updated_at: "2023-01-15T00:00:00Z",
+		date_added: "2022-06-01T00:00:00Z",
 		book: {
 			title: "Book Title",
 			slug: "book-title",
@@ -183,6 +184,12 @@ describe("TemplateDataBuilder", () => {
 			expect(variables.quotes).toEqual(["Quote one", "Quote two"]);
 		});
 
+		test("extracts date added", () => {
+			const { variables } = builder.build(MOCK_USER_BOOK);
+
+			expect(variables.dateAdded).toBe("2022-06-01T00:00:00Z");
+		});
+
 		test("handles missing fields", () => {
 			const incompleteBook = {
 				book_id: 999,
@@ -206,6 +213,7 @@ describe("TemplateDataBuilder", () => {
 			expect(variables.rating).toBeUndefined();
 			expect(variables.description).toBeUndefined();
 			expect(variables.review).toBeUndefined();
+			expect(variables.dateAdded).toBeUndefined();
 		});
 	});
 

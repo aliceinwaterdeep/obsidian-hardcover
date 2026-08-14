@@ -1,13 +1,15 @@
-import { Setting } from "obsidian";
+import { Setting, SettingDefinition } from "obsidian";
 
 import ObsidianHardcover from "src/main";
 
-export function renderLastSyncTimestampSetting(
-	containerEl: HTMLElement,
+function configureLastSyncTimestampSetting(
+	setting: Setting,
 	plugin: ObsidianHardcover,
 	onSettingsChanged: () => void,
 ): void {
-	new Setting(containerEl)
+	setting.controlEl.empty();
+
+	setting
 		.setName("Last sync timestamp")
 		.setDesc(
 			"When provided, only books updated on Hardcover after this timestamp will be synced. Leave empty to sync your entire library. Example format: 2025-01-01T18:30:35.519934+00:00",
@@ -31,4 +33,15 @@ export function renderLastSyncTimestampSetting(
 					await plugin.saveSettings();
 				}),
 		);
+}
+
+export function getLastSyncTimestampSettingDefinition(
+	plugin: ObsidianHardcover,
+	onSettingsChanged: () => void,
+): SettingDefinition {
+	return {
+		name: "Last sync timestamp",
+		render: (setting) =>
+			configureLastSyncTimestampSetting(setting, plugin, onSettingsChanged),
+	};
 }

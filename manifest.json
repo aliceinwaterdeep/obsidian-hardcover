@@ -2,8 +2,8 @@
 	"id": "hardcover",
 	"name": "Hardcover",
 	"description": "Sync your Hardcover library to your notes.",
-	"version": "2.2.0",
-	"minAppVersion": "1.11.4",
+	"version": "2.3.0",
+	"minAppVersion": "1.13.0",
 	"author": "aliceinwaterdeep",
 	"isDesktopOnly": false
 }

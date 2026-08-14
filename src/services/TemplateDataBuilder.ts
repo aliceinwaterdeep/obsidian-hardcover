@@ -177,6 +177,11 @@ export class TemplateDataBuilder {
 			variables.rating = `${userBook.rating}/5`;
 		}
 
+		// date added
+		if (userBook.date_added) {
+			variables.dateAdded = userBook.date_added;
+		}
+
 		// status
 		if (userBook.status_id !== null) {
 			variables.status = this.mapStatus(userBook.status_id);

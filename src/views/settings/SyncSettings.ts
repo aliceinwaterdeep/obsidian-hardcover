@@ -1,9 +1,8 @@
-import { ButtonComponent, Setting } from "obsidian";
+import { ButtonComponent, Setting, SettingDefinition } from "obsidian";
 import { CONTENT_DELIMITER } from "src/config/constants";
 import ObsidianHardcover from "src/main";
 
-export interface SyncButtonConfig {
-	containerEl: HTMLElement;
+export interface SyncButtonSettings {
 	plugin: ObsidianHardcover;
 	name?: string;
 	description?: string;
@@ -16,25 +15,11 @@ export interface SyncButtonConfig {
 	onSyncComplete?: () => void;
 }
 
-export function renderSyncSection(config: SyncButtonConfig) {
-	const { containerEl } = config;
-
-	renderSyncButton(config);
-
-	const setting = new Setting(containerEl);
-	setting.descEl.createSpan({
-		text: `⚠️ Content below the ${CONTENT_DELIMITER} delimiter in your notes will be preserved during syncs. Regular backups of your vault are still recommended.`,
-	});
-	setting.descEl.createEl("br");
-	setting.descEl.createEl("br");
-	setting.descEl.createSpan({
-		text: "For large libraries (500+ books), sync may take several minutes due to Hardcover's API rate limits (60 requests/minute). The plugin will automatically pace requests to respect these limits.",
-	});
-}
-
-export const renderSyncButton = (config: SyncButtonConfig): ButtonComponent => {
+function configureSyncButtonSetting(
+	setting: Setting,
+	config: SyncButtonSettings,
+): ButtonComponent {
 	const {
-		containerEl,
 		plugin,
 		name = "Sync",
 		description = "Sync Hardcover books to your notes",
@@ -47,7 +32,8 @@ export const renderSyncButton = (config: SyncButtonConfig): ButtonComponent => {
 		onSyncComplete,
 	} = config;
 
-	const setting = new Setting(containerEl).setName(name).setDesc(description);
+	setting.setName(name).setDesc(description);
+	setting.controlEl.empty();
 
 	if (settingClassName) {
 		setting.setClass(settingClassName);
@@ -100,4 +86,39 @@ export const renderSyncButton = (config: SyncButtonConfig): ButtonComponent => {
 	});
 
 	return button;
-};
+}
+
+function configureSyncInfoSetting(setting: Setting): void {
+	setting.descEl.empty();
+	setting.descEl.createSpan({
+		text: `⚠️ Content below the ${CONTENT_DELIMITER} delimiter in your notes will be preserved during syncs. Regular backups of your vault are still recommended.`,
+	});
+	setting.descEl.createEl("br");
+	setting.descEl.createEl("br");
+	setting.descEl.createSpan({
+		text: "For large libraries (500+ books), sync may take several minutes due to Hardcover's API rate limits (60 requests/minute). The plugin will automatically pace requests to respect these limits.",
+	});
+}
+
+export function getSyncButtonSettingDefinition(
+	config: SyncButtonSettings,
+): SettingDefinition {
+	return {
+		name: config.name ?? "Sync",
+		render: (setting) => {
+			configureSyncButtonSetting(setting, config);
+		},
+	};
+}
+
+export function getSyncSectionDefinitions(
+	config: SyncButtonSettings,
+): SettingDefinition[] {
+	return [
+		getSyncButtonSettingDefinition(config),
+		{
+			name: "",
+			render: (setting) => configureSyncInfoSetting(setting),
+		},
+	];
+}

@@ -1,5 +1,16 @@
 # Changelog
 
+## 2.3.0
+
+### Added
+
+- New `{{dateAdded}}` template variable for the date a book was added to your library.
+
+### Changed
+
+- Migrated the settings tab to Obsidian's declarative settings API. Settings now appear in Obsidian's plugin settings search.
+- **Requires Obsidian 1.13.0 or later**
+
 ## 2.2.0
 
 ### Added

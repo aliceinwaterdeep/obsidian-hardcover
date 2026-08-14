@@ -1,16 +1,19 @@
-import { Setting } from "obsidian";
+import { Setting, SettingDefinition } from "obsidian";
 import { HARDCOVER_STATUS_MAP } from "src/config/statusMapping";
 import ObsidianHardcover from "src/main";
 
-export function renderStatusFilterSetting(
-	containerEl: HTMLElement,
+function configureStatusFilterSetting(
+	filterSetting: Setting,
 	plugin: ObsidianHardcover,
 ): void {
-	const filterSetting = new Setting(containerEl)
+	filterSetting
 		.setName("Filter by reading status")
 		.setDesc(
 			"Select which reading statuses to sync. Uncheck to exclude. All statuses synced by default.",
 		);
+
+	filterSetting.infoEl.querySelector(".status-filter-note")?.remove();
+	filterSetting.settingEl.querySelector(".status-filter-checkboxes")?.remove();
 
 	const allStatuses = Object.keys(HARDCOVER_STATUS_MAP).map((id) =>
 		parseInt(id),
@@ -77,4 +80,13 @@ export function renderStatusFilterSetting(
 
 		label.createSpan({ text: statusName });
 	}
+}
+
+export function getStatusFilterSettingDefinition(
+	plugin: ObsidianHardcover,
+): SettingDefinition {
+	return {
+		name: "Filter by reading status",
+		render: (setting) => configureStatusFilterSetting(setting, plugin),
+	};
 }

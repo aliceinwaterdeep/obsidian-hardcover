@@ -47,6 +47,7 @@ export interface HardcoverUserBook {
 	edition: HardcoverEdition;
 	user_book_reads: HardcoverUserBooksReads[];
 	reading_journals?: ReadingJournalQuote[];
+	date_added?: string | null;
 }
 
 interface HardcoverBook {

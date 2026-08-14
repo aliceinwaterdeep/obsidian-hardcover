@@ -1,18 +1,19 @@
-import { App, PluginSettingTab, Setting } from "obsidian";
+import { App, PluginSettingTab, Setting, SettingDefinitionItem } from "obsidian";
 import { REPO_ISSUES_URL, REPO_URL } from "src/config/constants";
 import ObsidianHardcover from "src/main";
-import { renderDebugSection } from "./settings/DebugSettings";
-import { renderApiTokenSetting } from "./settings/ApiSettings";
+import { getByPath, setByPath } from "src/utils/ObjectPath";
+import { getDebugSectionDefinitions } from "./settings/DebugSettings";
+import { getApiTokenSettingDefinition } from "./settings/ApiSettings";
 import {
-	renderFolderSetting,
-	renderFilenameTemplateSetting,
+	getFolderSettingDefinition,
+	getFilenameTemplateSettingDefinition,
 } from "./settings/FileSettings";
-import { renderSyncSection } from "./settings/SyncSettings";
-import { renderStatusFilterSetting } from "./settings/StatusFilterSettings";
-import { renderLastSyncTimestampSetting } from "./settings/LastSyncSettings";
-import { renderGroupingSettings } from "./settings/GroupingSettings";
-import { renderNoteTemplateSettings } from "./settings/NoteTemplateSettings";
-import { renderStatusMappingSettings } from "./settings/StatusMappingSettings";
+import { getSyncSectionDefinitions } from "./settings/SyncSettings";
+import { getStatusFilterSettingDefinition } from "./settings/StatusFilterSettings";
+import { getLastSyncTimestampSettingDefinition } from "./settings/LastSyncSettings";
+import { getGroupingSettingDefinitions } from "./settings/GroupingSettings";
+import { getNoteTemplateSettingDefinitions } from "./settings/NoteTemplateSettings";
+import { getStatusMappingSettingDefinition } from "./settings/StatusMappingSettings";
 
 export default class SettingsTab extends PluginSettingTab {
 	plugin: ObsidianHardcover;
@@ -26,73 +27,82 @@ export default class SettingsTab extends PluginSettingTab {
 		this.debugBookLimit = 1;
 	}
 
-	display(): void {
-		const { containerEl } = this;
-		containerEl.empty();
-		containerEl.addClass("obhc-settings");
-
-		//  SECTION 1: GENERAL
-		new Setting(containerEl).setName("Setup").setHeading();
-
-		renderApiTokenSetting(containerEl, this.plugin);
-		renderFolderSetting(containerEl, this.plugin);
-		renderStatusFilterSetting(containerEl, this.plugin);
-		renderLastSyncTimestampSetting(containerEl, this.plugin, () =>
-			this.display(),
-		);
-
-		containerEl.createEl("hr");
-
-		//  SECTION 2: FILE ORGANIZATION
-		new Setting(containerEl).setName("File Organization").setHeading();
-
-		renderGroupingSettings(containerEl, this.plugin, () => this.display());
-		renderFilenameTemplateSetting(containerEl, this.plugin);
-
-		containerEl.createEl("hr");
-
-		//  SECTION 3: NOTE TEMPLATE
-		new Setting(containerEl).setName("Note Template").setHeading();
-
-		renderNoteTemplateSettings(containerEl, this.plugin);
-		renderStatusMappingSettings(containerEl, this.plugin);
-
-		containerEl.createEl("hr");
-
-		//  SECTION 4: SYNC
-		renderSyncSection({
-			containerEl: containerEl,
-			plugin: this.plugin,
-			name: "Sync Hardcover library",
-			description:
-				"Sync your Hardcover books to your notes. For testing, you can sync a limited number of books in the Debug section below.",
-			buttonText: this.SYNC_CTA_LABEL,
-			isMainCTA: true,
-			onSyncComplete: () => this.display(),
-			settingClassName: "obhc-sync-cta",
-		});
-
-		containerEl.createEl("hr");
-
-		//  SECTION 5: DEBUG
-		new Setting(containerEl).setName("Debug").setHeading();
-
-		renderDebugSection(
-			containerEl,
-			this.plugin,
-			this.debugBookLimit,
-			(limit) => (this.debugBookLimit = limit),
-			() => this.display(),
-		);
-
-		containerEl.createEl("hr");
-
-		//  SECTION 7: SOURCE
-		this.addSourceSection(containerEl);
+	getControlValue(key: string): unknown {
+		return getByPath(this.plugin.settings, key);
 	}
 
-	private addSourceSection(containerEl: HTMLElement): void {
-		const helpContainer = containerEl.createDiv({
+	async setControlValue(key: string, value: unknown): Promise<void> {
+		setByPath(this.plugin.settings, key, value);
+		await this.plugin.saveSettings();
+	}
+
+	getSettingDefinitions(): SettingDefinitionItem[] {
+		this.containerEl.addClass("obhc-settings");
+
+		return [
+			{
+				type: "group",
+				heading: "Setup",
+				items: [
+					getApiTokenSettingDefinition(this.plugin),
+					getFolderSettingDefinition(this.plugin),
+					getStatusFilterSettingDefinition(this.plugin),
+					getLastSyncTimestampSettingDefinition(this.plugin, () =>
+						this.update(),
+					),
+				],
+			},
+			{
+				type: "group",
+				heading: "File Organization",
+				items: [
+					...getGroupingSettingDefinitions(this.plugin, () => this.update()),
+					getFilenameTemplateSettingDefinition(this.plugin),
+				],
+			},
+			{
+				type: "group",
+				heading: "Note Template",
+				items: [
+					...getNoteTemplateSettingDefinitions(this.plugin),
+					getStatusMappingSettingDefinition(this.plugin),
+				],
+			},
+			{
+				type: "group",
+				items: getSyncSectionDefinitions({
+					plugin: this.plugin,
+					name: "Sync Hardcover library",
+					description:
+						"Sync your Hardcover books to your notes. For testing, you can sync a limited number of books in the Debug section below.",
+					buttonText: this.SYNC_CTA_LABEL,
+					isMainCTA: true,
+					onSyncComplete: () => this.update(),
+					settingClassName: "obhc-sync-cta",
+				}),
+			},
+			{
+				type: "group",
+				heading: "Debug",
+				items: getDebugSectionDefinitions(
+					this.plugin,
+					this.debugBookLimit,
+					(limit) => (this.debugBookLimit = limit),
+					() => this.update(),
+				),
+			},
+			{
+				name: "",
+				render: (setting) => this.renderSourceSection(setting),
+			},
+		];
+	}
+
+	private renderSourceSection(setting: Setting): void {
+		setting.setClass("obhc-section-source");
+		setting.controlEl.empty();
+
+		const helpContainer = setting.controlEl.createDiv({
 			cls: "obhc-source-container",
 		});
 

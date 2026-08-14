@@ -1,17 +1,20 @@
-import { Setting } from "obsidian";
+import { Setting, SettingDefinition } from "obsidian";
 import { DEFAULT_FILENAME_FORMAT } from "src/config/defaultSettings";
 import ObsidianHardcover from "src/main";
 import { markSettingAsRequired } from "../ui/SettingsHelpers";
 
-export function renderFilenameTemplateSetting(
-	containerEl: HTMLElement,
+const FILENAME_TEMPLATE_DESC =
+	"Pattern used to generate filenames. Available variables: {{bookId}}, {{editionId}}, {{bookTitle}}, {{editionTitle}}, {{bookAuthors}}, {{editionAuthors}}, {{bookYear}}, {{editionYear}}.";
+
+function configureFilenameTemplateSetting(
+	setting: Setting,
 	plugin: ObsidianHardcover,
 ): void {
-	new Setting(containerEl)
+	setting.controlEl.empty();
+
+	setting
 		.setName("Filename template")
-		.setDesc(
-			"Pattern used to generate filenames. Available variables: {{bookId}}, {{editionId}}, {{bookTitle}}, {{editionTitle}}, {{bookAuthors}}, {{editionAuthors}}, {{bookYear}}, {{editionYear}}.",
-		)
+		.setDesc(FILENAME_TEMPLATE_DESC)
 		.addText((text) =>
 			text
 				.setPlaceholder(DEFAULT_FILENAME_FORMAT)
@@ -23,16 +26,25 @@ export function renderFilenameTemplateSetting(
 		);
 }
 
-export function renderFolderSetting(
-	containerEl: HTMLElement,
+export function getFilenameTemplateSettingDefinition(
 	plugin: ObsidianHardcover,
-): Setting {
-	const baseDesc =
-		"The folder where book notes will be stored (required, will be created if it doesn't exist)";
+): SettingDefinition {
+	return {
+		name: "Filename template",
+		desc: FILENAME_TEMPLATE_DESC,
+		render: (setting) => configureFilenameTemplateSetting(setting, plugin),
+	};
+}
 
-	const setting = new Setting(containerEl)
-		.setName("Target folder")
-		.setDesc(baseDesc);
+const TARGET_FOLDER_BASE_DESC =
+	"The folder where book notes will be stored (required, will be created if it doesn't exist)";
+
+function configureFolderSetting(
+	setting: Setting,
+	plugin: ObsidianHardcover,
+): void {
+	setting.controlEl.empty();
+	setting.setName("Target folder").setDesc(TARGET_FOLDER_BASE_DESC);
 
 	markSettingAsRequired(setting);
 
@@ -46,17 +58,24 @@ export function renderFolderSetting(
 				if (isRootOrEmpty) {
 					text.inputEl.addClass("has-error");
 					setting.setDesc(
-						`${baseDesc} - Please specify a subfolder. Using the vault root is not allowed.`,
+						`${TARGET_FOLDER_BASE_DESC} - Please specify a subfolder. Using the vault root is not allowed.`,
 					);
 				} else {
 					text.inputEl.removeClass("has-error");
-					setting.setDesc(baseDesc);
+					setting.setDesc(TARGET_FOLDER_BASE_DESC);
 				}
 
 				plugin.settings.targetFolder = value;
 				await plugin.saveSettings();
 			});
 	});
+}
 
-	return setting;
+export function getFolderSettingDefinition(
+	plugin: ObsidianHardcover,
+): SettingDefinition {
+	return {
+		name: "Target folder",
+		render: (setting) => configureFolderSetting(setting, plugin),
+	};
 }
