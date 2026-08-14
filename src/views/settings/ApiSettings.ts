@@ -56,14 +56,6 @@ function configureApiTokenSetting(
 	void updateEnvMessage();
 }
 
-export function renderApiTokenSetting(
-	containerEl: HTMLElement,
-	plugin: ObsidianHardcover,
-): void {
-	const setting = new Setting(containerEl);
-	configureApiTokenSetting(setting, plugin);
-}
-
 export function getApiTokenSettingDefinition(
 	plugin: ObsidianHardcover,
 ): SettingDefinition {

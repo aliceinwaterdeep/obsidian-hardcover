@@ -79,14 +79,6 @@ function configureStatusFilterSetting(
 	}
 }
 
-export function renderStatusFilterSetting(
-	containerEl: HTMLElement,
-	plugin: ObsidianHardcover,
-): void {
-	const filterSetting = new Setting(containerEl);
-	configureStatusFilterSetting(filterSetting, plugin);
-}
-
 export function getStatusFilterSettingDefinition(
 	plugin: ObsidianHardcover,
 ): SettingDefinition {

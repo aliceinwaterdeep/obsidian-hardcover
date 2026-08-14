@@ -33,15 +33,6 @@ function configureLastSyncTimestampSetting(
 		);
 }
 
-export function renderLastSyncTimestampSetting(
-	containerEl: HTMLElement,
-	plugin: ObsidianHardcover,
-	onSettingsChanged: () => void,
-): void {
-	const setting = new Setting(containerEl);
-	configureLastSyncTimestampSetting(setting, plugin, onSettingsChanged);
-}
-
 export function getLastSyncTimestampSettingDefinition(
 	plugin: ObsidianHardcover,
 	onSettingsChanged: () => void,

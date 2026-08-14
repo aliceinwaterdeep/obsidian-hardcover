@@ -114,6 +114,10 @@
 	width: 100%;
 }
 
+.obhc-section-source .setting-item-control {
+	width: 100%;
+}
+
 .obhc-section-wikilinks {
 	flex-direction: column;
 	align-items: flex-start;

@@ -15,10 +15,6 @@ export interface SyncButtonSettings {
 	onSyncComplete?: () => void;
 }
 
-export interface SyncButtonConfig extends SyncButtonSettings {
-	containerEl: HTMLElement;
-}
-
 function configureSyncButtonSetting(
 	setting: Setting,
 	config: SyncButtonSettings,
@@ -101,21 +97,6 @@ function configureSyncInfoSetting(setting: Setting): void {
 		text: "For large libraries (500+ books), sync may take several minutes due to Hardcover's API rate limits (60 requests/minute). The plugin will automatically pace requests to respect these limits.",
 	});
 }
-
-export function renderSyncSection(config: SyncButtonConfig) {
-	const { containerEl } = config;
-
-	renderSyncButton(config);
-
-	const setting = new Setting(containerEl);
-	configureSyncInfoSetting(setting);
-}
-
-export const renderSyncButton = (config: SyncButtonConfig): ButtonComponent => {
-	const { containerEl, ...settings } = config;
-	const setting = new Setting(containerEl);
-	return configureSyncButtonSetting(setting, settings);
-};
 
 export function getSyncButtonSettingDefinition(
 	config: SyncButtonSettings,

@@ -24,14 +24,6 @@ function configureFilenameTemplateSetting(
 		);
 }
 
-export function renderFilenameTemplateSetting(
-	containerEl: HTMLElement,
-	plugin: ObsidianHardcover,
-): void {
-	const setting = new Setting(containerEl);
-	configureFilenameTemplateSetting(setting, plugin);
-}
-
 export function getFilenameTemplateSettingDefinition(
 	plugin: ObsidianHardcover,
 ): SettingDefinition {
@@ -74,15 +66,6 @@ function configureFolderSetting(
 				await plugin.saveSettings();
 			});
 	});
-}
-
-export function renderFolderSetting(
-	containerEl: HTMLElement,
-	plugin: ObsidianHardcover,
-): Setting {
-	const setting = new Setting(containerEl);
-	configureFolderSetting(setting, plugin);
-	return setting;
 }
 
 export function getFolderSettingDefinition(

@@ -41,14 +41,6 @@ function configureStatusMappingSettings(
 	}
 }
 
-export function renderStatusMappingSettings(
-	containerEl: HTMLElement,
-	plugin: ObsidianHardcover,
-): void {
-	const setting = new Setting(containerEl);
-	configureStatusMappingSettings(setting, plugin);
-}
-
 export function getStatusMappingSettingDefinition(
 	plugin: ObsidianHardcover,
 ): SettingDefinition {

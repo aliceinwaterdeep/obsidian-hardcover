@@ -61,14 +61,6 @@ function configureWikilinkSettings(
 	}
 }
 
-export function renderWikilinkSettings(
-	containerEl: HTMLElement,
-	plugin: ObsidianHardcover,
-): void {
-	const setting = new Setting(containerEl);
-	configureWikilinkSettings(setting, plugin);
-}
-
 export function getWikilinkSettingDefinition(
 	plugin: ObsidianHardcover,
 ): SettingDefinition {
