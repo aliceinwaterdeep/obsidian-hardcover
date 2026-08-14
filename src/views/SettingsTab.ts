@@ -1,6 +1,7 @@
 import { App, PluginSettingTab, Setting } from "obsidian";
 import { REPO_ISSUES_URL, REPO_URL } from "src/config/constants";
 import ObsidianHardcover from "src/main";
+import { getByPath, setByPath } from "src/utils/ObjectPath";
 import { renderDebugSection } from "./settings/DebugSettings";
 import { renderApiTokenSetting } from "./settings/ApiSettings";
 import {
@@ -24,6 +25,15 @@ export default class SettingsTab extends PluginSettingTab {
 		this.plugin = plugin;
 		this.SYNC_CTA_LABEL = "Sync now";
 		this.debugBookLimit = 1;
+	}
+
+	getControlValue(key: string): unknown {
+		return getByPath(this.plugin.settings, key);
+	}
+
+	async setControlValue(key: string, value: unknown): Promise<void> {
+		setByPath(this.plugin.settings, key, value);
+		await this.plugin.saveSettings();
 	}
 
 	display(): void {
