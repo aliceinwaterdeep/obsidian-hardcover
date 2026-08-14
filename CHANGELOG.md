@@ -1,5 +1,7 @@
 # Changelog
 
+## 2.3.0
+
 ### Added
 
 - New `{{dateAdded}}` template variable for the date a book was added to your library.
