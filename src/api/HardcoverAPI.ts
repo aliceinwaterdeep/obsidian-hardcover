@@ -17,6 +17,10 @@ import { QueryBuilder } from "./QueryBuilder";
 import { HARDCOVER_API } from "src/config/constants";
 import ObsidianHardcover from "src/main";
 
+// Hardcover caps nested relations at 100 rows per request
+const LISTS_PAGE_SIZE = 100;
+const LISTS_PAGE_DELAY_MS = 1100; // stay under the 60 req/min limit
+
 export class HardcoverAPI {
 	private settings: PluginSettings;
 	private queryBuilder: QueryBuilder;
@@ -260,18 +264,6 @@ export class HardcoverAPI {
 			aggregateWhere = `(where: {status_id: {_in: [${status.join(",")}]}})`;
 		}
 
-		// build the query dynamically based on what we need
-		const listsFragment = includeLists
-			? `
-		lists {
-			name
-			list_books {
-				book_id
-			}
-		}
-	`
-			: "";
-
 		const query = `
 		query GetSyncInfo {
 			me {
@@ -281,7 +273,6 @@ export class HardcoverAPI {
 						count
 					}
 				}
-				${listsFragment}
 			}
 		}
 	`;
@@ -298,18 +289,19 @@ export class HardcoverAPI {
 			booksCount: user.user_books_aggregate?.aggregate?.count ?? 0,
 		};
 
-		if (includeLists && user.lists) {
-			result.userLists = user.lists;
+		if (includeLists) {
+			result.userLists = await this.fetchUserLists(user.id);
 		}
 
 		return result;
 	}
 
 	async fetchUserLists(userId: number): Promise<UserList[]> {
+		// the API caps nested `lists` at 100 rows, so page through them
 		const query = `
-		query GetUserLists($userId: Int!) {
+		query GetUserLists($userId: Int!, $offset: Int!) {
 			users_by_pk(id: $userId) {
-				lists {
+				lists(limit: ${LISTS_PAGE_SIZE}, offset: $offset, order_by: {id: asc}) {
 					name
 					list_books {
 						book_id
@@ -319,13 +311,22 @@ export class HardcoverAPI {
 		}
 	`;
 
-		const variables = { userId };
-		const data = await this.graphqlRequest<UserListsResponse>(
-			query,
-			variables,
-		);
+		const lists: UserList[] = [];
+		for (let offset = 0; ; offset += LISTS_PAGE_SIZE) {
+			const data = await this.graphqlRequest<UserListsResponse>(query, {
+				userId,
+				offset,
+			});
+			const page = data.users_by_pk?.lists || [];
+			lists.push(...page);
 
-		return data.users_by_pk?.lists || [];
+			if (page.length < LISTS_PAGE_SIZE) {
+				break;
+			}
+			await this.delay(LISTS_PAGE_DELAY_MS);
+		}
+
+		return lists;
 	}
 
 	async fetchUserId(): Promise<HardcoverUser | undefined> {
