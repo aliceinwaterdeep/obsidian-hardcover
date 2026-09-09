@@ -19,7 +19,6 @@ import ObsidianHardcover from "src/main";
 
 // Hardcover caps nested relations at 100 rows per request
 const LISTS_PAGE_SIZE = 100;
-const LISTS_PAGE_DELAY_MS = 1100; // stay under the 60 req/min limit
 
 export class HardcoverAPI {
 	private settings: PluginSettings;
@@ -323,7 +322,6 @@ export class HardcoverAPI {
 			if (page.length < LISTS_PAGE_SIZE) {
 				break;
 			}
-			await this.delay(LISTS_PAGE_DELAY_MS);
 		}
 
 		return lists;

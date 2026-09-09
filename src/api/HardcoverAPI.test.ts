@@ -16,7 +16,6 @@ describe("HardcoverAPI.fetchUserLists", () => {
 			.mockResolvedValueOnce({ users_by_pk: { lists: page(100) } })
 			.mockResolvedValueOnce({ users_by_pk: { lists: page(100) } })
 			.mockResolvedValueOnce({ users_by_pk: { lists: page(35) } });
-		jest.spyOn(api as any, "delay").mockResolvedValue(undefined);
 
 		const lists = await api.fetchUserLists(42);
 
