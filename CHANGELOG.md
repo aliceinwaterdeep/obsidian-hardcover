@@ -11,6 +11,10 @@
 - Migrated the settings tab to Obsidian's declarative settings API. Settings now appear in Obsidian's plugin settings search.
 - **Requires Obsidian 1.13.0 or later**
 
+### Fixed
+
+- Lists are now fetched in pages of 100. Previously only the first 100 lists (sorted alphabetically) were included, so books in lists past that cutoff were missing those lists in their notes.
+
 ## 2.2.0
 
 ### Added

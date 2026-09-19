@@ -136,7 +136,6 @@ export interface UserLibraryInfoResponse {
 				count?: number;
 			};
 		};
-		lists?: UserList[];
 	}>;
 }
 
