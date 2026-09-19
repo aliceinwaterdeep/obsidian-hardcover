@@ -1,5 +1,11 @@
 # Changelog
 
+## 2.3.1
+
+### Fixed
+
+- Lists are now fetched in pages of 100. Previously only the first 100 lists (sorted alphabetically) were included, so books in lists past that cutoff were missing those lists in their notes.
+
 ## 2.3.0
 
 ### Added
