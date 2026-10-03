@@ -1,10 +1,4 @@
-import {
-	App,
-	PluginSettingTab,
-	Setting,
-	SettingDefinition,
-	SettingDefinitionItem,
-} from "obsidian";
+import { App, PluginSettingTab, Setting, SettingDefinitionItem } from "obsidian";
 import { REPO_ISSUES_URL, REPO_URL } from "src/config/constants";
 import ObsidianHardcover from "src/main";
 import { getByPath, setByPath } from "src/utils/ObjectPath";
@@ -19,7 +13,6 @@ import { getStatusFilterSettingDefinition } from "./settings/StatusFilterSetting
 import { getLastSyncTimestampSettingDefinition } from "./settings/LastSyncSettings";
 import { getGroupingSettingDefinitions } from "./settings/GroupingSettings";
 import { getNoteTemplateSettingDefinitions } from "./settings/NoteTemplateSettings";
-import { getStatusMappingSettingDefinition } from "./settings/StatusMappingSettings";
 
 export default class SettingsTab extends PluginSettingTab {
 	plugin: ObsidianHardcover;
@@ -65,21 +58,26 @@ export default class SettingsTab extends PluginSettingTab {
 						type: "page",
 						name: "File Organization",
 						desc: "Group notes into subfolders and customize filenames",
-						items: this.getPageItems([
-							...getGroupingSettingDefinitions(this.plugin, () =>
-								this.update(),
-							),
-							getFilenameTemplateSettingDefinition(this.plugin),
-						]),
+						items: [
+							{
+								type: "group",
+								heading: "Filenames",
+								items: [getFilenameTemplateSettingDefinition(this.plugin)],
+							},
+							{
+								type: "group",
+								heading: "Subfolders",
+								items: getGroupingSettingDefinitions(this.plugin, () =>
+									this.update(),
+								),
+							},
+						],
 					},
 					{
 						type: "page",
 						name: "Note Template",
 						desc: "Customize the frontmatter and body of your book notes",
-						items: this.getPageItems([
-							...getNoteTemplateSettingDefinitions(this.plugin),
-							getStatusMappingSettingDefinition(this.plugin),
-						]),
+						items: getNoteTemplateSettingDefinitions(this.plugin),
 					},
 				],
 			},
@@ -103,13 +101,11 @@ export default class SettingsTab extends PluginSettingTab {
 						type: "page",
 						name: "Debug",
 						desc: "Run a test sync or sync specific books",
-						items: this.getPageItems(
-							getDebugSectionDefinitions(
-								this.plugin,
-								this.debugBookLimit,
-								(limit) => (this.debugBookLimit = limit),
-								() => this.update(),
-							),
+						items: getDebugSectionDefinitions(
+							this.plugin,
+							this.debugBookLimit,
+							(limit) => (this.debugBookLimit = limit),
+							() => this.update(),
 						),
 					},
 				],
@@ -119,10 +115,6 @@ export default class SettingsTab extends PluginSettingTab {
 				render: (setting) => this.renderSourceSection(setting),
 			},
 		];
-	}
-
-	private getPageItems(items: SettingDefinition[]): SettingDefinitionItem[] {
-		return [{ type: "group", cls: "obhc-settings", items }];
 	}
 
 	private renderSourceSection(setting: Setting): void {

@@ -1,5 +1,4 @@
-import { Setting, SettingDefinition, ToggleComponent } from "obsidian";
-import ObsidianHardcover from "src/main";
+import { SettingDefinitionGroup } from "obsidian";
 
 const WIKILINK_FIELDS = [
 	{
@@ -28,46 +27,22 @@ const WIKILINK_FIELDS = [
 	},
 ] as const;
 
-function configureWikilinkSettings(
-	setting: Setting,
-	plugin: ObsidianHardcover,
-): void {
-	setting
-		.setName("Wikilinks")
-		.setDesc(
-			"Format these fields as [[wikilinks]] both in frontmatter and note body",
-		)
-		.setClass("obhc-section-wikilinks");
-
-	setting.controlEl.empty();
-
-	const controlsContainer = setting.controlEl.createDiv({
-		cls: "obhc-wikilink-toggles",
-	});
-
-	for (const field of WIKILINK_FIELDS) {
-		const toggleContainer = controlsContainer.createDiv({
-			cls: "obhc-wikilink-toggle-item",
-		});
-
-		toggleContainer.createSpan({
-			text: field.label,
-		});
-
-		new ToggleComponent(toggleContainer)
-			.setValue(plugin.settings.wikilinkSettings[field.key])
-			.onChange(async (value) => {
-				plugin.settings.wikilinkSettings[field.key] = value;
-				await plugin.saveSettings();
-			});
-	}
-}
-
-export function getWikilinkSettingDefinition(
-	plugin: ObsidianHardcover,
-): SettingDefinition {
+export function getWikilinkGroupDefinition(): SettingDefinitionGroup {
 	return {
-		name: "Wikilinks",
-		render: (setting) => configureWikilinkSettings(setting, plugin),
+		type: "group",
+		heading: "Wikilinks",
+		items: [
+			{
+				name: "",
+				desc: "Format these fields as [[wikilinks]] both in frontmatter and note body",
+			},
+			...WIKILINK_FIELDS.map((field) => ({
+				name: field.label,
+				control: {
+					type: "toggle" as const,
+					key: `wikilinkSettings.${field.key}`,
+				},
+			})),
+		],
 	};
 }
