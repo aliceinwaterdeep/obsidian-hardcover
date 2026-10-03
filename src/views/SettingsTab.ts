@@ -13,7 +13,6 @@ import { getStatusFilterSettingDefinition } from "./settings/StatusFilterSetting
 import { getLastSyncTimestampSettingDefinition } from "./settings/LastSyncSettings";
 import { getGroupingSettingDefinitions } from "./settings/GroupingSettings";
 import { getNoteTemplateSettingDefinitions } from "./settings/NoteTemplateSettings";
-import { getStatusMappingSettingDefinition } from "./settings/StatusMappingSettings";
 
 export default class SettingsTab extends PluginSettingTab {
 	plugin: ObsidianHardcover;
@@ -54,18 +53,32 @@ export default class SettingsTab extends PluginSettingTab {
 			},
 			{
 				type: "group",
-				heading: "File Organization",
 				items: [
-					...getGroupingSettingDefinitions(this.plugin, () => this.update()),
-					getFilenameTemplateSettingDefinition(this.plugin),
-				],
-			},
-			{
-				type: "group",
-				heading: "Note Template",
-				items: [
-					...getNoteTemplateSettingDefinitions(this.plugin),
-					getStatusMappingSettingDefinition(this.plugin),
+					{
+						type: "page",
+						name: "File Organization",
+						desc: "Group notes into subfolders and customize filenames",
+						items: [
+							{
+								type: "group",
+								heading: "Filenames",
+								items: [getFilenameTemplateSettingDefinition(this.plugin)],
+							},
+							{
+								type: "group",
+								heading: "Subfolders",
+								items: getGroupingSettingDefinitions(this.plugin, () =>
+									this.update(),
+								),
+							},
+						],
+					},
+					{
+						type: "page",
+						name: "Note Template",
+						desc: "Customize the frontmatter and body of your book notes",
+						items: getNoteTemplateSettingDefinitions(this.plugin),
+					},
 				],
 			},
 			{
@@ -74,7 +87,7 @@ export default class SettingsTab extends PluginSettingTab {
 					plugin: this.plugin,
 					name: "Sync Hardcover library",
 					description:
-						"Sync your Hardcover books to your notes. For testing, you can sync a limited number of books in the Debug section below.",
+						"Sync your Hardcover books to your notes. For testing, you can sync a limited number of books from the Debug page below.",
 					buttonText: this.SYNC_CTA_LABEL,
 					isMainCTA: true,
 					onSyncComplete: () => this.update(),
@@ -83,13 +96,19 @@ export default class SettingsTab extends PluginSettingTab {
 			},
 			{
 				type: "group",
-				heading: "Debug",
-				items: getDebugSectionDefinitions(
-					this.plugin,
-					this.debugBookLimit,
-					(limit) => (this.debugBookLimit = limit),
-					() => this.update(),
-				),
+				items: [
+					{
+						type: "page",
+						name: "Debug",
+						desc: "Run a test sync or sync specific books",
+						items: getDebugSectionDefinitions(
+							this.plugin,
+							this.debugBookLimit,
+							(limit) => (this.debugBookLimit = limit),
+							() => this.update(),
+						),
+					},
+				],
 			},
 			{
 				name: "",

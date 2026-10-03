@@ -17,7 +17,6 @@ export function getGroupingSettingDefinitions(
 			desc: "Group your book notes into subdirectories for better organization",
 			render: (setting) => {
 				setting.controlEl.empty();
-				setting.settingEl.addClass("obhc-no-border-top");
 				setting.addToggle((toggle) =>
 					toggle
 						.setValue(plugin.settings.grouping.enabled)
@@ -55,7 +54,6 @@ export function getGroupingSettingDefinitions(
 			visible: authorGroupingVisible,
 			render: (setting) => {
 				setting.controlEl.empty();
-				setting.settingEl.addClass("obhc-no-border-top");
 				setting.addToggle((toggle) =>
 					toggle
 						.setValue(plugin.settings.grouping.authorFormat === "lastFirst")
@@ -100,7 +98,6 @@ export function getGroupingSettingDefinitions(
 				plugin.settings.grouping.noAuthorBehavior === "useFallbackFolder",
 			render: (setting) => {
 				setting.controlEl.empty();
-				setting.settingEl.addClass("obhc-no-border-top");
 				setting.addText((text) =>
 					text
 						.setPlaceholder("Various")
@@ -140,7 +137,6 @@ export function getGroupingSettingDefinitions(
 					"useCollectionsFolder",
 			render: (setting) => {
 				setting.controlEl.empty();
-				setting.settingEl.addClass("obhc-no-border-top");
 				setting.addText((text) =>
 					text
 						.setPlaceholder("Collections")

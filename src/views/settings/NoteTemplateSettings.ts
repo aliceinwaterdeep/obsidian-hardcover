@@ -1,12 +1,13 @@
-import { SettingDefinition } from "obsidian";
+import { SettingDefinition, SettingDefinitionItem } from "obsidian";
 import ObsidianHardcover from "src/main";
 import { DEFAULT_NOTE_TEMPLATE } from "src/config/defaultSettings";
-import { getWikilinkSettingDefinition } from "./WikilinkSettings";
+import { getWikilinkGroupDefinition } from "./WikilinkSettings";
+import { getStatusMappingGroupDefinition } from "./StatusMappingSettings";
 
 export function getNoteTemplateSettingDefinitions(
 	plugin: ObsidianHardcover,
-): SettingDefinition[] {
-	return [
+): SettingDefinitionItem[] {
+	const templateItems: SettingDefinition[] = [
 		{
 			name: "",
 			render: (setting) => {
@@ -82,6 +83,9 @@ export function getNoteTemplateSettingDefinitions(
 			name: "",
 			desc: "⚠️ For array fields like {{authors}}, {{contributors}}, {{series}}, {{publisher}}, {{genres}} and {{lists}}, use the Wikilinks settings below to enable [[wikilinks]] formatting. Writing [[{{authors}}]] in the template won't work as expected as they may contain multiple values.",
 		},
+	];
+
+	const formattingItems: SettingDefinition[] = [
 		{
 			name: "Preserve additional custom properties",
 			desc: "Keep any additional properties you manually add to your notes (not in the template above).",
@@ -110,6 +114,12 @@ export function getNoteTemplateSettingDefinitions(
 				},
 			},
 		},
-		getWikilinkSettingDefinition(plugin),
+	];
+
+	return [
+		{ type: "group", heading: "Template", items: templateItems },
+		{ type: "group", heading: "Formatting", items: formattingItems },
+		getWikilinkGroupDefinition(),
+		getStatusMappingGroupDefinition(plugin),
 	];
 }

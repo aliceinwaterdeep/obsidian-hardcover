@@ -119,61 +119,7 @@
 	width: 100%;
 }
 
-.obhc-section-wikilinks {
-	flex-direction: column;
-	align-items: flex-start;
-}
-
-.obhc-section-wikilinks .setting-item-control {
-	width: 100%;
-	flex-direction: column;
-}
-
-.obhc-wikilink-toggles {
-	display: flex;
-	flex-direction: column;
-	width: 100%;
-	gap: 10px;
-}
-
-.obhc-wikilink-toggle-item {
-	display: flex;
+/* rows without a description: center the label against the input */
+.obhc-status-mapping-row {
 	align-items: center;
-	justify-content: space-between;
-}
-.obhc-section-status-mapping {
-	display: flex;
-	flex-direction: column;
-	align-items: flex-start;
-}
-
-.obhc-section-status-mapping .setting-item-control {
-	align-items: start;
-	text-align: start;
-	width: 100%;
-	justify-content: space-between;
-}
-
-.obhc-status-mapping-inputs {
-	display: flex;
-	flex-direction: column;
-	gap: 8px;
-	margin-top: 12px;
-	width: 100%;
-}
-
-.obhc-status-mapping-item {
-	display: flex;
-	align-items: center;
-	justify-content: space-between;
-	gap: 12px;
-}
-
-.obhc-status-mapping-item span {
-	min-width: 140px;
-	flex-shrink: 0;
-}
-
-.obhc-settings .setting-item.obhc-no-border-top {
-	border-top: none;
 }
