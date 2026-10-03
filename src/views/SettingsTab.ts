@@ -1,4 +1,10 @@
-import { App, PluginSettingTab, Setting, SettingDefinitionItem } from "obsidian";
+import {
+	App,
+	PluginSettingTab,
+	Setting,
+	SettingDefinition,
+	SettingDefinitionItem,
+} from "obsidian";
 import { REPO_ISSUES_URL, REPO_URL } from "src/config/constants";
 import ObsidianHardcover from "src/main";
 import { getByPath, setByPath } from "src/utils/ObjectPath";
@@ -54,18 +60,27 @@ export default class SettingsTab extends PluginSettingTab {
 			},
 			{
 				type: "group",
-				heading: "File Organization",
 				items: [
-					...getGroupingSettingDefinitions(this.plugin, () => this.update()),
-					getFilenameTemplateSettingDefinition(this.plugin),
-				],
-			},
-			{
-				type: "group",
-				heading: "Note Template",
-				items: [
-					...getNoteTemplateSettingDefinitions(this.plugin),
-					getStatusMappingSettingDefinition(this.plugin),
+					{
+						type: "page",
+						name: "File Organization",
+						desc: "Group notes into subfolders and customize filenames",
+						items: this.getPageItems([
+							...getGroupingSettingDefinitions(this.plugin, () =>
+								this.update(),
+							),
+							getFilenameTemplateSettingDefinition(this.plugin),
+						]),
+					},
+					{
+						type: "page",
+						name: "Note Template",
+						desc: "Customize the frontmatter and body of your book notes",
+						items: this.getPageItems([
+							...getNoteTemplateSettingDefinitions(this.plugin),
+							getStatusMappingSettingDefinition(this.plugin),
+						]),
+					},
 				],
 			},
 			{
@@ -74,7 +89,7 @@ export default class SettingsTab extends PluginSettingTab {
 					plugin: this.plugin,
 					name: "Sync Hardcover library",
 					description:
-						"Sync your Hardcover books to your notes. For testing, you can sync a limited number of books in the Debug section below.",
+						"Sync your Hardcover books to your notes. For testing, you can sync a limited number of books from the Debug page below.",
 					buttonText: this.SYNC_CTA_LABEL,
 					isMainCTA: true,
 					onSyncComplete: () => this.update(),
@@ -83,19 +98,31 @@ export default class SettingsTab extends PluginSettingTab {
 			},
 			{
 				type: "group",
-				heading: "Debug",
-				items: getDebugSectionDefinitions(
-					this.plugin,
-					this.debugBookLimit,
-					(limit) => (this.debugBookLimit = limit),
-					() => this.update(),
-				),
+				items: [
+					{
+						type: "page",
+						name: "Debug",
+						desc: "Run a test sync or sync specific books",
+						items: this.getPageItems(
+							getDebugSectionDefinitions(
+								this.plugin,
+								this.debugBookLimit,
+								(limit) => (this.debugBookLimit = limit),
+								() => this.update(),
+							),
+						),
+					},
+				],
 			},
 			{
 				name: "",
 				render: (setting) => this.renderSourceSection(setting),
 			},
 		];
+	}
+
+	private getPageItems(items: SettingDefinition[]): SettingDefinitionItem[] {
+		return [{ type: "group", cls: "obhc-settings", items }];
 	}
 
 	private renderSourceSection(setting: Setting): void {
